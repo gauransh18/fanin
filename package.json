@@ -1,0 +1,13 @@
+{
+  "name": "fanin",
+  "version": "1.0.0",
+  "description": "A free, open AI research curriculum. Every lesson unlocked.",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node src/build.mjs",
+    "serve": "node src/serve.mjs",
+    "dev": "node src/build.mjs && node src/serve.mjs"
+  },
+  "license": "CC-BY-SA-4.0"
+}
