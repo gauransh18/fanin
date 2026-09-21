@@ -11,8 +11,31 @@ const ROOT = path.resolve(HERE, '..');
 const OUT = path.join(ROOT, 'dist');
 const LESSON_DIR = path.join(ROOT, 'content', 'lessons');
 
-const BASE = (process.env.BASE_PATH || '').replace(/\/$/, '');
-const u = makeUrl(BASE);
+// Two link modes.
+//   absolute  links are BASE + "/curriculum/"  — what a web server wants.
+//   relative  links are "../../curriculum/index.html" — works from any path,
+//             including a file:// open or a preview host that serves published
+//             paths literally with no directory-index resolution.
+const RELATIVE = process.env.LINK_MODE === 'relative';
+const BASE = RELATIVE ? '' : (process.env.BASE_PATH || '').replace(/\/$/, '');
+
+// Depth of the page currently being written, so relative links can climb out
+// of it. Pages are generated one at a time, so a module-level cursor is safe.
+let pageDepth = 0;
+const setPage = (canonical) => {
+  pageDepth = canonical.split('/').filter(Boolean).length;
+};
+
+const absoluteUrl = makeUrl(BASE);
+
+function u(target) {
+  if (/^(https?:|mailto:|#)/.test(target)) return target;
+  if (!RELATIVE) return absoluteUrl(target);
+  const clean = target.replace(/^\//, '');
+  const file = clean === '' || clean.endsWith('/') ? clean + 'index.html' : clean;
+  const up = pageDepth ? '../'.repeat(pageDepth) : './';
+  return up + file;
+}
 
 const byTrack = new Map(tracks.map((t) => [t.id, t]));
 const lessonAt = (i) => (i >= 0 && i < allLessons.length ? allLessons[i] : null);
@@ -114,6 +137,7 @@ function lessonRows(track, present) {
 // ------------------------------------------------------------------ pages --
 
 function landingPage(present) {
+  setPage('/');
   const done = allLessons.filter((l) => present.has(lessonId(l))).length;
 
   const cards = tracks
@@ -258,13 +282,14 @@ function landingPage(present) {
     title: site.name,
     description: site.description,
     body,
-    base: BASE,
+    base: RELATIVE ? u('/').replace(/index\.html$/, '') : BASE,
     canonical: '/',
     nav: 'home',
   });
 }
 
 function curriculumPage(present) {
+  setPage('/curriculum/');
   const allIds = allLessons.map(lessonId).join(' ');
 
   const sections = tracks
@@ -322,13 +347,14 @@ function curriculumPage(present) {
     title: 'Curriculum',
     description: `All ${totals.lessons} Fanin lessons across ${totals.tracks} tracks, from linear algebra to distributed training. Free, no account required.`,
     body,
-    base: BASE,
+    base: RELATIVE ? u('/').replace(/index\.html$/, '') : BASE,
     canonical: '/curriculum/',
     nav: 'curriculum',
   });
 }
 
 function trackPage(track, present) {
+  setPage(`/learn/${track.id}/`);
   const i = tracks.indexOf(track);
   const ids = track.lessons.map(([slug]) => `${track.id}/${slug}`).join(' ');
   const mins = track.lessons.reduce((s, [, , m]) => s + m, 0);
@@ -384,7 +410,7 @@ function trackPage(track, present) {
     title: track.title,
     description: track.blurb,
     body,
-    base: BASE,
+    base: RELATIVE ? u('/').replace(/index\.html$/, '') : BASE,
     canonical: `/learn/${track.id}/`,
     nav: 'curriculum',
   });
@@ -402,6 +428,7 @@ function draftBody(lesson, track) {
 }
 
 async function lessonPage(lesson, raw) {
+  setPage(lesson.href);
   const track = byTrack.get(lesson.trackId);
   const i = allLessons.indexOf(lesson);
   const prev = lessonAt(i - 1);
@@ -523,7 +550,7 @@ async function lessonPage(lesson, raw) {
     title: `${lesson.title} · ${track.short}`,
     description: summary || `${lesson.title} — part of the free ${site.name} AI curriculum.`,
     body,
-    base: BASE,
+    base: RELATIVE ? u('/').replace(/index\.html$/, '') : BASE,
     canonical: lesson.href,
     nav: 'curriculum',
     math: /class="tex"/.test(contentHtml),
@@ -533,6 +560,7 @@ async function lessonPage(lesson, raw) {
 }
 
 function aboutPage() {
+  setPage('/about/');
   const body = `
 <div class="wrap narrow">
   <section class="page-head">
@@ -598,13 +626,14 @@ function aboutPage() {
     title: 'About',
     description: `Why ${site.name} is free, how it is built, and how to use it.`,
     body,
-    base: BASE,
+    base: RELATIVE ? u('/').replace(/index\.html$/, '') : BASE,
     canonical: '/about/',
     nav: 'about',
   });
 }
 
 function progressPage() {
+  setPage('/progress/');
   const allIds = allLessons.map(lessonId).join(' ');
   const trackBlocks = tracks
     .map((track, i) => {
@@ -653,13 +682,14 @@ function progressPage() {
     title: 'Progress',
     description: 'Your lesson progress, stored locally in your browser.',
     body,
-    base: BASE,
+    base: RELATIVE ? u('/').replace(/index\.html$/, '') : BASE,
     canonical: '/progress/',
     nav: 'progress',
   });
 }
 
 function notFoundPage() {
+  setPage('/');
   const body = `
 <div class="wrap narrow">
   <section class="page-head">
@@ -681,7 +711,7 @@ function notFoundPage() {
     title: 'Not found',
     description: 'That page does not exist.',
     body,
-    base: BASE,
+    base: RELATIVE ? u('/').replace(/index\.html$/, '') : BASE,
     canonical: '/404',
   });
 }

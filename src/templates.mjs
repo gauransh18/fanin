@@ -5,8 +5,14 @@ export const esc = (s = '') =>
     .replace(/"/g, '&quot;');
 
 export function makeUrl(base) {
+  const relative = base === '' ? false : !base.startsWith('/');
   return (path) => {
     if (/^(https?:|mailto:|#)/.test(path)) return path;
+    if (relative) {
+      const clean = path.replace(/^\//, '');
+      const file = clean === '' || clean.endsWith('/') ? clean + 'index.html' : clean;
+      return base + file;
+    }
     return base + (path.startsWith('/') ? path : '/' + path);
   };
 }

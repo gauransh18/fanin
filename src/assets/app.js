@@ -4,6 +4,18 @@
   'use strict';
 
   var BASE = document.documentElement.dataset.base || '';
+  // BASE is either a server path ("" or "/fanin") or a relative climb
+  // ("../../"). Build links the same way the generator did.
+  var RELATIVE = BASE !== '' && BASE.charAt(0) !== '/';
+
+  function url(path) {
+    var clean = String(path).replace(/^\//, '');
+    if (RELATIVE) {
+      if (clean === '' || clean.charAt(clean.length - 1) === '/') clean += 'index.html';
+      return BASE + clean;
+    }
+    return BASE + '/' + clean;
+  }
   var PROGRESS_KEY = 'fanin:progress:v1';
   var THEME_KEY = 'fanin:theme';
 
@@ -227,7 +239,7 @@
 
   function loadIndex() {
     if (indexPromise) return indexPromise;
-    indexPromise = fetch(BASE + '/search-index.json')
+    indexPromise = fetch(url('search-index.json'))
       .then(function (r) { return r.json(); })
       .then(function (data) { index = data; return data; })
       .catch(function () { index = []; return []; });
@@ -325,7 +337,7 @@
       results.innerHTML = list
         .map(function (entry, i) {
           return (
-            '<a class="palette-hit" href="' + BASE + entry.u + '"' + (i === 0 ? ' data-active' : '') + '>' +
+            '<a class="palette-hit" href="' + url(entry.u) + '"' + (i === 0 ? ' data-active' : '') + '>' +
             '<span class="n">' + entry.n + '</span>' +
             '<span><span class="t">' + mark(entry.t, terms) + '</span>' +
             '<span class="s">' + mark(excerpt(entry, terms), terms) + '</span></span></a>'
