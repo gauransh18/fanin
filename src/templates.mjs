@@ -50,12 +50,12 @@ export function layout(opts) {
     `<a class="nav-link${hideSm ? ' nav-hide-sm' : ''}" href="${u(href)}"` +
     `${nav === key ? ' aria-current="page"' : ''}>${label}</a>`;
 
-  // KaTeX from jsDelivr: npm-backed paths, so the font files the stylesheet
-  // pulls resolve correctly relative to it. No SRI — an unverified hash would
-  // block the asset outright, and unrendered TeX stays legible either way.
+  // KaTeX is vendored, not pulled from a CDN. The site promises no tracking,
+  // and every CDN request hands a third party the visitor's IP and referrer.
+  // Self-hosting also means maths still renders offline and on a bad network.
   const katex = math
-    ? `<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" crossorigin="anonymous">
-  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js" crossorigin="anonymous" onload="window.dispatchEvent(new Event('fanin:katex'))"></script>`
+    ? `<link rel="stylesheet" href="${u('/assets/katex/katex.min.css')}">
+  <script defer src="${u('/assets/katex/katex.min.js')}" onload="window.dispatchEvent(new Event('fanin:katex'))"></script>`
     : '';
 
   return `<!doctype html>
@@ -71,9 +71,7 @@ export function layout(opts) {
 <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="${u('/favicon.svg')}" type="image/svg+xml">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Serif:ital,wght@0,400;0,600;1,400&display=swap">
+<link rel="stylesheet" href="${u('/assets/fonts.css')}">
 <link rel="stylesheet" href="${u('/assets/styles.css')}">
 ${katex}
 <script>
