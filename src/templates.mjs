@@ -95,6 +95,15 @@ ${katex}
       ${navLink('/curriculum/', 'Curriculum', 'curriculum')}
       ${navLink('/progress/', 'Progress', 'progress', true)}
       ${navLink('/about/', 'About', 'about', true)}
+      <a class="level-chip" id="level-chip" href="${u('/progress/')}" hidden>
+        <span class="chip-level">L<span data-level-num>1</span></span>
+        <span class="chip-streak" id="chip-streak" hidden>
+          <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+            <path d="M8 1c.6 2.2-.4 3.4-1.4 4.5C5.4 6.8 4.3 8 4.3 9.9A3.7 3.7 0 0 0 8 13.6a3.7 3.7 0
+                     0 0 3.7-3.7c0-2.6-1.6-3.9-2.4-5.6-.3 1-.9 1.6-1.6 2.2.5-1.9.6-3.9.3-5.5z"/>
+          </svg><span data-streak>0</span>
+        </span>
+      </a>
       <button class="search-trigger" type="button" data-search-open aria-label="Search lessons">
         ${ICON.search}<span class="search-label">Search</span><kbd>⌘K</kbd>
       </button>
@@ -142,6 +151,7 @@ ${body}
   </div>
 </footer>
 
+${opts.extraHead || ''}
 <script src="${u('/assets/app.js')}" defer></script>
 </body>
 </html>`;

@@ -300,6 +300,7 @@
 
     paintLevel(s);
     paintDashboard(s);
+    paintResume(s);
     return s;
   }
 
@@ -368,8 +369,10 @@
           '<span class="badge-name">' + escapeHtml(b.name) + '</span>' +
           '<span class="badge-hint">' + escapeHtml(b.hint) + '</span></li>';
       }).join('');
-      var count = document.querySelector('[data-badge-count]');
-      if (count) count.textContent = earned + ' / ' + s.badges.length;
+      // There is more than one of these on the page.
+      document.querySelectorAll('[data-badge-count]').forEach(function (el) {
+        el.textContent = earned + ' / ' + s.badges.length;
+      });
     }
   }
 
@@ -426,6 +429,43 @@
         }).join('') + '</div>';
       }).join('') +
       '</div>';
+  }
+
+  /* ------------------------------------------------------------ resume -- */
+  // The landing page carries the ordered lesson list, so the next unfinished
+  // lesson can be found without a fetch. It stays hidden until something has
+  // actually been completed — a first-time reader should see "Start 1.01".
+
+  function paintResume(s) {
+    var card = document.getElementById('resume-card');
+    if (!card) return;
+
+    var raw = document.getElementById('lesson-order');
+    if (!raw) { card.hidden = true; return; }
+
+    var order;
+    try { order = JSON.parse(raw.textContent); } catch (e) { card.hidden = true; return; }
+
+    if (!s.count) { card.hidden = true; return; }
+
+    var next = null;
+    for (var i = 0; i < order.length; i++) {
+      if (!isDone(order[i][0])) { next = order[i]; break; }
+    }
+    if (!next) {
+      // Everything is done. Offer the last lesson rather than hiding the card.
+      next = order[order.length - 1];
+      card.dataset.finished = '1';
+    }
+
+    card.href = url('learn/' + next[0] + '/');
+    var num = card.querySelector('[data-resume-number]');
+    var title = card.querySelector('[data-resume-title]');
+    var done = card.querySelector('[data-resume-done]');
+    if (num) num.textContent = next[1];
+    if (title) title.textContent = next[2];
+    if (done) done.textContent = String(s.count);
+    card.hidden = false;
   }
 
   /* -------------------------------------------------- lesson controls --- */

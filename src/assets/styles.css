@@ -1830,3 +1830,406 @@ h2:hover > .anchor, h3:hover > .anchor, h4:hover > .anchor, .anchor:focus-visibl
   :root:not([data-theme="light"]) .quote-chip { color: #17090F; }
 }
 @keyframes chip-in { from { opacity: 0; transform: translate(-50%, 3px); } }
+
+/* ==========================================================================
+   Progress dashboard
+
+   The activity calendar encodes magnitude (lessons per day), so its ramp is a
+   single hue running light to dark — never the viridis track colours, which
+   encode position in the curriculum and are a different job. The empty cell
+   sits outside the ramp as a neutral, so "nothing happened" never reads as a
+   low value.
+   ========================================================================== */
+
+:root {
+  --cal-0: #E7E9EF;
+  --cal-1: #F7DDE8;
+  --cal-2: #E7A9C6;
+  --cal-3: #C76A9B;
+  --cal-4: #9E2A63;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --cal-0: #1C2029;
+    --cal-1: #3D1C2C;
+    --cal-2: #6E2E4C;
+    --cal-3: #A8486F;
+    --cal-4: #F28FB8;
+  }
+}
+:root[data-theme="dark"] {
+  --cal-0: #1C2029;
+  --cal-1: #3D1C2C;
+  --cal-2: #6E2E4C;
+  --cal-3: #A8486F;
+  --cal-4: #F28FB8;
+}
+
+/* --- level ------------------------------------------------------------- */
+
+.level-card {
+  padding: 1.25rem 1.375rem 1.375rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+  margin-bottom: 1rem;
+}
+.level-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: .5rem 1rem;
+  margin-bottom: .875rem;
+}
+.level-eyebrow {
+  margin: 0 0 .125rem;
+  font-family: var(--mono);
+  font-size: var(--fs-xs);
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.level-name {
+  margin: 0;
+  font-size: var(--fs-xl);
+  font-weight: 600;
+  letter-spacing: -.022em;
+}
+.level-xp {
+  margin: 0;
+  font-family: var(--mono);
+  font-size: var(--fs-md);
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+.level-xp b { color: var(--accent); font-weight: 500; }
+.progress.level-bar { height: 6px; }
+.level-bar > i { background: var(--accent); }
+.level-next {
+  margin: .5rem 0 0;
+  font-size: var(--fs-sm);
+  color: var(--muted);
+}
+
+/* --- stat tiles -------------------------------------------------------- */
+
+.stat-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1px;
+  background: var(--line);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+  margin-bottom: 2rem;
+}
+@media (min-width: 720px) { .stat-row { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+.stat-tile {
+  display: grid;
+  gap: .1875rem;
+  padding: 1rem 1.125rem;
+  background: var(--surface);
+}
+.stat-num {
+  font-family: var(--mono);
+  font-size: var(--fs-xl);
+  font-weight: 500;
+  letter-spacing: -.02em;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+}
+.stat-cap { font-size: var(--fs-sm); color: var(--muted); }
+
+/* --- panels ------------------------------------------------------------ */
+
+.panel { margin-bottom: 2rem; }
+.panel-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: .5rem 1rem;
+  margin-bottom: .875rem;
+}
+.panel-head h2 {
+  margin: 0;
+  font-size: var(--fs-lg);
+  font-weight: 600;
+  letter-spacing: -.018em;
+}
+.panel-sub, .panel-note {
+  margin: 0;
+  font-size: var(--fs-sm);
+  color: var(--muted);
+}
+.panel-note { margin-top: .625rem; max-width: 60ch; line-height: 1.5; }
+
+/* --- activity calendar ------------------------------------------------- */
+
+.cal {
+  overflow-x: auto;
+  padding: .875rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+.cal-months {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 15px;
+  gap: 3px;
+  margin-bottom: .3125rem;
+  font-family: var(--mono);
+  font-size: var(--fs-xs);
+  color: var(--muted);
+  min-width: max-content;
+}
+.cal-body {
+  display: flex;
+  gap: 3px;
+  min-width: max-content;
+}
+.cal-week { display: grid; grid-auto-rows: 12px; gap: 3px; }
+.cal-cell {
+  width: 12px;
+  height: 12px;
+  border-radius: 2px;
+  background: var(--cal-0);
+}
+.cal-cell[data-step="-1"] { background: none; }
+.cal-cell[data-step="1"] { background: var(--cal-1); }
+.cal-cell[data-step="2"] { background: var(--cal-2); }
+.cal-cell[data-step="3"] { background: var(--cal-3); }
+.cal-cell[data-step="4"] { background: var(--cal-4); }
+
+.cal-legend {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  margin: 0;
+  font-size: var(--fs-xs);
+  color: var(--muted);
+}
+.cal-legend .cal-cell { width: 10px; height: 10px; }
+.cal-legend .cal-cell:first-of-type { margin-left: .375rem; }
+.cal-legend .cal-cell:last-of-type { margin-right: .375rem; }
+
+/* --- track rings ------------------------------------------------------- */
+
+.ring-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(9.5rem, 1fr));
+  gap: 1px;
+  background: var(--line);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.ring-card {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: .5rem;
+  padding: 1.125rem .75rem 1rem;
+  background: var(--surface);
+  text-decoration: none;
+  color: var(--ink);
+}
+.ring-card:hover { background: var(--surface-sunk); color: var(--ink); }
+.ring { width: 4.25rem; height: 4.25rem; transform: rotate(-90deg); }
+.ring circle { fill: none; stroke-width: 6; }
+.ring-bg { stroke: var(--surface-2); }
+.ring-fill {
+  stroke: var(--track-ink);
+  stroke-linecap: round;
+  stroke-dasharray: 163.36 163.36;
+  stroke-dashoffset: 163.36;
+  transition: stroke-dashoffset .5s ease;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .ring-fill { stroke: var(--track-ink-dark); }
+}
+:root[data-theme="dark"] .ring-fill { stroke: var(--track-ink-dark); }
+@media (prefers-reduced-motion: reduce) { .ring-fill { transition: none; } }
+
+.ring-pct {
+  position: absolute;
+  top: 2.6rem;
+  font-family: var(--mono);
+  font-size: var(--fs-sm);
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-2);
+}
+.ring-meta { display: grid; justify-items: center; gap: .125rem; text-align: center; }
+.ring-track {
+  display: inline-flex;
+  align-items: center;
+  gap: .375rem;
+  font-size: var(--fs-sm);
+  font-weight: 500;
+}
+.ring-track .track-dot { width: .4375rem; height: .4375rem; }
+.ring-count {
+  font-family: var(--mono);
+  font-size: var(--fs-xs);
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+.ring-card[data-complete="1"] .ring-pct { color: var(--good); }
+
+/* --- badges ------------------------------------------------------------ */
+
+.badge-grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  /* Column counts that divide the badge count evenly, so the last row is
+     never a full card followed by dead space. */
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1px;
+  background: var(--line);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+@media (min-width: 620px)  { .badge-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+
+.badge {
+  display: grid;
+  gap: .1875rem;
+  padding: .875rem 1rem;
+  background: var(--surface);
+}
+.badge-mark {
+  width: .875rem;
+  height: .875rem;
+  border-radius: 50%;
+  border: 2px solid var(--line-strong);
+  margin-bottom: .1875rem;
+}
+.badge[data-earned="1"] .badge-mark {
+  border-color: var(--accent);
+  background: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+.badge-name { font-size: var(--fs-base); font-weight: 500; }
+.badge-hint { font-size: var(--fs-xs); color: var(--muted); line-height: 1.45; }
+.badge[data-earned="0"] { opacity: .55; }
+.badge[data-earned="0"] .badge-name { font-weight: 400; }
+
+/* ==========================================================================
+   Level chip, resume card, reward toasts
+   ========================================================================== */
+
+.level-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: .375rem;
+  height: 2rem;
+  padding: 0 .5rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--ink-2);
+  text-decoration: none;
+  font-family: var(--mono);
+  font-size: var(--fs-xs);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.level-chip:hover { border-color: var(--accent-line); color: var(--accent); }
+.chip-level { font-weight: 500; }
+.chip-streak { display: inline-flex; align-items: center; gap: .125rem; color: var(--warn); }
+.chip-streak svg { width: .6875rem; height: .6875rem; }
+@media (max-width: 520px) { .level-chip { display: none; } }
+
+/* --- resume ------------------------------------------------------------ */
+
+.resume {
+  display: grid;
+  gap: .1875rem;
+  margin-top: 1.5rem;
+  padding: .875rem 1rem;
+  max-width: 26rem;
+  border: 1px solid var(--accent-line);
+  border-radius: var(--radius);
+  background: var(--accent-soft);
+  text-decoration: none;
+  color: var(--ink);
+}
+.resume:hover { border-color: var(--accent); color: var(--ink); }
+.resume-label {
+  font-family: var(--mono);
+  font-size: var(--fs-xs);
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.resume-title { font-size: var(--fs-md); font-weight: 500; line-height: 1.35; }
+.resume-title b { font-family: var(--mono); font-weight: 500; color: var(--muted); }
+.resume-meta {
+  display: inline-flex;
+  align-items: center;
+  gap: .375rem;
+  font-size: var(--fs-sm);
+  color: var(--muted);
+}
+.resume-meta svg { width: .8125rem; height: .8125rem; }
+.resume[data-finished="1"] .resume-label::after { content: " — all done"; }
+
+/* --- complete button xp hint ------------------------------------------- */
+
+.xp-hint {
+  font-family: var(--mono);
+  font-size: var(--fs-xs);
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+}
+.complete-btn[aria-pressed="true"] .xp-hint { display: none; }
+
+/* --- toasts ------------------------------------------------------------ */
+
+.toast-stack {
+  position: fixed;
+  right: 1rem;
+  bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
+  z-index: 100;
+  display: grid;
+  gap: .5rem;
+  justify-items: end;
+  pointer-events: none;
+}
+.toast {
+  display: flex;
+  align-items: center;
+  gap: .625rem;
+  padding: .625rem .875rem;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  animation: toast-in .22s cubic-bezier(.2, .8, .3, 1);
+  max-width: min(20rem, calc(100vw - 2rem));
+}
+.toast[data-leaving] { animation: toast-out .28s ease forwards; }
+.toast-mark {
+  width: .625rem;
+  height: .625rem;
+  border-radius: 50%;
+  background: var(--accent);
+  flex-shrink: 0;
+}
+.toast[data-kind="badge"] .toast-mark { background: var(--good); }
+.toast[data-kind="level"] .toast-mark { background: var(--warn); }
+.toast[data-kind="streak"] .toast-mark { background: var(--warn); }
+.toast-text { display: grid; gap: .0625rem; min-width: 0; }
+.toast-text b { font-size: var(--fs-base); font-weight: 600; }
+.toast-text span { font-size: var(--fs-sm); color: var(--muted); }
+
+@keyframes toast-in  { from { opacity: 0; transform: translateY(8px) scale(.97); } }
+@keyframes toast-out { to   { opacity: 0; transform: translateY(-4px); } }
+@media (prefers-reduced-motion: reduce) {
+  .toast, .toast[data-leaving] { animation: none; }
+}

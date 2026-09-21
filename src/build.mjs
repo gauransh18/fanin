@@ -208,6 +208,15 @@ function landingPage(present) {
         <a class="btn btn-primary" href="${u('/learn/math/vectors-norms-geometry/')}">Start lesson 1.01 ${ICON.arrow}</a>
         <a class="btn btn-ghost" href="${u('/curriculum/')}">See all ${totals.lessons} lessons</a>
       </div>
+
+      <!-- Populated from local storage; stays hidden for a first-time reader. -->
+      <a class="resume" id="resume-card" href="#" hidden>
+        <span class="resume-label">Pick up where you left off</span>
+        <span class="resume-title"><b data-resume-number></b> <span data-resume-title></span></span>
+        <span class="resume-meta"><span data-resume-done>0</span> of ${
+          totals.lessons
+        } complete ${ICON.arrow}</span>
+      </a>
     </div>
     <div>${spine()}</div>
   </div>
@@ -278,9 +287,17 @@ function landingPage(present) {
   </div>
 </section>`;
 
+  const order = JSON.stringify(
+    allLessons.map((l) => [lessonId(l), l.number, l.title])
+  );
+
   return layout({
     title: site.name,
     description: site.description,
+    extraHead: `<script type="application/json" id="lesson-order">${order.replace(
+      /</g,
+      '\\u003c'
+    )}</script>`,
     body,
     base: RELATIVE ? u('/').replace(/index\.html$/, '') : BASE,
     canonical: '/',
@@ -532,6 +549,7 @@ async function lessonPage(lesson, raw) {
           lesson
         )}" data-minutes="${lesson.minutes}" aria-pressed="false">
           <span class="box" aria-hidden="true"></span><span class="label">Mark complete</span>
+          <span class="xp-hint"></span>
         </button>
         <span class="complete-note">Saved in this browser only. Nothing is sent anywhere.</span>
       </div>
@@ -610,8 +628,12 @@ function aboutPage() {
     <ul>
       <li><strong>Everything is free.</strong> Not a free tier. There is no tier.</li>
       <li><strong>No account, ever.</strong> Nothing asks who you are. There is no login to build.</li>
-      <li><strong>No tracking.</strong> No analytics script, no pixel, no cookie. The only state is
-      your lesson progress, kept in your browser's local storage, which never leaves the device.</li>
+      <li><strong>No tracking.</strong> No analytics script, no pixel, no cookie, and no request
+      to any third party — the fonts and the maths renderer are served from this site, not a CDN.</li>
+      <li><strong>Your progress is yours alone.</strong> Lessons completed, XP, streak and badges are
+      all derived from one record in your browser's local storage. It never leaves the device, so
+      there is no leaderboard, no profile and nothing to compare. The scoreboard is private by
+      construction.</li>
       <li><strong>Dependency order, not difficulty order.</strong> A lesson appears after the
       lessons whose results it uses, and it says at the top which those are.</li>
       <li><strong>Maths is shown, not waved at.</strong> Where a derivation matters, it is done.</li>
@@ -633,9 +655,17 @@ function aboutPage() {
 
     <h2>Corrections and contributions</h2>
     <p>
+      Every lesson carries a <strong>Found a problem with this lesson?</strong> control at the
+      bottom, and selecting any passage offers to quote it. Both open a prefilled issue on GitHub
+      for a <strong>correction</strong> (something is wrong), an <strong>addition</strong>
+      (something is missing) or a <strong>deletion</strong> (something should go). The page posts
+      nothing itself — it just saves you describing where the problem is.
+    </p>
+    <p>
       The whole site — content, generator, styles — is one public repository. Lessons are plain
       Markdown files under <code>content/lessons/</code>, and the build is a single Node script
-      with no dependencies. If you find an error, open an issue or send a pull request.
+      with no dependencies. Pull requests are welcome; <code>node src/check.mjs</code> will tell
+      you if a link or a lesson dependency is wrong before CI does.
     </p>
     <p>
       Lesson text is licensed <strong>${site.license}</strong>: use it, translate it, teach from
@@ -665,42 +695,102 @@ function aboutPage() {
 function progressPage() {
   setPage('/progress/');
   const allIds = allLessons.map(lessonId).join(' ');
-  const trackBlocks = tracks
+
+  // One ring per track. The stroke uses the contrast-safe ink variant, not the
+  // raw viridis fill -- at the light end of the ramp the fill drops to 1.6:1
+  // against white, which is unreadable for a thin mark.
+  const rings = tracks
     .map((track, i) => {
       const ids = track.lessons.map(([slug]) => `${track.id}/${slug}`).join(' ');
-      return `<div class="progress-track" data-track-progress data-track-lessons="${ids}" style="--track:${
-        track.fill
-      }">
-        <div class="ct-meta-row">
-          <span>${trackDot(track)} ${esc(track.title)}</span>
-          <span data-progress-label>0 / ${track.lessons.length}</span>
-        </div>
-        <div class="progress"><i></i></div>
-      </div>`;
+      return `<a class="ring-card" href="${u(`/learn/${track.id}/`)}"
+         data-track-progress data-track-lessons="${ids}"
+         style="--track:${track.fill};--track-ink:${track.inkLight};--track-ink-dark:${track.inkDark}">
+        <svg class="ring" viewBox="0 0 64 64" aria-hidden="true">
+          <circle class="ring-bg" cx="32" cy="32" r="26" />
+          <circle class="ring-fill" cx="32" cy="32" r="26" data-ring />
+        </svg>
+        <span class="ring-meta">
+          <span class="ring-track">${trackDot(track)}${esc(track.short)}</span>
+          <span class="ring-count" data-progress-label>0 / ${track.lessons.length}</span>
+        </span>
+        <span class="ring-pct" data-ring-pct>0%</span>
+      </a>`;
     })
     .join('\n');
 
   const body = `
-<div class="wrap narrow">
+<div class="wrap">
   <section class="page-head">
     <p class="eyebrow">Progress</p>
     <h1>Where you are</h1>
     <p class="page-lede">
-      Kept in this browser's local storage and nowhere else. Open the site on another device
-      and you will start from zero — that is the cost of not having accounts.
+      Everything here is computed from your own browser's local storage and stays there.
+      No account, no sync, nothing sent anywhere — so a new device starts from zero.
     </p>
-    <div class="overall">
-      <div class="overall-row">
-        <span class="overall-count"><b data-overall-progress data-all-lessons="${allIds}">0</b> of ${
-    totals.lessons
-  } lessons</span>
-        <span class="overall-pct" data-overall-pct>0%</span>
-      </div>
-      <div class="progress"><i data-overall-bar></i></div>
-    </div>
   </section>
 
-  <div class="progress-tracks">${trackBlocks}</div>
+  <section class="level-card">
+    <div class="level-head">
+      <div>
+        <p class="level-eyebrow">Level <span data-level-num>1</span></p>
+        <h2 class="level-name" data-level-name>Randomly Initialized</h2>
+      </div>
+      <p class="level-xp"><b data-xp>0</b> XP</p>
+    </div>
+    <div class="progress level-bar"><i data-level-bar></i></div>
+    <p class="level-next" data-next-level>600 XP to First Backward Pass</p>
+  </section>
+
+  <div class="stat-row">
+    <div class="stat-tile">
+      <span class="stat-num" data-overall-progress data-all-lessons="${allIds}">0</span>
+      <span class="stat-cap">of ${totals.lessons} lessons</span>
+    </div>
+    <div class="stat-tile">
+      <span class="stat-num" data-streak>0</span>
+      <span class="stat-cap">day streak</span>
+    </div>
+    <div class="stat-tile">
+      <span class="stat-num" data-longest-streak>0</span>
+      <span class="stat-cap">longest streak</span>
+    </div>
+    <div class="stat-tile">
+      <span class="stat-num" data-badge-count>0 / 16</span>
+      <span class="stat-cap">badges</span>
+    </div>
+  </div>
+
+  <section class="panel">
+    <div class="panel-head">
+      <h2>Activity</h2>
+      <p class="cal-legend">
+        Less
+        <span class="cal-cell" data-step="1"></span>
+        <span class="cal-cell" data-step="2"></span>
+        <span class="cal-cell" data-step="3"></span>
+        <span class="cal-cell" data-step="4"></span>
+        More
+      </p>
+    </div>
+    <div class="cal" id="activity-grid" data-weeks="18"></div>
+    <p class="panel-note">
+      Lessons completed per day over the last eighteen weeks. Days before you started
+      show as empty.
+    </p>
+  </section>
+
+  <section class="panel">
+    <div class="panel-head"><h2>Tracks</h2></div>
+    <div class="ring-grid">${rings}</div>
+  </section>
+
+  <section class="panel">
+    <div class="panel-head">
+      <h2>Badges</h2>
+      <p class="panel-sub"><span data-badge-count>0 / 16</span> earned</p>
+    </div>
+    <ul class="badge-grid" id="badge-grid"></ul>
+  </section>
 
   <p class="progress-actions">
     <a class="btn btn-primary" href="${u('/curriculum/')}">Back to the curriculum</a>
@@ -710,7 +800,7 @@ function progressPage() {
 
   return layout({
     title: 'Progress',
-    description: 'Your lesson progress, stored locally in your browser.',
+    description: 'Your XP, streak, badges and per-track progress, stored locally in your browser.',
     body,
     base: RELATIVE ? u('/').replace(/index\.html$/, '') : BASE,
     canonical: '/progress/',
