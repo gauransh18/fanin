@@ -207,7 +207,7 @@ x = torch.randint(0, cfg.vocab_size, (2, cfg.block_size))
 _, loss = model(x[:, :-1], x[:, 1:])
 print(f'initial loss {loss.item():.3f}, expected {math.log(cfg.vocab_size):.3f}')
 
-# 3. No causal leakage (lesson 4.07): editing a token must not change
+# 3. No causal leakage (lesson 4.06): editing a token must not change
 #    any earlier position's logits.
 model.all_positions = True          # return logits at every position
 with torch.no_grad():

@@ -141,7 +141,7 @@ Three consequences follow. Numerically, the sum avoids the underflow that multip
 thousands of probabilities below 1 would cause. Computationally, the terms are
 independent given the prefixes, so a causal mask lets you evaluate all $T$ of them in
 one parallel forward pass rather than $T$ sequential ones — the core efficiency of
-transformer training, lesson 4.07. And statistically, the gradient is a sum over
+transformer training, lesson 4.06. And statistically, the gradient is a sum over
 tokens, so a batch of sequences gives you a Monte Carlo estimate with variance falling
 like $1/(\text{batch} \times T)$.
 :::

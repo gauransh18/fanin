@@ -31,6 +31,7 @@ a paywall. Lesson progress is kept in your own browser and never leaves it.
 
 ```bash
 node src/build.mjs     # writes dist/
+node src/check.mjs     # verifies links, frontmatter and lesson ordering
 node src/serve.mjs     # serves dist/ on http://localhost:4173
 ```
 
@@ -51,11 +52,16 @@ content/
   lessons/<track>/*.md  lesson content, Markdown with frontmatter
 src/
   build.mjs             static site generator
+  check.mjs             integrity checks — run in CI
   markdown.mjs          Markdown subset: callouts, tables, TeX, collapsible solutions
   highlight.mjs         build-time syntax highlighting
   templates.mjs         page shell
-  assets/               styles.css, app.js — copied verbatim into dist/
+  assets/               styles.css, app.js, self-hosted fonts and KaTeX
 ```
+
+Nothing is loaded from a CDN. IBM Plex and KaTeX are vendored under
+`src/assets/`, so the site makes **no third-party requests** — which is what the
+no-tracking promise on the About page actually requires.
 
 ### Writing a lesson
 
@@ -65,6 +71,7 @@ Create `content/lessons/<track>/<slug>.md` matching a slug in `content/curriculu
 ---
 summary: One sentence shown under the title and in search results.
 prereqs: [vectors-norms-geometry, derivatives-gradients-jacobians]
+seealso: [flash-attention]
 ---
 
 ## A section
@@ -88,8 +95,13 @@ Subtracting the max is exactly this, used for numerical stability.
 :::
 ```
 
+`prereqs` are lessons this one leans on and **must come earlier** in the
+curriculum; `seealso` points **forwards**. `node src/check.mjs` enforces both
+directions, so the "dependency order" claim on the About page stays true.
+
 Lessons listed in the manifest without a Markdown file render as an honest
 "being edited" page and are flagged in the index — never as locked content.
+All 108 are currently written.
 
 ## Licence
 

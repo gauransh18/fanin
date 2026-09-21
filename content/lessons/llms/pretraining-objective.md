@@ -101,7 +101,7 @@ sharpness in each.
 
 **Document packing.** Concatenate documents and chop into fixed blocks. No padding, every
 token trains. Use a block-diagonal mask so documents cannot attend across boundaries
-(lesson 4.07).
+(lesson 4.06).
 
 **One epoch, or close to it.** Frontier runs see most data once or twice. With each token
 seen once there is nothing to memorise, which is why regularisation is nearly absent from
@@ -127,7 +127,7 @@ def pretraining_loss(model, tokens):
 ## The alternatives, and why they lost
 
 **Masked language modelling** (BERT) predicts 15% of positions from bidirectional context.
-Better representations per token, but a 6–7× worse signal-to-FLOP ratio (lesson 4.06) and
+Better representations per token, but a 6–7× worse signal-to-FLOP ratio (lesson 4.07) and
 no generation.
 
 **Span corruption** (T5) masks contiguous spans and generates them. Works well, and needs
@@ -154,7 +154,7 @@ about context.** Something is preventing context from reaching the prediction.
 
 1. **The attention mask is diagonal rather than causal.** Each position sees only itself,
    so the model is a unigram predictor by construction. Print the mask for $T=5$ and check
-   it is lower-triangular with a True diagonal (lesson 4.07).
+   it is lower-triangular with a True diagonal (lesson 4.06).
 
 2. **Positional information is missing.** Without it, self-attention is
    permutation-equivariant (lesson 4.01) — the model sees a bag of tokens and cannot use

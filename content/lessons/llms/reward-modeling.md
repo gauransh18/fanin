@@ -48,7 +48,7 @@ class RewardModel(nn.Module):
         h = self.backbone(input_ids, attention_mask, output_hidden_states=True)
         h = h.hidden_states[-1]                              # (B, T, d)
         # Score the LAST non-padding token: with causal attention only that
-        # position has seen the whole response (lesson 4.06).
+        # position has seen the whole response (lesson 4.07).
         last = attention_mask.sum(1) - 1
         return self.score(h[torch.arange(h.size(0)), last]).squeeze(-1)
 
@@ -148,7 +148,7 @@ the policy from exploiting them.
 
 **Process rewards.** Instead of one score for a whole response, score each reasoning step.
 Denser signal, harder to game with a plausible-looking final answer, and substantially more
-expensive to annotate. This is what makes the reasoning training of lesson 5.10 work.
+expensive to annotate. This is what makes the reasoning training of lesson 5.11 work.
 
 ::: exercise
 Your reward model reaches 82% validation accuracy. RLHF against it produces a policy that

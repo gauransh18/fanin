@@ -40,7 +40,7 @@ cheaper to fix than anything else in the pipeline.
 
 ## Reliable output
 
-Prompting for JSON and hoping is unreliable. Constrain decoding instead (lesson 5.11):
+Prompting for JSON and hoping is unreliable. Constrain decoding instead (lesson 5.10):
 
 ```python
 # Grammar-constrained decoding guarantees parseable output.
@@ -105,7 +105,7 @@ Action: get_tracking(order_id=1042)
 ...
 ```
 
-The explicit Thought step matters for the reason chain of thought does (lesson 5.10): it
+The explicit Thought step matters for the reason chain of thought does (lesson 5.11): it
 gives the model sequential computation between actions rather than requiring the decision in
 one forward pass.
 
@@ -135,7 +135,7 @@ well-scoped ones. If two tools do similar things, merge them.
 
 **Verify each step.** Where a cheap check exists — did the file get written, does the code
 compile, did the API return 200 — run it and feed the result back. This is the agent
-equivalent of process supervision (lesson 5.10) and it is the most effective single
+equivalent of process supervision (lesson 5.11) and it is the most effective single
 intervention.
 
 **Manage the context explicitly.** Summarise older turns, or keep a structured scratchpad
@@ -201,7 +201,7 @@ record — and by summarising older turns.
 1. **Trim tool output.** Return the minimum useful fields. This is usually worth more than
    any model change and costs nothing.
 2. **Add verification steps.** After each call, check the result is usable and feed a clear
-   error back if not. Process-level feedback (lesson 5.10) improves multi-step reliability
+   error back if not. Process-level feedback (lesson 5.11) improves multi-step reliability
    substantially.
 3. **Rewrite the tool descriptions** with explicit sequencing: "call this *after*
    `search_orders`, using the `order_id` from its result".

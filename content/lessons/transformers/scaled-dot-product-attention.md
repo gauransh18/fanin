@@ -191,7 +191,7 @@ substantially smaller than the full $T\times T$ space an asymmetric pair can rea
 
 **The caveat worth knowing:** shared QK projections are not *useless*. Some efficient
 architectures tie them deliberately to halve parameters, accepting the symmetry cost, and
-they work acceptably. But the causal masking of lesson 4.07 already breaks symmetry
+they work acceptably. But the causal masking of lesson 4.06 already breaks symmetry
 structurally in a decoder — position $i$ can see $j < i$ but not the reverse — which
 partially compensates. In an encoder with bidirectional attention, tying them hurts much
 more.

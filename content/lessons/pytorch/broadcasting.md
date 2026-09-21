@@ -99,7 +99,7 @@ output shape is before you write it.
 
 ## Attention masking is broadcasting
 
-The causal mask in lesson 4.07 is a broadcast, and reading it as one removes the mystery:
+The causal mask in lesson 4.06 is a broadcast, and reading it as one removes the mystery:
 
 ```python
 import torch

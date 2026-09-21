@@ -1,6 +1,7 @@
 ---
 summary: Serving a model in 4 bits, the outlier problem that makes naive quantization fail, and how to choose a method.
-prereqs: [tensors-dtypes-devices, memory-hierarchy-roofline, peft-lora]
+prereqs: [tensors-dtypes-devices, peft-lora]
+seealso: [memory-hierarchy-roofline]
 ---
 
 A 70B model is 140 GB in bf16 — two 80 GB GPUs before the KV cache. In 4 bits it is 35 GB

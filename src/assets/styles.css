@@ -1695,3 +1695,7 @@ h2:hover > .anchor, h3:hover > .anchor, h4:hover > .anchor, .anchor:focus-visibl
   vertical-align: middle;
   font-weight: 400;
 }
+
+/* "Continues in" is a forward pointer, not a prerequisite — it sits under
+   "Leans on" and is visually quieter. */
+.lesson-seealso { margin-top: .4375rem; padding-top: 0; border-top: 0; }

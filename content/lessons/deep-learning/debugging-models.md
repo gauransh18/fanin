@@ -33,7 +33,7 @@ mistake changes it:
 - **Much higher** — the output layer is badly initialised, or logits are being scaled,
   or the labels are shifted so the model is being asked to predict the wrong token.
 - **Much lower** — label leakage. The model can already see the answer. Check your
-  causal mask (lesson 4.07) and your target alignment.
+  causal mask (lesson 4.06) and your target alignment.
 - **Exactly zero** — the loss is being computed against itself, or every target is masked
   out and you are averaging over an empty set.
 :::
@@ -198,7 +198,7 @@ hundred steps. Getting stuck there means context is not reaching the prediction.
 1. **The attention mask is wrong.** If every position is masked out except itself, each
    token can only see itself, and the model reduces to a unigram predictor. Check by
    printing the mask for a short sequence and confirming it is lower-triangular, not
-   diagonal (lesson 4.07).
+   diagonal (lesson 4.06).
 
 2. **The targets are misaligned.** If targets are not shifted by one, the model is being
    asked to predict the *current* token from itself — which is trivially solvable and

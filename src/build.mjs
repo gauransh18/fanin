@@ -437,14 +437,17 @@ async function lessonPage(lesson, raw) {
 
   let summary = '';
   let prereqs = [];
+  let seealso = [];
   let contentHtml;
   let plain = '';
   let isDraft = false;
 
   if (raw) {
     const { data, body } = parseFrontmatter(raw);
+    const list = (v) => (Array.isArray(v) ? v : v ? [v] : []);
     summary = data.summary || '';
-    prereqs = Array.isArray(data.prereqs) ? data.prereqs : data.prereqs ? [data.prereqs] : [];
+    prereqs = list(data.prereqs);
+    seealso = list(data.seealso);
     contentHtml = render(body, { url: u, headings });
     plain = toPlainText(body);
   } else {
@@ -458,14 +461,21 @@ async function lessonPage(lesson, raw) {
     .map((h) => `<li class="lv${h.level}"><a href="#${h.id}">${h.html}</a></li>`)
     .join('\n');
 
-  const prereqLinks = prereqs
-    .map((slug) => {
-      const target = allLessons.find((l) => l.slug === slug);
-      if (!target) return null;
-      return `<a href="${u(target.href)}">${target.number} ${esc(target.title)}</a>`;
-    })
-    .filter(Boolean)
-    .join('<span class="sep">·</span>');
+  // "Leans on" points backwards to results this lesson uses; "continues in"
+  // points forward, so a cross-track dependency is never mislabelled as a
+  // prerequisite the reader was supposed to have read already.
+  const linkList = (slugs) =>
+    slugs
+      .map((slug) => {
+        const target = allLessons.find((l) => l.slug === slug);
+        if (!target) return null;
+        return `<a href="${u(target.href)}">${target.number} ${esc(target.title)}</a>`;
+      })
+      .filter(Boolean)
+      .join('<span class="sep">·</span>');
+
+  const prereqLinks = linkList(prereqs);
+  const seealsoLinks = linkList(seealso);
 
   const nav = trackNav(track, lesson.slug);
 
@@ -499,6 +509,11 @@ async function lessonPage(lesson, raw) {
       ${
         prereqLinks
           ? `<p class="lesson-prereq"><span class="label">Leans on</span>${prereqLinks}</p>`
+          : ''
+      }
+      ${
+        seealsoLinks
+          ? `<p class="lesson-prereq lesson-seealso"><span class="label">Continues in</span>${seealsoLinks}</p>`
           : ''
       }
     </header>

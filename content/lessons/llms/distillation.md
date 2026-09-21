@@ -60,7 +60,7 @@ distribution it actually produces, not the teacher's. Generalised knowledge dist
 (GKD) formalises it and consistently beats off-policy variants.
 
 **Reasoning distillation.** Have a strong reasoning model produce chains of thought
-(lesson 5.10), filter to those reaching verified-correct answers, and fine-tune a small
+(lesson 5.11), filter to those reaching verified-correct answers, and fine-tune a small
 model on them. This is how small models acquire reasoning behaviour they could not learn
 from the original corpus.
 

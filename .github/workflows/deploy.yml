@@ -37,11 +37,10 @@ jobs:
         env:
           BASE_PATH: ${{ steps.pages.outputs.base_path }}
 
-      - name: Check every page was written
-        run: |
-          pages=$(find dist -name 'index.html' | wc -l)
-          echo "generated $pages pages"
-          test "$pages" -ge 115
+      # Verifies every internal link resolves, every lesson has frontmatter,
+      # every prereq points backwards and every seealso points forwards.
+      - name: Check site integrity
+        run: node src/check.mjs
 
       - uses: actions/upload-pages-artifact@v3
         with:

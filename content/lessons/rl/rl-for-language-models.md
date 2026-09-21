@@ -115,7 +115,7 @@ A single terminal reward for 500 tokens is a weak signal. Three approaches:
 **Uniform.** Every token gets the same advantage. What GRPO does, and it works because the
 KL constraint prevents large updates.
 
-**Process rewards.** Score each reasoning step with a learned PRM (lesson 5.10). Much denser,
+**Process rewards.** Score each reasoning step with a learned PRM (lesson 5.11). Much denser,
 and it needs step-level annotation.
 
 **Token-level from the value function.** PPO's GAE distributes credit across tokens using the
@@ -183,7 +183,7 @@ raise $G$ so partial credit appears more often; or add harder problems.
 
 **The length growth.** Three candidate causes, distinguishable by measurement:
 
-1. **Genuine improvement.** Longer chains of thought do help (lesson 5.10). Check whether
+1. **Genuine improvement.** Longer chains of thought do help (lesson 5.11). Check whether
    accuracy *conditional on length* has improved, or whether only the length changed. If
    short responses are as accurate as they were, the length is not buying anything.
 

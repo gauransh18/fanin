@@ -14,7 +14,7 @@ standard sampling, not an approximation.
 
 1. A cheap **draft** model proposes $k$ tokens autoregressively.
 2. The **target** model scores all $k$ in **one** forward pass, because they are already
-   known — the same parallelism that makes training efficient (lesson 4.07).
+   known — the same parallelism that makes training efficient (lesson 4.06).
 3. A rejection-sampling rule accepts a prefix of the draft and samples a correction.
 
 ::: key

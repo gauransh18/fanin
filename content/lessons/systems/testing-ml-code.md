@@ -42,7 +42,7 @@ a non-power-of-two like 17. Those are where broadcasting and reshape bugs surfac
 
 ## Causality
 
-The most valuable single test for a decoder, from lesson 4.07:
+The most valuable single test for a decoder, from lesson 4.06:
 
 ```python
 import torch
@@ -127,7 +127,7 @@ The pipeline is where the quietest bugs live:
 import torch
 
 def test_targets_are_shifted():
-    """The single most common from-scratch bug (lesson 4.07)."""
+    """The single most common from-scratch bug (lesson 4.06)."""
     dataset = TokenDataset(tokens=list(range(1000)), block=16)
     x, y = dataset[0]
     assert torch.equal(x[1:], y[:-1]), 'targets are not the inputs shifted by one'

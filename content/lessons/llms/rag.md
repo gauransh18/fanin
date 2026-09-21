@@ -47,7 +47,7 @@ matches neither.
 
 ## Embedding and search
 
-Encode chunks with a bidirectional encoder (lesson 4.06 — a causal model's early tokens have
+Encode chunks with a bidirectional encoder (lesson 4.07 — a causal model's early tokens have
 not seen the rest, which makes it a worse sentence encoder), and search by cosine similarity
 (lesson 1.01).
 

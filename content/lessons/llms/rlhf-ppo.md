@@ -1,6 +1,7 @@
 ---
 summary: The full RLHF loop — four models in memory, why the KL penalty is load-bearing, and the failure modes that make it hard to run.
-prereqs: [reward-modeling, trpo-ppo, policy-gradients]
+prereqs: [reward-modeling, supervised-finetuning]
+seealso: [policy-gradients, actor-critic, trpo-ppo]
 ---
 
 RLHF optimises a language model against a learned reward (lesson 5.07) using policy

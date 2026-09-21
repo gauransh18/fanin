@@ -116,7 +116,7 @@ memorises exact responses and generalises worse.
 ## Packing, carefully
 
 Concatenating short examples to fill the context wastes no compute, but it needs the
-block-diagonal mask of lesson 4.07:
+block-diagonal mask of lesson 4.06:
 
 ```python
 def pack_examples(examples, max_len, pad_id):

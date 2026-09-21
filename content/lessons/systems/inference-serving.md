@@ -101,7 +101,7 @@ In practice this is a 2–4× increase in concurrent sequences, which by the arg
 
 **Copy-on-write sharing** falls out of the block table for free: several sequences sampled
 from the same prompt share the prompt's physical blocks until they diverge. This makes
-best-of-$n$ sampling (lesson 5.10) far cheaper than $n$ independent generations.
+best-of-$n$ sampling (lesson 5.11) far cheaper than $n$ independent generations.
 
 ## Prefix caching
 

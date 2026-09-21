@@ -1,6 +1,7 @@
 ---
 summary: The algorithm that made long context affordable by never materialising the attention matrix — and the online softmax trick that makes it possible.
-prereqs: [scaled-dot-product-attention, memory-hierarchy-roofline, kv-caching]
+prereqs: [scaled-dot-product-attention, kv-caching]
+seealso: [memory-hierarchy-roofline]
 ---
 
 FlashAttention computes exactly the same function as lesson 4.02's four lines. It is 2–4×
