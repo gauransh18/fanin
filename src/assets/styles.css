@@ -1667,3 +1667,15 @@ h2:hover > .anchor, h3:hover > .anchor, h4:hover > .anchor, .anchor:focus-visibl
 .track-pager { margin-block: 2.5rem 1rem; }
 
 .btn svg { width: .875rem; height: .875rem; }
+
+/* A heading may carry maths or code; the contents lists must not blow up when
+   it does. Both rails keep their own type size. */
+.toc-rail .tex, .toc-mobile .tex { font-size: .95em; }
+.toc-rail code, .toc-mobile code {
+  font-family: var(--mono);
+  font-size: .9em;
+  background: none;
+  border: 0;
+  padding: 0;
+}
+.toc-rail .katex, .toc-mobile .katex { font-size: 1em; }

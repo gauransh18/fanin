@@ -455,7 +455,7 @@ async function lessonPage(lesson, raw) {
 
   const tocItems = headings
     .filter((h) => h.level <= 3)
-    .map((h) => `<li class="lv${h.level}"><a href="#${h.id}">${esc(h.text)}</a></li>`)
+    .map((h) => `<li class="lv${h.level}"><a href="#${h.id}">${h.html}</a></li>`)
     .join('\n');
 
   const prereqLinks = prereqs
@@ -553,7 +553,7 @@ async function lessonPage(lesson, raw) {
     base: RELATIVE ? u('/').replace(/index\.html$/, '') : BASE,
     canonical: lesson.href,
     nav: 'curriculum',
-    math: /class="tex"/.test(contentHtml),
+    math: /class="tex"/.test(contentHtml) || /class="tex"/.test(tocItems),
   });
 
   return { html, plain, summary, isDraft };

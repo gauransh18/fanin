@@ -244,9 +244,12 @@ export function render(markdown, ctx = {}) {
       const level = heading[1].length;
       const text = heading[2].trim();
       const id = slugify(text);
-      context.headings.push({ level, text, id });
+      // Keep the inline-rendered form too: a heading may contain maths or code,
+      // and the table of contents has to show it the same way the heading does.
+      const rendered = inline(text, context);
+      context.headings.push({ level, text, id, html: rendered });
       out.push(
-        `<h${level} id="${id}">${inline(text, context)}` +
+        `<h${level} id="${id}">${rendered}` +
         `<a class="anchor" href="#${id}" aria-label="Link to this section">#</a></h${level}>`
       );
       i++;
