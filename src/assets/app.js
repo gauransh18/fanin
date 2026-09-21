@@ -549,6 +549,152 @@
 
   paintProgress();
 
+  /* --------------------------------------------- suggest a change ------ */
+  // The site is static, so a change request is a prefilled GitHub issue form.
+  // Nothing is posted from the page; the reader lands on GitHub with the
+  // lesson, the URL and any passage they selected already filled in.
+
+  var REPO = document.documentElement.dataset.repo || '';
+
+  var SUGGEST_KINDS = [
+    { id: 'correction', label: 'Something is wrong',
+      hint: 'A formula, a claim, or code that does not run.' },
+    { id: 'addition', label: 'Something is missing',
+      hint: 'A caveat, an example, a section, or a whole lesson.' },
+    { id: 'deletion', label: 'Something should go',
+      hint: 'Outdated, duplicated, or misleading.' },
+  ];
+
+  function lessonContext() {
+    var btn = document.querySelector('[data-suggest]');
+    if (!btn) return null;
+    return {
+      number: btn.dataset.lessonNumber || '',
+      title: btn.dataset.lessonTitle || '',
+      url: window.location.href.split('#')[0],
+    };
+  }
+
+  function issueUrl(kind, quote) {
+    var ctx = lessonContext();
+    if (!REPO || !ctx) return REPO;
+    var lesson = (ctx.number + ' ' + ctx.title).trim();
+    var params = new URLSearchParams();
+    params.set('template', kind + '.yml');
+    params.set('title', kind.charAt(0).toUpperCase() + kind.slice(1) + ': ' + lesson);
+    params.set('lesson', lesson);
+    params.set('url', ctx.url);
+    if (quote) {
+      // The quote fields render as markdown, so a blockquote keeps it readable.
+      var trimmed = quote.replace(/\s+/g, ' ').trim().slice(0, 1500);
+      params.set(kind === 'addition' ? 'addition' : 'quote', '> ' + trimmed);
+    }
+    return REPO + '/issues/new?' + params.toString();
+  }
+
+  function openSuggestDialog(quote) {
+    if (document.querySelector('.suggest-backdrop')) return;
+    var opener = document.activeElement;
+
+    var backdrop = document.createElement('div');
+    backdrop.className = 'suggest-backdrop';
+    backdrop.innerHTML =
+      '<div class="suggest-dialog" role="dialog" aria-modal="true" aria-labelledby="suggest-h">' +
+      '<div class="suggest-head"><h2 id="suggest-h">Request a change</h2>' +
+      '<button class="icon-btn" type="button" data-close aria-label="Close">' +
+      '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">' +
+      '<path d="M5 5l10 10M15 5L5 15"/></svg></button></div>' +
+      (quote
+        ? '<blockquote class="suggest-quote">' + escapeHtml(quote.slice(0, 280)) +
+          (quote.length > 280 ? '…' : '') + '</blockquote>'
+        : '') +
+      '<div class="suggest-kinds">' +
+      SUGGEST_KINDS.map(function (k) {
+        return '<a class="suggest-kind" href="' + issueUrl(k.id, quote) + '"' +
+               ' target="_blank" rel="noopener noreferrer">' +
+               '<span class="k-label">' + k.label + '</span>' +
+               '<span class="k-hint">' + k.hint + '</span></a>';
+      }).join('') +
+      '</div>' +
+      '<p class="suggest-foot">Opens a prefilled issue on GitHub. ' +
+      'You need an account there; nothing is sent from this page.</p>' +
+      '</div>';
+
+    document.body.appendChild(backdrop);
+    document.body.style.overflow = 'hidden';
+
+    function close() {
+      backdrop.remove();
+      document.body.style.overflow = '';
+      if (opener && opener.focus) opener.focus();
+    }
+    backdrop.addEventListener('click', function (e) {
+      if (e.target === backdrop || e.target.closest('[data-close]') || e.target.closest('a')) close();
+    });
+    backdrop.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') { e.preventDefault(); close(); }
+    });
+    document.addEventListener('keydown', function esc(e) {
+      if (e.key === 'Escape' && document.body.contains(backdrop)) {
+        close();
+        document.removeEventListener('keydown', esc);
+      }
+    });
+    var first = backdrop.querySelector('.suggest-kind');
+    if (first) first.focus();
+  }
+
+  document.querySelectorAll('[data-suggest]').forEach(function (el) {
+    el.addEventListener('click', function () { openSuggestDialog(''); });
+  });
+
+  // Selecting a passage inside a lesson offers to quote it into the request.
+  var quoteChip = null;
+  var quoteTimer = null;
+
+  function hideQuoteChip() {
+    if (quoteChip) { quoteChip.remove(); quoteChip = null; }
+  }
+
+  function showQuoteChip(text, rect) {
+    hideQuoteChip();
+    quoteChip = document.createElement('button');
+    quoteChip.type = 'button';
+    quoteChip.className = 'quote-chip';
+    quoteChip.textContent = 'Suggest a change to this';
+    quoteChip.style.top = (window.scrollY + rect.top - 42) + 'px';
+    quoteChip.style.left = (window.scrollX + rect.left + rect.width / 2) + 'px';
+    quoteChip.addEventListener('mousedown', function (e) { e.preventDefault(); });
+    quoteChip.addEventListener('click', function () {
+      var t = text;
+      hideQuoteChip();
+      openSuggestDialog(t);
+    });
+    document.body.appendChild(quoteChip);
+  }
+
+  var proseEl = document.querySelector('.lesson-main .prose');
+  if (proseEl && REPO) {
+    document.addEventListener('selectionchange', function () {
+      // Settle at the end of the drag rather than firing per character.
+      clearTimeout(quoteTimer);
+      quoteTimer = setTimeout(function () {
+        var sel = window.getSelection();
+        if (!sel || sel.isCollapsed || !sel.rangeCount) { hideQuoteChip(); return; }
+        var text = sel.toString().trim();
+        if (text.length < 12) { hideQuoteChip(); return; }
+        var node = sel.anchorNode;
+        if (!node || !proseEl.contains(node.nodeType === 1 ? node : node.parentNode)) {
+          hideQuoteChip();
+          return;
+        }
+        var rect = sel.getRangeAt(0).getBoundingClientRect();
+        if (rect.width || rect.height) showQuoteChip(text, rect);
+      }, 250);
+    });
+    window.addEventListener('scroll', hideQuoteChip, { passive: true });
+  }
+
   /* ------------------------------------------------------- code copy ---- */
 
   document.addEventListener('click', function (e) {
