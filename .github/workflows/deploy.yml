@@ -26,6 +26,9 @@ jobs:
 
       - uses: actions/configure-pages@v5
         id: pages
+        with:
+          # Turn Pages on for the repo if it is not enabled yet.
+          enablement: true
 
       # The generator has no dependencies, so there is nothing to install.
       # base_path is "/fanin" for a project site, "" for a user or custom-domain site.
