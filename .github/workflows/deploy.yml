@@ -1,4 +1,4 @@
-name: Deploy to GitHub Pages
+name: Build and deploy
 
 on:
   push:
@@ -15,7 +15,9 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build:
+  # Always runs, and does not depend on Pages being configured. This is the
+  # job that tells you whether the site is correct.
+  verify:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -24,34 +26,52 @@ jobs:
         with:
           node-version: '22'
 
-      - uses: actions/configure-pages@v5
-        id: pages
-        with:
-          # Turn Pages on for the repo if it is not enabled yet.
-          enablement: true
-
       # The generator has no dependencies, so there is nothing to install.
-      # base_path is "/fanin" for a project site, "" for a user or custom-domain site.
-      - name: Build site
+      - name: Build
         run: node src/build.mjs
-        env:
-          BASE_PATH: ${{ steps.pages.outputs.base_path }}
 
       # Verifies every internal link resolves, every lesson has frontmatter,
       # every prereq points backwards and every seealso points forwards.
       - name: Check site integrity
         run: node src/check.mjs
 
-      - uses: actions/upload-pages-artifact@v3
-        with:
-          path: dist
-
   deploy:
-    needs: build
+    needs: verify
     runs-on: ubuntu-latest
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      # Fails with "Resource not accessible by integration" until Pages is
+      # switched on for the repository. It is a one-time setting:
+      #   Settings -> Pages -> Build and deployment -> Source: GitHub Actions
+      # The workflow token cannot create the Pages site itself.
+      - uses: actions/configure-pages@v5
+        id: pages
+
+      - name: Explain a Pages configuration failure
+        if: failure()
+        run: |
+          echo "::error::GitHub Pages is not enabled for this repository."
+          echo "Enable it once at Settings -> Pages -> Source: GitHub Actions,"
+          echo "then re-run this workflow. The build and integrity checks above"
+          echo "already passed, so nothing else is wrong."
+
+      # base_path is "/fanin" for a project site, "" for a user or custom-domain site.
+      - name: Build with the resolved base path
+        run: node src/build.mjs
+        env:
+          BASE_PATH: ${{ steps.pages.outputs.base_path }}
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
       - uses: actions/deploy-pages@v4
         id: deployment
