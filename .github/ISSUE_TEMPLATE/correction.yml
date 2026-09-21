@@ -1,0 +1,33 @@
+name: Correction
+description: Something in a lesson is wrong — a formula, a claim, code that does not run.
+title: "Correction: "
+labels: [correction]
+body:
+  - type: input
+    id: lesson
+    attributes:
+      label: Lesson
+      description: Number and title, e.g. "4.02 Scaled Dot-Product Attention".
+      placeholder: 4.02 Scaled Dot-Product Attention
+    validations:
+      required: true
+  - type: input
+    id: url
+    attributes:
+      label: Page
+      placeholder: https://gauransh18.github.io/fanin/learn/...
+  - type: textarea
+    id: quote
+    attributes:
+      label: The passage as it currently reads
+      description: Paste the text you are correcting. Leave as-is if the page filled it in.
+      render: markdown
+  - type: textarea
+    id: correction
+    attributes:
+      label: What it should say, and why
+      description: >
+        A citation helps a great deal — a paper, the PyTorch docs, or a snippet
+        that demonstrates the correct behaviour.
+    validations:
+      required: true

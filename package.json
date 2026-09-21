@@ -6,6 +6,7 @@
   "type": "module",
   "scripts": {
     "build": "node src/build.mjs",
+    "test": "node src/check.mjs && node src/test-progress.mjs",
     "serve": "node src/serve.mjs",
     "dev": "node src/build.mjs && node src/serve.mjs"
   },

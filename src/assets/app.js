@@ -16,8 +16,10 @@
     }
     return BASE + '/' + clean;
   }
-  var PROGRESS_KEY = 'fanin:progress:v1';
+  var STORE_KEY = 'fanin:progress:v2';
+  var LEGACY_KEY = 'fanin:progress:v1';
   var THEME_KEY = 'fanin:theme';
+  var XP_PER_MINUTE = 10;
 
   /* ---------------------------------------------------------- storage --- */
   // Site data lives in this browser only. Private windows and blocked site
@@ -41,15 +43,175 @@
     }
   }
 
-  var progress = readJSON(PROGRESS_KEY, {});
-  if (!progress || typeof progress !== 'object' || Array.isArray(progress)) progress = {};
+  // One record per completed lesson: { d: "YYYY-MM-DD", x: xp earned }.
+  // XP is stored at completion rather than recomputed, so it stays yours even
+  // if a lesson is later re-timed, and no metadata has to be fetched to total
+  // it up.
+  var store = readJSON(STORE_KEY, null);
 
-  function isDone(id) { return progress[id] === 1; }
-  function setDone(id, done) {
-    if (done) progress[id] = 1;
-    else delete progress[id];
-    writeJSON(PROGRESS_KEY, progress);
-    paintProgress();
+  if (!store || typeof store !== 'object' || Array.isArray(store)) {
+    store = {};
+    // v1 was a flat { id: 1 } with no dates. Preserve the completions; their
+    // XP and dates are genuinely unknown, so they are left empty rather than
+    // invented.
+    var legacy = readJSON(LEGACY_KEY, null);
+    if (legacy && typeof legacy === 'object' && !Array.isArray(legacy)) {
+      Object.keys(legacy).forEach(function (id) {
+        if (legacy[id]) store[id] = { d: null, x: 0 };
+      });
+      writeJSON(STORE_KEY, store);
+    }
+  }
+
+  function today() {
+    var d = new Date();
+    return d.getFullYear() + '-' +
+      String(d.getMonth() + 1).padStart(2, '0') + '-' +
+      String(d.getDate()).padStart(2, '0');
+  }
+
+  function isDone(id) { return !!store[id]; }
+
+  function setDone(id, done, minutes) {
+    if (done) {
+      store[id] = { d: today(), x: (minutes || 0) * XP_PER_MINUTE };
+    } else {
+      delete store[id];
+    }
+    writeJSON(STORE_KEY, store);
+    return stats();
+  }
+
+  /* ------------------------------------------------- derived statistics -- */
+
+  var TRACKS = (document.documentElement.dataset.tracks || '')
+    .split(',').filter(Boolean)
+    .map(function (part) {
+      var bits = part.split(':');
+      return { id: bits[0], size: Number(bits[1]) || 0, short: bits[2] || bits[0] };
+    });
+
+  var LEVELS = [
+    { at: 0,     name: 'Randomly Initialized' },
+    { at: 600,   name: 'First Backward Pass' },
+    { at: 1800,  name: 'Gradient Descending' },
+    { at: 3600,  name: 'Learning Rate Tuned' },
+    { at: 6000,  name: 'Attention Is Yours' },
+    { at: 9000,  name: 'Residual Connected' },
+    { at: 12000, name: 'Scaling Laws Obeyed' },
+    { at: 15000, name: 'Policy Optimized' },
+    { at: 17500, name: 'Kernel Fused' },
+    { at: 20110, name: 'Compute Optimal' },
+  ];
+
+  var TRACK_BADGE = {
+    math: 'Foundations Laid',
+    pytorch: 'Fluent in Tensors',
+    'deep-learning': 'Trainable',
+    transformers: 'Attention Mastered',
+    llms: 'Full Lifecycle',
+    rl: 'Policy Converged',
+    systems: 'Shipped It',
+  };
+
+  function dayBefore(iso) {
+    var parts = iso.split('-');
+    var d = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]) - 1);
+    return d.getFullYear() + '-' +
+      String(d.getMonth() + 1).padStart(2, '0') + '-' +
+      String(d.getDate()).padStart(2, '0');
+  }
+
+  function streakFrom(days) {
+    // days: sorted-descending array of unique "YYYY-MM-DD".
+    if (!days.length) return { current: 0, longest: 0 };
+    var set = {};
+    days.forEach(function (d) { set[d] = true; });
+
+    var now = today();
+    var current = 0;
+    // A streak survives until the end of the next day, so yesterday still counts.
+    var cursor = set[now] ? now : (set[dayBefore(now)] ? dayBefore(now) : null);
+    while (cursor && set[cursor]) { current++; cursor = dayBefore(cursor); }
+
+    var longest = 0, run = 0, prev = null;
+    days.slice().reverse().forEach(function (d) {
+      run = prev && dayBefore(d) === prev ? run + 1 : 1;
+      if (run > longest) longest = run;
+      prev = d;
+    });
+    return { current: current, longest: longest };
+  }
+
+  function stats() {
+    var ids = Object.keys(store);
+    var xp = 0, byDay = {}, byTrack = {}, earliest = null;
+
+    ids.forEach(function (id) {
+      var rec = store[id] || {};
+      xp += rec.x || 0;
+      var track = id.split('/')[0];
+      byTrack[track] = (byTrack[track] || 0) + 1;
+      if (rec.d) {
+        byDay[rec.d] = (byDay[rec.d] || 0) + 1;
+        if (!earliest || rec.d < earliest) earliest = rec.d;
+      }
+    });
+
+    var days = Object.keys(byDay).sort().reverse();
+    var streak = streakFrom(days);
+
+    var level = LEVELS[0], next = LEVELS[1] || null;
+    for (var i = 0; i < LEVELS.length; i++) {
+      if (xp >= LEVELS[i].at) { level = LEVELS[i]; next = LEVELS[i + 1] || null; }
+    }
+
+    var total = TRACKS.reduce(function (s, t) { return s + t.size; }, 0);
+    var busiest = days.reduce(function (m, d) { return Math.max(m, byDay[d]); }, 0);
+
+    return {
+      count: ids.length,
+      total: total,
+      xp: xp,
+      level: level,
+      levelIndex: LEVELS.indexOf(level),
+      next: next,
+      streak: streak.current,
+      longest: streak.longest,
+      byDay: byDay,
+      byTrack: byTrack,
+      days: days,
+      busiestDay: busiest,
+      badges: badges({ count: ids.length, total: total, byTrack: byTrack,
+                       streak: streak, busiest: busiest }),
+    };
+  }
+
+  function badges(s) {
+    var out = [];
+    function add(id, name, hint, earned) {
+      out.push({ id: id, name: name, hint: hint, earned: !!earned });
+    }
+
+    add('first', 'First Light', 'Complete your first lesson', s.count >= 1);
+    add('ten', 'Warmed Up', 'Complete ten lessons', s.count >= 10);
+    add('half', 'Past the Ridge Point', 'Complete half the curriculum', s.count >= Math.ceil(s.total / 2));
+    add('all', 'Compute Optimal', 'Complete all ' + s.total + ' lessons', s.total > 0 && s.count >= s.total);
+
+    add('deep-work', 'Deep Work', 'Five lessons in one day', s.busiest >= 5);
+    add('streak-3', 'Three Days Running', 'A three-day streak', s.streak.longest >= 3);
+    add('streak-7', 'A Full Week', 'A seven-day streak', s.streak.longest >= 7);
+    add('streak-30', 'Converged', 'A thirty-day streak', s.streak.longest >= 30);
+
+    var touched = TRACKS.filter(function (t) { return s.byTrack[t.id]; }).length;
+    add('breadth', 'Polymath', 'A lesson in every track', TRACKS.length > 0 && touched >= TRACKS.length);
+
+    TRACKS.forEach(function (t) {
+      add('track-' + t.id, TRACK_BADGE[t.id] || ('Cleared ' + t.short),
+          'Finish ' + t.short, t.size > 0 && (s.byTrack[t.id] || 0) >= t.size);
+    });
+
+    return out;
   }
 
   /* ------------------------------------------------------------ theme --- */
@@ -92,6 +254,8 @@
   /* --------------------------------------------------------- progress --- */
 
   function paintProgress() {
+    var s = stats();
+
     document.querySelectorAll('[data-lesson-id]').forEach(function (el) {
       el.dataset.done = isDone(el.dataset.lessonId) ? '1' : '0';
     });
@@ -104,6 +268,11 @@
       if (bar) bar.style.width = pct + '%';
       var label = el.querySelector('[data-progress-label]');
       if (label) label.textContent = done + ' / ' + ids.length;
+      var ring = el.querySelector('[data-ring]');
+      if (ring) setRing(ring, done / (ids.length || 1));
+      var ringLabel = el.querySelector('[data-ring-pct]');
+      if (ringLabel) ringLabel.textContent = pct + '%';
+      el.dataset.complete = done && done === ids.length ? '1' : '0';
     });
 
     var overall = document.querySelector('[data-overall-progress]');
@@ -123,24 +292,219 @@
       btn.setAttribute('aria-pressed', done2 ? 'true' : 'false');
       var lbl = btn.querySelector('.label');
       if (lbl) lbl.textContent = done2 ? 'Completed' : 'Mark complete';
+      var xpHint = btn.querySelector('.xp-hint');
+      if (xpHint) {
+        xpHint.textContent = done2 ? '' : '+' + (Number(btn.dataset.minutes) || 0) * XP_PER_MINUTE + ' XP';
+      }
+    }
+
+    paintLevel(s);
+    paintDashboard(s);
+    return s;
+  }
+
+  /* -------------------------------------------------- level & streak ---- */
+
+  function paintLevel(s) {
+    document.querySelectorAll('[data-level-name]').forEach(function (el) {
+      el.textContent = s.level.name;
+    });
+    document.querySelectorAll('[data-level-num]').forEach(function (el) {
+      el.textContent = String(s.levelIndex + 1);
+    });
+    document.querySelectorAll('[data-xp]').forEach(function (el) {
+      el.textContent = s.xp.toLocaleString();
+    });
+    document.querySelectorAll('[data-streak]').forEach(function (el) {
+      el.textContent = String(s.streak);
+    });
+    document.querySelectorAll('[data-longest-streak]').forEach(function (el) {
+      el.textContent = String(s.longest);
+    });
+
+    // Progress toward the next level, measured from the current threshold so
+    // the bar starts empty on arrival rather than part-filled.
+    document.querySelectorAll('[data-level-bar]').forEach(function (el) {
+      var span = s.next ? s.next.at - s.level.at : 0;
+      var into = s.xp - s.level.at;
+      el.style.width = (s.next ? Math.min(100, (into / span) * 100) : 100) + '%';
+    });
+    document.querySelectorAll('[data-next-level]').forEach(function (el) {
+      el.textContent = s.next
+        ? (s.next.at - s.xp).toLocaleString() + ' XP to ' + s.next.name
+        : 'Every lesson complete.';
+    });
+
+    var chip = document.getElementById('level-chip');
+    if (chip) {
+      chip.hidden = s.count === 0;
+      chip.setAttribute('title',
+        s.level.name + ' · ' + s.xp.toLocaleString() + ' XP' +
+        (s.streak ? ' · ' + s.streak + '-day streak' : ''));
+    }
+    var flame = document.getElementById('chip-streak');
+    if (flame) flame.hidden = s.streak < 2;
+  }
+
+  /* --------------------------------------------------------- dashboard -- */
+
+  function setRing(ring, fraction) {
+    var r = Number(ring.getAttribute('r')) || 26;
+    var c = 2 * Math.PI * r;
+    ring.style.strokeDasharray = c + ' ' + c;
+    ring.style.strokeDashoffset = String(c * (1 - Math.max(0, Math.min(1, fraction))));
+  }
+
+  function paintDashboard(s) {
+    var grid = document.getElementById('activity-grid');
+    if (grid) paintHeatmap(grid, s);
+
+    var badgeGrid = document.getElementById('badge-grid');
+    if (badgeGrid) {
+      var earned = s.badges.filter(function (b) { return b.earned; }).length;
+      badgeGrid.innerHTML = s.badges.map(function (b) {
+        return '<li class="badge" data-earned="' + (b.earned ? '1' : '0') + '">' +
+          '<span class="badge-mark" aria-hidden="true"></span>' +
+          '<span class="badge-name">' + escapeHtml(b.name) + '</span>' +
+          '<span class="badge-hint">' + escapeHtml(b.hint) + '</span></li>';
+      }).join('');
+      var count = document.querySelector('[data-badge-count]');
+      if (count) count.textContent = earned + ' / ' + s.badges.length;
     }
   }
+
+  // Activity calendar. Magnitude is lessons-per-day, so the ramp is a single
+  // hue light to dark; the empty cell sits outside the ramp as a neutral.
+  function paintHeatmap(grid, s) {
+    var WEEKS = Number(grid.dataset.weeks) || 18;
+    var cells = [];
+    var now = new Date();
+    // Start on the Sunday that begins the window, so columns are whole weeks.
+    var start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - (WEEKS * 7 - 1));
+    start.setDate(start.getDate() - start.getDay());
+
+    var max = Math.max(1, s.busiestDay);
+    var months = [];
+    var lastMonth = -1;
+
+    for (var w = 0; w < WEEKS + 1; w++) {
+      var col = [];
+      for (var d = 0; d < 7; d++) {
+        var day = new Date(start.getFullYear(), start.getMonth(), start.getDate() + w * 7 + d);
+        if (day > now) { col.push(null); continue; }
+        var iso = day.getFullYear() + '-' +
+          String(day.getMonth() + 1).padStart(2, '0') + '-' +
+          String(day.getDate()).padStart(2, '0');
+        var n = s.byDay[iso] || 0;
+        // Four filled steps; 0 is the neutral empty cell, not a ramp step.
+        var step = n === 0 ? 0 : Math.min(4, Math.ceil((n / max) * 4));
+        col.push({ iso: iso, n: n, step: step });
+      }
+      var firstOfCol = new Date(start.getFullYear(), start.getMonth(), start.getDate() + w * 7);
+      if (firstOfCol.getMonth() !== lastMonth && firstOfCol <= now) {
+        lastMonth = firstOfCol.getMonth();
+        months.push({ col: w, label: firstOfCol.toLocaleString(undefined, { month: 'short' }) });
+      }
+      cells.push(col);
+    }
+
+    grid.innerHTML =
+      '<div class="cal-months">' +
+      months.map(function (m) {
+        return '<span style="grid-column:' + (m.col + 1) + '">' + m.label + '</span>';
+      }).join('') +
+      '</div>' +
+      '<div class="cal-body">' +
+      cells.map(function (col) {
+        return '<div class="cal-week">' + col.map(function (c) {
+          if (!c) return '<span class="cal-cell" data-step="-1"></span>';
+          var label = c.n === 0
+            ? 'No lessons on ' + c.iso
+            : c.n + (c.n === 1 ? ' lesson' : ' lessons') + ' on ' + c.iso;
+          return '<span class="cal-cell" data-step="' + c.step + '" title="' + label +
+                 '" role="img" aria-label="' + label + '"></span>';
+        }).join('') + '</div>';
+      }).join('') +
+      '</div>';
+  }
+
+  /* -------------------------------------------------- lesson controls --- */
 
   var completeBtn = document.getElementById('complete-btn');
   if (completeBtn) {
     completeBtn.addEventListener('click', function () {
-      setDone(completeBtn.dataset.lesson, !isDone(completeBtn.dataset.lesson));
+      var wasDone = isDone(completeBtn.dataset.lesson);
+      var minutes = Number(completeBtn.dataset.minutes) || 0;
+      var before = stats();
+      setDone(completeBtn.dataset.lesson, !wasDone, minutes);
+      var after = paintProgress();
+      if (!wasDone) celebrate(before, after, minutes);
     });
   }
 
   var resetBtn = document.getElementById('reset-progress');
   if (resetBtn) {
     resetBtn.addEventListener('click', function () {
-      if (!confirm('Clear your progress on all lessons? This cannot be undone.')) return;
-      progress = {};
-      writeJSON(PROGRESS_KEY, progress);
+      if (!confirm('Clear your progress, XP, streak and badges? This cannot be undone.')) return;
+      store = {};
+      writeJSON(STORE_KEY, store);
+      try { localStorage.removeItem(LEGACY_KEY); } catch (e) {}
       paintProgress();
     });
+  }
+
+  /* ------------------------------------------------------- celebration -- */
+  // Marking a lesson complete is the only moment the site can reward, so it
+  // gets one: the XP earned, and any badge or level that just unlocked.
+
+  function celebrate(before, after, minutes) {
+    var gained = minutes * XP_PER_MINUTE;
+    var events = [];
+
+    if (after.levelIndex > before.levelIndex) {
+      events.push({ kind: 'level', title: 'Level ' + (after.levelIndex + 1),
+                    body: after.level.name });
+    }
+    var had = {};
+    before.badges.forEach(function (b) { if (b.earned) had[b.id] = true; });
+    after.badges.forEach(function (b) {
+      if (b.earned && !had[b.id]) {
+        events.push({ kind: 'badge', title: b.name, body: b.hint });
+      }
+    });
+    if (after.streak > before.streak && after.streak >= 2) {
+      events.push({ kind: 'streak', title: after.streak + '-day streak',
+                    body: 'Keep it going tomorrow.' });
+    }
+
+    showToast('+' + gained + ' XP', after.xp.toLocaleString() + ' total', 'xp');
+    events.forEach(function (e, i) {
+      setTimeout(function () { showToast(e.title, e.body, e.kind); }, 450 * (i + 1));
+    });
+  }
+
+  function showToast(title, body, kind) {
+    var stack = document.getElementById('toast-stack');
+    if (!stack) {
+      stack = document.createElement('div');
+      stack.id = 'toast-stack';
+      stack.className = 'toast-stack';
+      stack.setAttribute('role', 'status');
+      stack.setAttribute('aria-live', 'polite');
+      document.body.appendChild(stack);
+    }
+    var toast = document.createElement('div');
+    toast.className = 'toast';
+    toast.dataset.kind = kind || 'xp';
+    toast.innerHTML =
+      '<span class="toast-mark" aria-hidden="true"></span>' +
+      '<span class="toast-text"><b>' + escapeHtml(title) + '</b>' +
+      (body ? '<span>' + escapeHtml(body) + '</span>' : '') + '</span>';
+    stack.appendChild(toast);
+    setTimeout(function () {
+      toast.dataset.leaving = '1';
+      setTimeout(function () { toast.remove(); }, 300);
+    }, kind === 'xp' ? 2200 : 3600);
   }
 
   paintProgress();

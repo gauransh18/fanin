@@ -1712,3 +1712,121 @@ h2:hover > .anchor, h3:hover > .anchor, h4:hover > .anchor, .anchor:focus-visibl
   text-decoration-color: var(--accent-line);
   text-underline-offset: .12em;
 }
+
+/* ==========================================================================
+   Request a change
+   ========================================================================== */
+
+.suggest-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .5rem .875rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--line);
+}
+.suggest-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  padding: .4375rem .75rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--ink-2);
+  font-size: var(--fs-sm);
+  cursor: pointer;
+}
+.suggest-btn:hover { border-color: var(--accent-line); color: var(--accent); background: var(--accent-soft); }
+.suggest-btn svg { width: .9375rem; height: .9375rem; }
+.suggest-note { font-size: var(--fs-sm); color: var(--muted); }
+
+.suggest-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 95;
+  background: color-mix(in srgb, var(--ink) 34%, transparent);
+  backdrop-filter: blur(2px);
+  display: grid;
+  align-items: start;
+  justify-items: center;
+  padding: clamp(1rem, 10vh, 7rem) 1rem 1rem;
+}
+.suggest-dialog {
+  width: min(32rem, 100%);
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+.suggest-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .75rem;
+  padding: .875rem 1rem .875rem 1.125rem;
+  border-bottom: 1px solid var(--line);
+}
+.suggest-head h2 {
+  margin: 0;
+  font-size: var(--fs-md);
+  font-weight: 600;
+  letter-spacing: -.012em;
+}
+.suggest-quote {
+  margin: 0;
+  padding: .875rem 1.125rem;
+  border-bottom: 1px solid var(--line);
+  border-left: 2px solid var(--accent-line);
+  background: var(--surface-sunk);
+  font-family: var(--serif);
+  font-size: var(--fs-sm);
+  line-height: 1.55;
+  color: var(--ink-2);
+  max-height: 7rem;
+  overflow-y: auto;
+}
+.suggest-kinds { display: grid; padding: .375rem; }
+.suggest-kind {
+  display: grid;
+  gap: .125rem;
+  padding: .625rem .75rem;
+  border-radius: var(--radius);
+  text-decoration: none;
+  color: var(--ink);
+}
+.suggest-kind:hover, .suggest-kind:focus-visible { background: var(--surface-2); color: var(--ink); }
+.k-label { font-size: var(--fs-base); font-weight: 500; }
+.k-hint { font-size: var(--fs-sm); color: var(--muted); line-height: 1.4; }
+.suggest-foot {
+  margin: 0;
+  padding: .75rem 1.125rem;
+  border-top: 1px solid var(--line);
+  font-size: var(--fs-xs);
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+/* The chip that appears when a passage is selected inside a lesson. */
+.quote-chip {
+  position: absolute;
+  z-index: 60;
+  transform: translateX(-50%);
+  padding: .375rem .625rem;
+  border: 1px solid var(--accent);
+  border-radius: var(--radius);
+  background: var(--accent);
+  color: #fff;
+  font-size: var(--fs-xs);
+  font-weight: 500;
+  cursor: pointer;
+  box-shadow: var(--shadow);
+  white-space: nowrap;
+  animation: chip-in .12s ease;
+}
+:root[data-theme="dark"] .quote-chip { color: #17090F; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .quote-chip { color: #17090F; }
+}
+@keyframes chip-in { from { opacity: 0; transform: translate(-50%, 3px); } }

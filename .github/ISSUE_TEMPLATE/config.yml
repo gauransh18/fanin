@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Ask a question about the material
+    url: https://github.com/gauransh18/fanin/discussions
+    about: For questions rather than changes to the lessons.

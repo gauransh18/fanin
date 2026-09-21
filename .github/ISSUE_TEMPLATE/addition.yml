@@ -1,0 +1,36 @@
+name: Addition
+description: Something is missing — a lesson, a section, an example, a caveat.
+title: "Addition: "
+labels: [addition]
+body:
+  - type: dropdown
+    id: scope
+    attributes:
+      label: Scope
+      options:
+        - A missing caveat or clarification in an existing lesson
+        - A missing section in an existing lesson
+        - A whole lesson that should exist
+        - Something else
+    validations:
+      required: true
+  - type: input
+    id: lesson
+    attributes:
+      label: Lesson or track it belongs to
+      placeholder: 7.02 Memory Hierarchy and Arithmetic Intensity
+  - type: input
+    id: url
+    attributes:
+      label: Page
+      placeholder: https://gauransh18.github.io/fanin/learn/...
+  - type: textarea
+    id: addition
+    attributes:
+      label: What should be added
+      description: >
+        What it should cover and why a reader needs it. If it is a whole lesson,
+        say which lessons it would lean on and which would lean on it — the
+        curriculum is kept in dependency order.
+    validations:
+      required: true

@@ -35,6 +35,9 @@ jobs:
       - name: Check site integrity
         run: node src/check.mjs
 
+      - name: Test the progress engine
+        run: node src/test-progress.mjs
+
   deploy:
     needs: verify
     runs-on: ubuntu-latest

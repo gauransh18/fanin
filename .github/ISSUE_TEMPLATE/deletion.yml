@@ -1,0 +1,31 @@
+name: Deletion
+description: Something should be removed — outdated, redundant, or misleading.
+title: "Deletion: "
+labels: [deletion]
+body:
+  - type: input
+    id: lesson
+    attributes:
+      label: Lesson
+      placeholder: 6.06 Deep Q-Networks
+    validations:
+      required: true
+  - type: input
+    id: url
+    attributes:
+      label: Page
+      placeholder: https://gauransh18.github.io/fanin/learn/...
+  - type: textarea
+    id: quote
+    attributes:
+      label: The passage that should go
+      render: markdown
+  - type: textarea
+    id: reason
+    attributes:
+      label: Why it should be removed
+      description: >
+        Outdated, superseded, duplicated elsewhere in the curriculum, or simply
+        wrong. If it is duplicated, say where the better version lives.
+    validations:
+      required: true

@@ -530,10 +530,25 @@ async function lessonPage(lesson, raw) {
       <div class="complete-row">
         <button class="complete-btn" type="button" id="complete-btn" data-lesson="${lessonId(
           lesson
-        )}" aria-pressed="false">
+        )}" data-minutes="${lesson.minutes}" aria-pressed="false">
           <span class="box" aria-hidden="true"></span><span class="label">Mark complete</span>
         </button>
         <span class="complete-note">Saved in this browser only. Nothing is sent anywhere.</span>
+      </div>
+
+      <div class="suggest-row">
+        <button class="suggest-btn" type="button" data-suggest
+                data-lesson-number="${lesson.number}"
+                data-lesson-title="${esc(lesson.title)}">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"
+               stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12.5 3.5l4 4L8 16H4v-4z"/><path d="M11 5l4 4"/>
+          </svg>
+          Found a problem with this lesson?
+        </button>
+        <span class="suggest-note">
+          Select any passage to quote it, or open a request below.
+        </span>
       </div>
       <nav class="pager" aria-label="Lesson navigation">
         ${
