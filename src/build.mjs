@@ -770,6 +770,7 @@ async function build() {
       b: plain.slice(0, 1400),
       k: lesson.trackTitle,
       u: lesson.href,
+      ...(isDraft ? { d: 1 } : {}),
     });
   }
 

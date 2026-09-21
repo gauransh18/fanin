@@ -263,7 +263,8 @@
       if (!hit) return 0;
       total += hit;
     }
-    return total;
+    // A lesson still being written is a worse answer than one you can read.
+    return entry.d ? total * 0.35 : total;
   }
 
   function excerpt(entry, terms) {
@@ -339,7 +340,8 @@
           return (
             '<a class="palette-hit" href="' + url(entry.u) + '"' + (i === 0 ? ' data-active' : '') + '>' +
             '<span class="n">' + entry.n + '</span>' +
-            '<span><span class="t">' + mark(entry.t, terms) + '</span>' +
+            '<span><span class="t">' + mark(entry.t, terms) +
+            (entry.d ? '<span class="hit-draft">drafting</span>' : '') + '</span>' +
             '<span class="s">' + mark(excerpt(entry, terms), terms) + '</span></span></a>'
           );
         })
