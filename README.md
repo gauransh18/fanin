@@ -111,13 +111,14 @@ All 108 are currently written.
   tells you whether the site is correct, and it never touches Pages.
 - **`deploy`** publishes `dist/` to GitHub Pages.
 
-**One-time setup.** The deploy job fails with *"Resource not accessible by
-integration"* until Pages is switched on for the repository — a workflow token
-cannot create a Pages site. Enable it once:
+**One-time setup.** A workflow token cannot create a Pages site, so until Pages
+is switched on for the repository the deploy job checks the Pages API, logs a
+notice and **skips** — the run stays green rather than emailing a failure for a
+setting nobody has flipped yet. Enable it once:
 
 > **Settings → Pages → Build and deployment → Source: `GitHub Actions`**
 
-Then re-run the workflow. Nothing else is needed; `BASE_PATH` is resolved from
+The next push publishes. Nothing else is needed: `BASE_PATH` is resolved from
 `actions/configure-pages`, so the same build works at `/fanin` on a project
 site or at `/` behind a custom domain.
 
