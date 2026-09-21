@@ -3,7 +3,7 @@
 A free AI research curriculum: **108 lessons across 7 tracks**, from vector norms to
 sharded training runs. Every lesson is open — no tiers, no trial, no account.
 
-**Live site:** https://gauransh18.github.io/fanin/
+**Live site:** https://gauransh18.github.io/fanin/ — once Pages is enabled, see below.
 
 ## Why
 
@@ -102,6 +102,24 @@ directions, so the "dependency order" claim on the About page stays true.
 Lessons listed in the manifest without a Markdown file render as an honest
 "being edited" page and are flagged in the index — never as locked content.
 All 108 are currently written.
+
+## Deploying
+
+`.github/workflows/deploy.yml` runs on every push:
+
+- **`verify`** builds the site and runs `src/check.mjs`. This is the job that
+  tells you whether the site is correct, and it never touches Pages.
+- **`deploy`** publishes `dist/` to GitHub Pages.
+
+**One-time setup.** The deploy job fails with *"Resource not accessible by
+integration"* until Pages is switched on for the repository — a workflow token
+cannot create a Pages site. Enable it once:
+
+> **Settings → Pages → Build and deployment → Source: `GitHub Actions`**
+
+Then re-run the workflow. Nothing else is needed; `BASE_PATH` is resolved from
+`actions/configure-pages`, so the same build works at `/fanin` on a project
+site or at `/` behind a custom domain.
 
 ## Licence
 
