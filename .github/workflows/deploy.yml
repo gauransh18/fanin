@@ -48,30 +48,45 @@ jobs:
         with:
           node-version: '22'
 
-      # Fails with "Resource not accessible by integration" until Pages is
-      # switched on for the repository. It is a one-time setting:
-      #   Settings -> Pages -> Build and deployment -> Source: GitHub Actions
-      # The workflow token cannot create the Pages site itself.
+      # A workflow token cannot create the Pages site, so until Pages is
+      # switched on for the repository the deploy has nothing to publish to.
+      # That is a one-time setting, not a broken build — so this job skips
+      # rather than failing, and the run stays green.
+      - name: Is Pages enabled?
+        id: status
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          code=$(curl -sS -o /dev/null -w '%{http_code}' \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/${{ github.repository }}/pages")
+          if [ "$code" = "200" ]; then
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            echo "::notice title=Pages not enabled::The site built and passed all \
+          integrity checks, but GitHub Pages is off for this repository (API \
+          returned $code). Turn it on once at Settings -> Pages -> Build and \
+          deployment -> Source: GitHub Actions. The next push will publish."
+          fi
+
       - uses: actions/configure-pages@v5
         id: pages
-
-      - name: Explain a Pages configuration failure
-        if: failure()
-        run: |
-          echo "::error::GitHub Pages is not enabled for this repository."
-          echo "Enable it once at Settings -> Pages -> Source: GitHub Actions,"
-          echo "then re-run this workflow. The build and integrity checks above"
-          echo "already passed, so nothing else is wrong."
+        if: steps.status.outputs.enabled == 'true'
 
       # base_path is "/fanin" for a project site, "" for a user or custom-domain site.
       - name: Build with the resolved base path
+        if: steps.status.outputs.enabled == 'true'
         run: node src/build.mjs
         env:
           BASE_PATH: ${{ steps.pages.outputs.base_path }}
 
       - uses: actions/upload-pages-artifact@v3
+        if: steps.status.outputs.enabled == 'true'
         with:
           path: dist
 
       - uses: actions/deploy-pages@v4
         id: deployment
+        if: steps.status.outputs.enabled == 'true'
