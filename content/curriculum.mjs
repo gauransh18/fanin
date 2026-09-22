@@ -18,6 +18,7 @@ export const site = {
 export const tracks = [
   {
     id: 'math',
+    badge: 'Foundations Laid',
     title: 'Mathematical Foundations',
     short: 'Math',
     fill: '#46327E',
@@ -49,6 +50,7 @@ export const tracks = [
   },
   {
     id: 'pytorch',
+    badge: 'Fluent in Tensors',
     title: 'Python and PyTorch',
     short: 'PyTorch',
     fill: '#3B528B',
@@ -79,6 +81,7 @@ export const tracks = [
   },
   {
     id: 'deep-learning',
+    badge: 'Trainable',
     title: 'Deep Learning Core',
     short: 'Deep Learning',
     fill: '#2C728E',
@@ -109,6 +112,7 @@ export const tracks = [
   },
   {
     id: 'transformers',
+    badge: 'Attention Mastered',
     title: 'Transformers and Attention',
     short: 'Transformers',
     fill: '#21918C',
@@ -139,6 +143,7 @@ export const tracks = [
   },
   {
     id: 'llms',
+    badge: 'Full Lifecycle',
     title: 'Large Language Models',
     short: 'LLMs',
     fill: '#28AE80',
@@ -169,6 +174,7 @@ export const tracks = [
   },
   {
     id: 'rl',
+    badge: 'Policy Converged',
     title: 'Reinforcement Learning',
     short: 'RL',
     fill: '#5EC962',
@@ -197,6 +203,7 @@ export const tracks = [
   },
   {
     id: 'systems',
+    badge: 'Shipped It',
     title: 'Systems and MLOps',
     short: 'Systems',
     fill: '#AADC32',

@@ -59,7 +59,7 @@ export function layout(opts) {
     : '';
 
   return `<!doctype html>
-<html lang="en" data-base="${esc(base)}" data-repo="${esc(site.repo)}" data-tracks="${tracks.map((t) => `${t.id}:${t.lessons.length}:${t.short}`).join(',')}">
+<html lang="en" data-base="${esc(base)}" data-repo="${esc(site.repo)}" data-tracks="${tracks.map((t) => `${t.id}:${t.lessons.length}:${t.short}:${t.badge}`).join(',')}">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">

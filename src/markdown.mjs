@@ -145,13 +145,27 @@ function checkBlock(body, ctx, seed) {
     throw new Error(`${ctx.where || 'check'}: ${err.message}`);
   }
   if (ctx.checks) ctx.checks.push(parsed);
+  return renderCheck(parsed, ctx, seed);
+}
+
+// Renders a parsed check. `opts.trial` marks it as belonging to an end-of-track
+// trial: same markup, so the same styles apply, but a class the lesson runtime
+// skips and a tag that numbers the question instead of inviting an answer.
+export function renderCheck(parsed, ctx, seed, opts = {}) {
+  const cls = opts.trial ? 'check check-trial' : 'check';
+  const tag = opts.tag
+    ? escHtml(opts.tag)
+    : `Your turn${
+        parsed.kind === 'multi' ? ' <span class="check-hint">· select all that apply</span>' : ''
+      }`;
   const promptHtml = render(parsed.prompt, ctx);
 
   if (parsed.kind === 'numeric') {
     const n = parsed.numeric;
     return (
-      `<form class="check" data-kind="numeric" data-k="${encodeKey(n.value + '|' + n.tol)}">` +
-      `<p class="check-tag">Your turn</p>` +
+      `<form class="${cls}" data-kind="numeric" data-k="${encodeKey(n.value + '|' + n.tol)}"` +
+      `${opts.from ? ` data-from="${escHtml(opts.from)}"` : ''}>` +
+      `<p class="check-tag">${tag}</p>` +
       `<div class="check-q">${promptHtml}</div>` +
       `<div class="check-num">` +
       `<input type="text" inputmode="decimal" autocomplete="off" spellcheck="false"` +
@@ -168,7 +182,7 @@ function checkBlock(body, ctx, seed) {
   const shown = order.map((i) => parsed.options[i]);
   const key = shown.map((o, i) => (o.correct ? i : -1)).filter((i) => i >= 0).join(',');
 
-  const opts = shown
+  const optsHtml = shown
     .map(
       (o, i) =>
         `<li class="opt-row"><button class="opt" type="button" data-i="${i}">` +
@@ -179,12 +193,15 @@ function checkBlock(body, ctx, seed) {
     .join('');
 
   return (
-    `<div class="check" data-kind="${parsed.kind}" data-k="${encodeKey(key)}">` +
-    `<p class="check-tag">Your turn${
-      parsed.kind === 'multi' ? ' <span class="check-hint">· select all that apply</span>' : ''
+    `<div class="${cls}" data-kind="${parsed.kind}" data-k="${encodeKey(key)}"` +
+    `${opts.from ? ` data-from="${escHtml(opts.from)}"` : ''}>` +
+    `<p class="check-tag">${tag}${
+      opts.trial && parsed.kind === 'multi'
+        ? ' <span class="check-hint">· select all that apply</span>'
+        : ''
     }</p>` +
     `<div class="check-q">${promptHtml}</div>` +
-    `<ul class="check-opts">${opts}</ul>` +
+    `<ul class="check-opts">${optsHtml}</ul>` +
     (parsed.kind === 'multi'
       ? `<div class="check-actions"><button class="btn btn-primary" type="button" data-submit>Check answer</button></div>`
       : '') +

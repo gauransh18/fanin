@@ -214,7 +214,12 @@
     .split(',').filter(Boolean)
     .map(function (part) {
       var bits = part.split(':');
-      return { id: bits[0], size: Number(bits[1]) || 0, short: bits[2] || bits[0] };
+      return {
+        id: bits[0],
+        size: Number(bits[1]) || 0,
+        short: bits[2] || bits[0],
+        badge: bits[3] || ('Cleared ' + (bits[2] || bits[0])),
+      };
     });
 
   // The ladder tops out at what finishing the curriculum is actually worth:
@@ -232,16 +237,6 @@
     { at: 13500, name: 'Kernel Fused' },
     { at: 16500, name: 'Compute Optimal' },
   ];
-
-  var TRACK_BADGE = {
-    math: 'Foundations Laid',
-    pytorch: 'Fluent in Tensors',
-    'deep-learning': 'Trainable',
-    transformers: 'Attention Mastered',
-    llms: 'Full Lifecycle',
-    rl: 'Policy Converged',
-    systems: 'Shipped It',
-  };
 
   function dayBefore(iso) {
     var parts = iso.split('-');
@@ -398,7 +393,7 @@
 
     // A track badge takes both: every lesson cleared and the trial passed.
     TRACKS.forEach(function (t) {
-      add('track-' + t.id, TRACK_BADGE[t.id] || ('Cleared ' + t.short),
+      add('track-' + t.id, t.badge,
           'Finish ' + t.short + ' and pass its trial',
           t.size > 0 && (s.byTrack[t.id] || 0) >= t.size &&
           !!(trials[t.id] && trials[t.id].passed));
@@ -448,6 +443,7 @@
 
   function paintProgress() {
     var s = stats();
+    paintTrialCards();
 
     document.querySelectorAll('[data-lesson-id]').forEach(function (el) {
       el.dataset.done = isDone(el.dataset.lessonId) ? '1' : '0';
@@ -498,6 +494,25 @@
   }
 
   /* -------------------------------------------------- level & streak ---- */
+
+  // The trial card on a track page carries its own state.
+  function paintTrialCards() {
+    document.querySelectorAll('[data-trial-card]').forEach(function (card) {
+      var t = trials[card.dataset.trialCard];
+      var state = card.querySelector('[data-trial-state]');
+      if (!state) return;
+      if (t && t.passed) {
+        state.dataset.passed = '1';
+        state.textContent = 'Passed · best ' + t.best + '%';
+      } else if (t && t.best) {
+        state.dataset.passed = '0';
+        state.textContent = 'Best ' + t.best + '% · not passed';
+      } else {
+        state.dataset.passed = '0';
+        state.textContent = 'Not attempted';
+      }
+    });
+  }
 
   function paintLevel(s) {
     document.querySelectorAll('[data-level-name]').forEach(function (el) {
@@ -669,7 +684,7 @@
   // gets it wrong still ends up knowing the answer -- they just earn less for
   // it, and their combo resets.
 
-  var checkEls = [].slice.call(document.querySelectorAll('.check'));
+  var checkEls = [].slice.call(document.querySelectorAll('.check:not(.check-trial)'));
   var completeBtn = document.getElementById('complete-btn');
   var LESSON = completeBtn ? completeBtn.dataset.lesson || '' : '';
   var NEED = completeBtn ? Number(completeBtn.dataset.checks) || 0 : 0;
@@ -923,6 +938,196 @@
       paintProgress();
     });
   }
+
+  /* ------------------------------------------------------------- trial -- */
+  // The boss round. Questions come from the whole track, the pool is bigger
+  // than the round, and nothing is explained until the end -- so a trial tests
+  // what you carried out of the lessons rather than what you can work out from
+  // the feedback.
+
+  var trialEl = document.querySelector('[data-trial]');
+  if (trialEl) (function () {
+    var TRACK = trialEl.dataset.trial;
+    var SIZE = Number(trialEl.dataset.size) || 10;
+    var pool = [].slice.call(trialEl.querySelectorAll('.check-trial'));
+    var intro = trialEl.querySelector('[data-intro]');
+    var runEl = trialEl.querySelector('[data-run]');
+    var doneEl = trialEl.querySelector('[data-done]');
+    var nextBtn = trialEl.querySelector('[data-next]');
+    var pickedNote = trialEl.querySelector('[data-picked]');
+    var barEl = trialEl.querySelector('[data-bar]');
+    var atEl = trialEl.querySelector('[data-at]');
+
+    var round = [];
+    var at = 0;
+    var results = [];
+
+    function shuffle(list) {
+      var a = list.slice();
+      for (var i = a.length - 1; i > 0; i--) {
+        var j = Math.floor(Math.random() * (i + 1));
+        var t = a[i]; a[i] = a[j]; a[j] = t;
+      }
+      return a;
+    }
+
+    // Paints the intro: best score so far, and whether the track is finished.
+    function paintIntro() {
+      var t = trials[TRACK];
+      var best = trialEl.querySelector('[data-trial-best]');
+      if (best) best.textContent = t && t.best ? t.best + '%' : '—';
+      var ids = (trialEl.dataset.trackLessons || '').split(' ').filter(Boolean);
+      var left = ids.filter(function (id) { return !isDone(id); }).length;
+      var warn = trialEl.querySelector('[data-warn]');
+      if (warn) warn.hidden = left === 0;
+    }
+
+    function show(i) {
+      round.forEach(function (el, n) { el.hidden = n !== i; });
+      if (atEl) atEl.textContent = String(i + 1);
+      if (barEl) barEl.style.width = Math.round((i / round.length) * 100) + '%';
+      if (nextBtn) {
+        nextBtn.disabled = true;
+        nextBtn.textContent = i === round.length - 1 ? 'Finish' : 'Next question';
+      }
+      if (pickedNote) pickedNote.textContent = 'Pick an answer to continue.';
+    }
+
+    // One answer, recorded but not judged out loud.
+    function arm(el) {
+      var right = {};
+      try {
+        var raw = atob(el.dataset.k || '');
+        (raw.indexOf('fanin:') === 0 ? raw.slice(6) : '').split(',').forEach(function (n) {
+          if (n !== '') right[Number(n)] = true;
+        });
+      } catch (e) { /* an unreadable key marks the question wrong, not broken */ }
+
+      var multi = el.dataset.kind === 'multi';
+      el.querySelectorAll('.opt').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          if (!multi) {
+            el.querySelectorAll('.opt').forEach(function (b) { b.dataset.picked = '0'; });
+          }
+          btn.dataset.picked = multi && btn.dataset.picked === '1' ? '0' : '1';
+          var any = el.querySelector('.opt[data-picked="1"]');
+          if (nextBtn) nextBtn.disabled = !any;
+          if (pickedNote) pickedNote.textContent = any ? '' : 'Pick an answer to continue.';
+        });
+      });
+
+      el.judge = function () {
+        var picked = [].slice.call(el.querySelectorAll('.opt[data-picked="1"]'));
+        var ok = picked.length === Object.keys(right).length &&
+                 picked.every(function (b) { return right[Number(b.dataset.i)]; });
+        // Mark every option so the review at the end reads on its own.
+        el.querySelectorAll('.opt').forEach(function (b) {
+          var i = Number(b.dataset.i);
+          var chose = b.dataset.picked === '1';
+          b.disabled = true;
+          if (right[i]) b.dataset.mark = 'right';
+          else if (chose) b.dataset.mark = 'wrong';
+          if (right[i] || chose) {
+            var row = b.closest('.opt-row');
+            if (row) row.dataset.show = '1';
+          }
+        });
+        el.dataset.state = 'solved';
+        return ok;
+      };
+    }
+
+    function begin() {
+      round = shuffle(pool).slice(0, SIZE);
+      at = 0;
+      results = [];
+      pool.forEach(function (el) {
+        el.hidden = true;
+        el.dataset.state = '';
+        delete el.dataset.how;
+        el.querySelectorAll('.opt').forEach(function (b) {
+          b.disabled = false;
+          b.dataset.picked = '0';
+          delete b.dataset.mark;
+        });
+        el.querySelectorAll('.opt-row').forEach(function (r) { r.dataset.show = '0'; });
+      });
+      round.forEach(function (el, n) {
+        var tag = el.querySelector('.check-tag');
+        if (tag) {
+          tag.textContent = 'Question ' + (n + 1) +
+            (el.dataset.kind === 'multi' ? ' · select all that apply' : '');
+        }
+      });
+      intro.hidden = true;
+      doneEl.hidden = true;
+      runEl.hidden = false;
+      show(0);
+      runEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function finish() {
+      var right = results.filter(Boolean).length;
+      var outcome = recordTrial(TRACK, right, round.length);
+
+      runEl.hidden = true;
+      doneEl.hidden = false;
+
+      var scoreEl = doneEl.querySelector('[data-score]');
+      if (scoreEl) scoreEl.textContent = String(right);
+      var verdict = doneEl.querySelector('[data-verdict]');
+      if (verdict) {
+        verdict.dataset.tone = outcome.passed ? 'pass' : 'fail';
+        verdict.textContent = outcome.passed
+          ? 'Passed — ' + trialEl.dataset.badge + ' is yours.'
+          : 'Not this time. ' + Math.ceil(round.length * 0.8) + ' of ' + round.length +
+            ' to pass — the answers are below.';
+      }
+
+      // The review is the round itself, judged, with every explanation open.
+      var review = doneEl.querySelector('[data-review]');
+      if (review) {
+        review.innerHTML = '';
+        round.forEach(function (el, n) {
+          if (results[n]) return;   // only what went wrong is worth re-reading
+          el.hidden = false;
+          review.appendChild(el);
+        });
+        if (!review.children.length) {
+          var p = document.createElement('p');
+          p.className = 'trial-note';
+          p.textContent = 'Every question right. Nothing to review.';
+          review.appendChild(p);
+        }
+      }
+
+      if (outcome.xp) {
+        showToast('Trial passed', '+' + outcome.xp + ' XP · ' + trialEl.dataset.badge, 'badge');
+      }
+      paintProgress();
+      paintIntro();
+      doneEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    pool.forEach(arm);
+    paintIntro();
+
+    var startBtn = trialEl.querySelector('[data-start]');
+    if (startBtn) startBtn.addEventListener('click', begin);
+    var retryBtn = trialEl.querySelector('[data-retry]');
+    if (retryBtn) retryBtn.addEventListener('click', begin);
+
+    if (nextBtn) {
+      nextBtn.addEventListener('click', function () {
+        var el = round[at];
+        if (!el) return;
+        results[at] = el.judge();
+        at++;
+        if (at >= round.length) finish();
+        else show(at);
+      });
+    }
+  })();
 
   /* ------------------------------------------------------- celebration -- */
   // Marking a lesson complete is the only moment the site can reward, so it

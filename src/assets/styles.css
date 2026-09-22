@@ -2444,3 +2444,177 @@ h2:hover > .anchor, h3:hover > .anchor, h4:hover > .anchor, .anchor:focus-visibl
   .complete-btn[data-ready="1"],
   .complete-btn[data-nudge="1"] { animation: none; }
 }
+
+/* ----------------------------------------------------------------- trial -- */
+
+.trial {
+  max-width: 44rem;
+  margin: 2rem auto 3rem;
+}
+
+.trial-stat-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: .75rem;
+  margin-bottom: 1.4rem;
+}
+.trial-stat {
+  padding: .9rem .5rem;
+  text-align: center;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+.trial-stat b {
+  display: block;
+  font: 600 var(--fs-xl)/1.1 var(--sans);
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+.trial-stat span {
+  display: block;
+  margin-top: .2rem;
+  font: 400 var(--fs-xs)/1 var(--sans);
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.trial-intro { text-align: center; }
+.trial-warn {
+  margin: 0 0 1.1rem;
+  padding: .7rem .9rem;
+  font: 400 var(--fs-sm)/1.55 var(--sans);
+  text-align: left;
+  color: var(--ink-2);
+  background: var(--warn-soft);
+  border: 1px solid color-mix(in srgb, var(--warn) 30%, transparent);
+  border-radius: var(--radius);
+}
+.trial-note {
+  margin: .85rem 0 0;
+  font: 400 var(--fs-sm)/1.5 var(--sans);
+  color: var(--muted);
+}
+.btn-lg { padding: .7rem 1.6rem; font-size: var(--fs-md); }
+
+.trial-progress { margin-bottom: 1.4rem; }
+.trial-count {
+  margin: 0 0 .5rem;
+  font: 400 var(--fs-sm)/1 var(--sans);
+  color: var(--muted);
+}
+.trial-count b { color: var(--ink); font-variant-numeric: tabular-nums; }
+.trial-bar {
+  height: 4px;
+  background: var(--surface-2);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.trial-bar > i {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+  border-radius: 2px;
+  transition: width .3s ease-out;
+}
+
+/* Inside a trial the card is the whole screen's business, so it loses the
+   border it needs when it sits in the middle of a lesson. */
+.trial-pool .check-trial {
+  margin: 0;
+  border: 0;
+  box-shadow: none;
+  padding: 0;
+  background: none;
+}
+.trial-pool .check-tag { color: var(--muted); }
+
+.trial-controls {
+  display: flex;
+  align-items: center;
+  gap: .9rem;
+  flex-wrap: wrap;
+  margin-top: 1.4rem;
+  padding-top: 1.2rem;
+  border-top: 1px solid var(--line);
+}
+.trial-skip-note { font: 400 var(--fs-sm)/1 var(--sans); color: var(--muted); }
+
+.trial-score { text-align: center; margin-bottom: 1.8rem; }
+.trial-verdict {
+  margin: 0 0 .5rem;
+  font: 600 var(--fs-lg)/1.35 var(--sans);
+  color: var(--ink);
+}
+.trial-verdict[data-tone="pass"] { color: var(--good); }
+.trial-verdict[data-tone="fail"] { color: var(--warn); }
+.trial-tally { margin: 0; font: 400 var(--fs-sm)/1 var(--sans); color: var(--muted); }
+.trial-tally b {
+  font: 600 var(--fs-3xl)/1 var(--sans);
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+.trial-tally span { display: block; margin-top: .3rem; }
+
+.trial-review { display: grid; gap: 1.6rem; }
+.trial-review:not(:empty) { margin-bottom: 2rem; }
+.trial-review .check-trial {
+  padding: 1.1rem 1.15rem;
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
+  border-radius: calc(var(--radius) + 3px);
+}
+.trial-review .check-trial::before {
+  content: "From " attr(data-from);
+  display: block;
+  margin-bottom: .55rem;
+  font: 500 var(--fs-xs)/1 var(--sans);
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.trial-again { display: flex; gap: .6rem; justify-content: center; flex-wrap: wrap; }
+
+/* The card on a track page that points at its trial. */
+.trial-card {
+  display: grid;
+  gap: .35rem;
+  margin: 1.75rem 0 .5rem;
+  padding: 1.1rem 1.2rem;
+  text-decoration: none;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--track, var(--accent));
+  border-radius: var(--radius);
+  transition: border-color .12s, transform .1s, box-shadow .12s;
+}
+.trial-card:hover { border-color: var(--line-strong); box-shadow: var(--shadow); transform: translateY(-1px); }
+.trial-card:focus-visible { outline: none; box-shadow: var(--ring); }
+.tc-tag {
+  font: 600 var(--fs-xs)/1 var(--sans);
+  letter-spacing: .09em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.tc-title { font: 600 var(--fs-md)/1.3 var(--sans); color: var(--ink); }
+.tc-body { font: 400 var(--fs-sm)/1.55 var(--sans); color: var(--ink-2); }
+.tc-body b { color: var(--ink); font-weight: 600; }
+.tc-state {
+  margin-top: .35rem;
+  font: 500 var(--fs-xs)/1 var(--sans);
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.tc-state[data-passed="1"] { color: var(--good); }
+
+@media (max-width: 560px) {
+  .trial-stat-row { gap: .5rem; }
+  .trial-stat { padding: .7rem .3rem; }
+  .trial-stat b { font-size: var(--fs-lg); }
+  .trial-controls { flex-direction: column; align-items: stretch; }
+  .trial-controls .btn { width: 100%; }
+  .trial-skip-note { text-align: center; }
+}

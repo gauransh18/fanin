@@ -3,7 +3,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { site, tracks, allLessons, totals } from '../content/curriculum.mjs';
-import { render, parseFrontmatter, toPlainText } from './markdown.mjs';
+import { render, renderCheck, parseFrontmatter, toPlainText } from './markdown.mjs';
 import { layout, esc, makeUrl, ICON } from './templates.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -370,7 +370,7 @@ function curriculumPage(present) {
   });
 }
 
-function trackPage(track, present) {
+function trackPage(track, present, hasTrial) {
   setPage(`/learn/${track.id}/`);
   const i = tracks.indexOf(track);
   const ids = track.lessons.map(([slug]) => `${track.id}/${slug}`).join(' ');
@@ -400,10 +400,24 @@ function trackPage(track, present) {
       <a class="btn btn-primary" href="${u(`/learn/${track.id}/${first[0]}/`)}">Start ${String(
     i + 1
   )}.01 ${ICON.arrow}</a>
+      ${hasTrial ? `<a class="btn" href="${u(`/learn/${track.id}/trial/`)}">Take the trial</a>` : ''}
     </div>
   </section>
 
   <div class="lesson-rows">${lessonRows(track, present)}</div>
+
+  ${
+    hasTrial
+      ? `<a class="trial-card" href="${u(`/learn/${track.id}/trial/`)}"
+             data-trial-card="${track.id}" style="--track:${track.fill}">
+           <span class="tc-tag">Trial</span>
+           <span class="tc-title">${esc(track.title)} trial</span>
+           <span class="tc-body">Ten questions drawn from the whole track. Pass it to
+             earn <b>${esc(track.badge)}</b>.</span>
+           <span class="tc-state" data-trial-state>Not attempted</span>
+         </a>`
+      : ''
+  }
 
   <div class="pager track-pager">
     ${
@@ -621,6 +635,108 @@ async function lessonPage(lesson, raw) {
   });
 
   return { html, plain, summary, isDraft, checks };
+}
+
+// The end-of-track trial: questions drawn from every lesson in the track, no
+// explanations until the end, and a score you have to beat to earn the badge.
+// The pool ships whole and the page picks from it, so a retry is a different
+// set rather than the same one again.
+const TRIAL_SIZE = 10;
+
+function trialPage(track, pool) {
+  setPage(`/learn/${track.id}/trial/`);
+  const i = tracks.indexOf(track);
+  const size = Math.min(TRIAL_SIZE, pool.length);
+  const headings = [];
+
+  const questions = pool
+    .map((q, n) =>
+      renderCheck(
+        q.check,
+        { url: u, headings, seed: `${track.id}#trial#${n}` },
+        `${track.id}#trial#${n}`,
+        { trial: true, tag: `Question`, from: q.number }
+      )
+    )
+    .join('\n');
+
+  const body = `
+<div class="wrap">
+  <section class="page-head" style="--track:${track.fill}">
+    <div class="crumbs">
+      <a href="${u('/curriculum/')}">Curriculum</a><span class="sep">/</span>
+      <a href="${u(`/learn/${track.id}/`)}">${esc(track.short)}</a><span class="sep">/</span>
+      <span>Trial</span>
+    </div>
+    <h1 class="ct-title">${trackDot(track)}${esc(track.title)} trial</h1>
+    <p class="page-lede">
+      ${size} questions drawn from the ${track.lessons.length} lessons in this track.
+      No explanations until the end. Score ${Math.ceil(size * 0.8)} or better to earn
+      <strong>${esc(track.badge)}</strong>.
+    </p>
+  </section>
+
+  <section class="trial" data-trial="${track.id}" data-size="${size}"
+           data-track-lessons="${track.lessons.map(([s]) => `${track.id}/${s}`).join(' ')}"
+           data-badge="${esc(track.badge)}">
+    <div class="trial-intro" data-intro>
+      <div class="trial-stat-row">
+        <div class="trial-stat"><b>${size}</b><span>questions</span></div>
+        <div class="trial-stat"><b>${Math.ceil(size * 0.8)}</b><span>to pass</span></div>
+        <div class="trial-stat"><b data-trial-best>—</b><span>your best</span></div>
+      </div>
+      <p class="trial-warn" data-warn hidden>
+        You have not cleared every lesson in this track yet. You can still take the
+        trial — it just draws on lessons you may not have read.
+      </p>
+      <button class="btn btn-primary btn-lg" type="button" data-start>Begin the trial</button>
+      <p class="trial-note">Nothing is timed. Nothing is sent anywhere.</p>
+    </div>
+
+    <div class="trial-run" data-run hidden>
+      <div class="trial-progress">
+        <p class="trial-count">Question <b data-at>1</b> of ${size}</p>
+        <div class="trial-bar"><i data-bar style="width:0%"></i></div>
+      </div>
+      <div class="trial-pool" data-pool>${questions}</div>
+      <div class="trial-controls">
+        <button class="btn btn-primary" type="button" data-next disabled>Next question</button>
+        <span class="trial-skip-note" data-picked>Pick an answer to continue.</span>
+      </div>
+    </div>
+
+    <div class="trial-done" data-done hidden>
+      <div class="trial-score">
+        <p class="trial-verdict" data-verdict></p>
+        <p class="trial-tally"><b data-score>0</b> <span>of ${size} right</span></p>
+      </div>
+      <div class="trial-review" data-review></div>
+      <div class="trial-again">
+        <button class="btn btn-primary" type="button" data-retry>Take it again</button>
+        <a class="btn" href="${u(`/learn/${track.id}/`)}">Back to ${esc(track.short)}</a>
+      </div>
+    </div>
+
+    <noscript>
+      <p class="trial-note">The trial needs JavaScript. Every question in it also
+      appears in the lesson it came from, which works without.</p>
+    </noscript>
+  </section>
+
+  <nav class="pager" aria-label="Track navigation">
+    <a href="${u(`/learn/${track.id}/`)}"><span class="dir">← Track ${String(i + 1).padStart(2, '0')}</span><span class="ttl">${esc(track.title)}</span></a>
+  </nav>
+</div>`;
+
+  return layout({
+    title: `${track.short} trial`,
+    description: `A ${size}-question trial over the ${track.lessons.length} lessons of ${track.title}. Free, no account.`,
+    body,
+    base: RELATIVE ? u('/').replace(/index\.html$/, '') : BASE,
+    canonical: `/learn/${track.id}/trial/`,
+    nav: 'curriculum',
+    math: /class="tex"/.test(questions),
+  });
 }
 
 function aboutPage() {
@@ -892,13 +1008,19 @@ async function build() {
   const present = new Set([...sources.entries()].filter(([, v]) => v).map(([k]) => k));
 
   const index = [];
+  const pools = new Map(tracks.map((t) => [t.id, []]));
   let drafts = 0;
+  let checkCount = 0;
 
   for (const lesson of allLessons) {
     const raw = sources.get(lessonId(lesson));
-    const { html, plain, summary, isDraft } = await lessonPage(lesson, raw);
+    const { html, plain, summary, isDraft, checks } = await lessonPage(lesson, raw);
     await write(path.join('learn', lesson.trackId, lesson.slug, 'index.html'), html);
     if (isDraft) drafts++;
+    checkCount += checks.length;
+    for (const check of checks) {
+      pools.get(lesson.trackId).push({ number: lesson.number, check });
+    }
     index.push({
       n: lesson.number,
       t: lesson.title,
@@ -911,7 +1033,14 @@ async function build() {
   }
 
   for (const track of tracks) {
-    await write(path.join('learn', track.id, 'index.html'), trackPage(track, present));
+    const pool = pools.get(track.id);
+    const hasTrial = pool.length >= TRIAL_SIZE;
+    await write(path.join('learn', track.id, 'index.html'), trackPage(track, present, hasTrial));
+    // A trial needs enough questions to be a trial. Below that the track has
+    // no trial page and nothing links to one.
+    if (hasTrial) {
+      await write(path.join('learn', track.id, 'trial', 'index.html'), trialPage(track, pool));
+    }
   }
 
   await write('index.html', landingPage(present));
@@ -930,6 +1059,9 @@ async function build() {
     '/about/',
     '/progress/',
     ...tracks.map((t) => `/learn/${t.id}/`),
+    ...tracks
+      .filter((t) => (pools.get(t.id) || []).length >= TRIAL_SIZE)
+      .map((t) => `/learn/${t.id}/trial/`),
     ...allLessons.map((l) => l.href),
   ];
   await write(
@@ -942,11 +1074,14 @@ async function build() {
 
   await copyDir(path.join(HERE, 'assets'), path.join(OUT, 'assets'));
 
-  const written = allLessons.length + tracks.length + 5;
+  const trialCount = tracks.filter((t) => (pools.get(t.id) || []).length >= TRIAL_SIZE).length;
+  const written = allLessons.length + tracks.length + trialCount + 5;
   console.log(
     `built ${written} pages in ${Date.now() - started}ms  ·  ` +
       `${allLessons.length - drafts}/${allLessons.length} lessons written` +
       (drafts ? `  ·  ${plural(drafts, 'draft')} remaining` : '  ·  complete') +
+      `  ·  ${plural(checkCount, 'check')}` +
+      `  ·  ${plural(trialCount, 'trial')}` +
       (BASE ? `  ·  base ${BASE}` : '')
   );
 }
