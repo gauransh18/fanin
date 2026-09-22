@@ -118,6 +118,19 @@ The data requirement was largely eliminated by training recipe rather than archi
   denoising autoencoder (lesson 3.14) over image patches. DINO uses self-distillation and
   produces features whose attention maps segment objects without any segmentation labels.
 
+::: check
+A ViT discards locality, translation equivariance and parameter sharing across positions. Why does it win anyway, past a data threshold?
+
+- [x] Those priors are a constraint as well as a help — with enough data the model learns the structure that actually holds rather than the structure a convolution assumes
+  > Below that threshold the convolutional prior is worth more than the data, which is why ViTs underperform CNNs on small datasets and overtake them on very large ones.
+- [ ] Attention has a larger receptive field, so it needs fewer layers
+  > A global receptive field from layer one is real and is not the reason it needs so much data to pay off.
+- [ ] Patch embedding is cheaper than convolution
+  > A stride-$P$ kernel-$P$ convolution *is* the patch embedding, at the same cost.
+- [ ] Transformers are easier to optimise than CNNs
+  > ViTs are notoriously more sensitive to augmentation, regularisation and schedule.
+:::
+
 ## Multimodal models
 
 The practical importance of ViTs now is as the vision half of a multimodal model. The

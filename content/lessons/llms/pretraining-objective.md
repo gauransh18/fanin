@@ -110,6 +110,19 @@ heads (lesson 4.03) is the best-documented case. The aggregate is an average ove
 capabilities at different stages, so smoothness in the average is compatible with
 sharpness in each.
 
+::: check
+A language model's loss stops falling while validation loss is still flat. What is the most informative next number to look at?
+
+- [x] Perplexity, $e^{\mathcal{L}}$, which says how many equally likely tokens the model is effectively choosing between
+  > Loss in nats is hard to feel. A loss of 2.3 is a choice among about ten plausible next tokens; 1.6 is about five. That framing is what makes a training curve readable rather than a line going down.
+- [ ] The gradient norm, which decides whether training has converged
+  > A useful diagnostic that says nothing about whether the current loss is good.
+- [ ] The learning rate, which is the only thing that moves the loss
+  > It is one lever among many, and it does not interpret the number.
+- [ ] The token count, since loss falls predictably with data
+  > Scaling laws relate the two, and neither tells you what the current loss means.
+:::
+
 ## Practical details that matter
 
 **Document packing.** Concatenate documents and chop into fixed blocks. No padding, every

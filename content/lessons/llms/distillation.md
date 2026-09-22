@@ -116,6 +116,19 @@ def feature_distillation(student_hidden, teacher_hidden, projections):
 The projection handles the dimension mismatch. This helps most when the student is much
 smaller, where output matching alone leaves the intermediate representations unconstrained.
 
+::: check
+What does a teacher's soft distribution carry that a one-hot label does not?
+
+- [x] Relative similarity between wrong answers — that a cat image is much more like a dog than like a truck
+  > That structure is the extra supervision, and it is why distillation often beats training the same small model from scratch on the original labels.
+- [ ] A confidence estimate that can be used to weight examples
+  > Teacher confidence can be used that way and is not what the soft targets are primarily providing.
+- [ ] The teacher's gradients, which guide the student's optimisation
+  > Only the output distribution is transferred; the gradients are the student's own.
+- [ ] A correction for label noise in the training set
+  > A good teacher does smooth some label noise, as a side effect rather than the mechanism.
+:::
+
 ## What it achieves
 
 | Approach | Typical retention of teacher quality |

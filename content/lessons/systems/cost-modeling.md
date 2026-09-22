@@ -130,6 +130,19 @@ Attempting spot without that machinery turns a 70% discount into repeated lost w
 the reliability first, then take the discount.
 :::
 
+::: check
+You are deciding between an API and self-hosting. What determines the crossover?
+
+- [x] Sustained throughput — a self-hosted GPU costs the same whether it is busy or idle, so the break-even is about utilisation rather than per-token price
+  > Bursty or low-volume traffic favours an API; steady high volume favours self-hosting. Add the engineering time, which is usually the larger hidden cost.
+- [ ] Model quality, since self-hosted models are always weaker
+  > Open-weight models are competitive for many tasks, and the question here is economic.
+- [ ] The size of the model, since large models cannot be self-hosted
+  > Large models can be served on multiple GPUs; that raises the fixed cost rather than ruling it out.
+- [ ] Latency, which is always better self-hosted
+  > It can be, and network proximity and batching policy matter more than ownership.
+:::
+
 ## Buy or build
 
 ```python

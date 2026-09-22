@@ -202,6 +202,19 @@ synchronisation, warp-level primitives, or the last few percent on a kernel that
 billions of times.
 :::
 
+::: check
+A CUDA kernel writes out of bounds. Where does the error surface?
+
+- [x] Possibly nowhere near the kernel — launches are asynchronous, so the error is reported at the next synchronisation, which may be an unrelated line
+  > `CUDA_LAUNCH_BLOCKING=1` makes launches synchronous so the error points at the right line, and `compute-sanitizer` finds the access itself. Debugging without either is guesswork.
+- [ ] Immediately, at the kernel launch
+  > The launch returns before the kernel has run.
+- [ ] At process exit, in a summary report
+  > Nothing summarises it for you by default.
+- [ ] It never surfaces; out-of-bounds writes are silently discarded
+  > They corrupt whatever is at that address, which surfaces later as wrong numbers.
+:::
+
 ## Profiling a kernel
 
 ```bash

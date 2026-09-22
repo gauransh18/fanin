@@ -99,6 +99,19 @@ for d in (4096, 4095):
     # Time both -- the 4095 case is measurably slower for a smaller problem.
 ```
 
+::: check
+An H100 has 3.35 TB/s of HBM bandwidth and about 15 TB/s of shared memory. What is the performance question that follows for any kernel?
+
+- [x] How much work can I do per byte read from HBM
+  > Each step down the hierarchy is roughly 3–5× slower and much larger. Keeping data on-chip and doing more with it before writing back is what every fused kernel, including FlashAttention, is about.
+- [ ] How many threads can I launch
+  > Occupancy matters for hiding latency and is downstream of the traffic question.
+- [ ] How can I avoid using shared memory, which is scarce
+  > Shared memory is what you *want* to use — it is where data goes to be reused.
+- [ ] How do I keep every SM busy at all times
+  > Every SM can be busy and still stalled waiting on HBM, which is exactly the memory-bound case.
+:::
+
 ## Occupancy
 
 Occupancy is the fraction of a warp scheduler's slots that are filled. It matters because

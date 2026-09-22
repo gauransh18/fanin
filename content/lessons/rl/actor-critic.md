@@ -167,6 +167,19 @@ Healthy training shows explained variance rising into 0.8–0.95. If it stays ne
 - **PPO** (lesson 6.09) — A2C plus a clipped objective allowing multiple epochs per batch.
 - **SAC** (lesson 6.10) — off-policy actor–critic with entropy in the objective itself.
 
+::: check
+GAE's $\lambda$ moves along a spectrum. What are the two ends?
+
+- [x] $\lambda = 0$ gives TD(0) — biased and low variance; $\lambda = 1$ gives Monte Carlo — unbiased and high variance
+  > It is an exponentially weighted average of all $n$-step estimators, so one parameter dials the whole bias–variance spectrum of lesson 6.04. Typical values sit around 0.95.
+- [ ] $\lambda = 0$ gives Monte Carlo and $\lambda = 1$ gives TD(0)
+  > Reversed: $\lambda = 0$ keeps only the first TD error.
+- [ ] $\lambda$ controls the discount factor, not the estimator
+  > $\gamma$ and $\lambda$ appear together as $(\gamma\lambda)^l$ and do different jobs — one sets the horizon, the other the bootstrapping depth.
+- [ ] Both ends give the same estimator, differing only in computational cost
+  > They differ in bias and variance, which is the entire point of having the knob.
+:::
+
 ## Where it reappears
 
 RLHF (lesson 5.08) is an actor–critic:

@@ -164,6 +164,19 @@ Because the two estimates have independent noise, the one used for evaluation do
 the error that made the selected action look best. Double DQN (lesson 6.06) is this idea
 applied to neural networks.
 
+::: check
+Why does $\max_{a'}Q(s',a')$ over noisy estimates produce a systematic overestimate?
+
+- [x] The maximum of noisy estimates is biased upwards — $\mathbb{E}[\max_a \hat Q] \ge \max_a \mathbb{E}[\hat Q]$, by Jensen's inequality
+  > The same action is used to both *select* and *evaluate*, so whichever action's noise happened to be positive gets picked. Double Q-learning decouples selection from evaluation, which removes most of it.
+- [ ] The learning rate is too high, so estimates overshoot
+  > The bias survives at any learning rate and even with unbiased estimates of each individual $Q$.
+- [ ] Rewards are usually positive, so values drift upward
+  > The bias appears with zero-mean rewards too.
+- [ ] The discount factor compounds errors across steps
+  > Discounting shrinks propagated error rather than amplifying it.
+:::
+
 ## Convergence
 
 Tabular Q-learning converges to $Q^*$ with probability 1, given that every state-action pair

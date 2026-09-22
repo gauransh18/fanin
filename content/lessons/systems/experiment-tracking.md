@@ -115,6 +115,19 @@ Serialise the whole dataclass with `asdict()` and store it with the run. This is
 most common reason a result cannot be reproduced six months later.
 :::
 
+::: check
+An ablation changes two things at once and the result improves. What have you learned?
+
+- [x] That the pair helps, and nothing about either one — and the two could even be working against each other with one large enough to win
+  > An ablation is only informative when exactly one thing changes and the comparison is against a baseline you ran yourself, on the same data, with the same budget.
+- [ ] That both changes help, since the combined effect is positive
+  > A positive sum is consistent with one helping a lot and the other hurting.
+- [ ] That the larger of the two changes is responsible
+  > Nothing in the result tells you which was larger in effect.
+- [ ] Nothing at all; multi-factor experiments are uninformative
+  > They tell you about the combination, which is sometimes exactly what you wanted to know.
+:::
+
 ## Naming and organising runs
 
 A name like `exp_v3_final_final2` tells you nothing in three months. Encode the variable:

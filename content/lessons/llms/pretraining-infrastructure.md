@@ -126,6 +126,19 @@ asleep.
 **Deterministic data ordering.** The data loader must be resumable to the exact sample, or
 a restart silently re-trains on data already seen and skips data never seen.
 
+::: check
+In a run of thousands of GPUs over weeks, hardware failures are routine rather than exceptional. What follows for the training loop?
+
+- [x] Checkpointing frequency has to be chosen against the expected time lost per failure, and restarts must restore the data iterator and RNG state, not just the weights
+  > Restoring only the weights silently changes which data the run sees and breaks reproducibility. The failure itself is not the problem; losing more than a few minutes to it is.
+- [ ] The run should be split into independent shorter runs
+  > Splitting changes the optimisation — a learning-rate schedule spanning the whole run is not the same as several short ones.
+- [ ] Failures should be prevented by running below peak utilisation
+  > Derating hardware does not remove the failure rate at this scale, and it wastes the capacity outright.
+- [ ] A failed rank should be dropped and training continued with fewer
+  > That changes the world size and therefore the effective batch mid-run.
+:::
+
 ## What to monitor
 
 ```python

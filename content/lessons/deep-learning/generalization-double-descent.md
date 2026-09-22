@@ -98,6 +98,19 @@ improving when the run is cheap, and watch weight norm alongside loss — a norm
 still falling means the solution is still changing, even if the metrics are flat.
 :::
 
+::: check
+Sample-wise double descent means more data can temporarily *hurt*. How?
+
+- [x] Adding data moves a fixed-size model towards its interpolation threshold, where the single interpolating solution is whatever the data forces
+  > The same peak, approached along a different axis. It is a striking reminder that "more data is always better" is a statement about the underparameterised regime.
+- [ ] More data increases label noise, which dominates at the margin
+  > Noise proportion is unchanged by collecting more of the same distribution.
+- [ ] Larger datasets require smaller learning rates, slowing convergence
+  > A tuning consequence, not the mechanism behind the peak.
+- [ ] It only happens with corrupted labels
+  > Label noise sharpens the effect and is not required for it.
+:::
+
 ## What predicts generalisation
 
 Parameter count does not. Some things that do better:

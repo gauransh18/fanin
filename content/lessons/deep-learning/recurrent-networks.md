@@ -139,6 +139,19 @@ The `detach()` is the whole technique: the forward pass carries state across chu
 boundaries, but gradients do not flow past them. You get $O(k)$ memory at the cost of
 never learning dependencies longer than $k$.
 
+::: check
+Truncated BPTT backpropagates only $k$ steps rather than the whole sequence. What does that cost?
+
+- [x] Dependencies longer than $k$ steps receive no gradient at all, so the model cannot learn them however long the sequence is
+  > It is a memory-for-capability trade: full BPTT over a 10,000-step sequence would need every activation alive at once. Where the true dependency exceeds $k$, truncation is not an approximation but a hard cut-off.
+- [ ] The forward pass becomes approximate
+  > The forward pass is unchanged; only the backward is truncated.
+- [ ] Gradients explode more readily over the shorter window
+  > A shorter product of Jacobians is *less* prone to both explosion and vanishing.
+- [ ] It requires the sequence length to be a multiple of $k$
+  > Ragged final segments are handled routinely.
+:::
+
 ## Bidirectional and stacked
 
 ```python

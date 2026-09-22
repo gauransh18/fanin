@@ -131,6 +131,19 @@ Offline RL cannot exceed what the data supports. Three cases:
 RL results do not beat it, and it is a one-line implementation.
 :::
 
+::: check
+Conservative Q-learning (CQL) adds a term that pushes $Q$ down on out-of-distribution actions and up on dataset actions. Why does that help?
+
+- [x] It makes the learned $Q$ a lower bound on the true value, so the policy cannot be lured towards actions whose value was extrapolated upwards
+  > Policy-constraint methods attack the same problem from the other side, by keeping the policy near the behaviour policy. Both are ways of restoring the correction that interaction would otherwise supply.
+- [ ] It regularises the network, reducing overfitting to the dataset
+  > Generic regularisation does not target out-of-distribution *actions* specifically, which is where the failure lives.
+- [ ] It removes the need for a behaviour policy estimate
+  > Not needing one is a convenience of CQL and is not why it works.
+- [ ] It makes the Bellman operator a contraction again
+  > The operator's contraction property is not what broke; the values it contracts towards are.
+:::
+
 ## Evaluation is the unsolved part
 
 You cannot run the policy to evaluate it — that is the whole premise. **Off-policy

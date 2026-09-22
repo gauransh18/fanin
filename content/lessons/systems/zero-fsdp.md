@@ -165,6 +165,19 @@ with FSDP.state_dict_type(model, StateDictType.FULL_STATE_DICT, cfg):
 Use distributed checkpoints during training — they are fast and they resume onto the same
 topology. Consolidate once at the end for release.
 
+::: check
+Why does FSDP prefetch the next layer's parameters while the current layer computes?
+
+- [x] ZeRO-3 all-gathers each layer's parameters just before using them, so without prefetch every layer would stall waiting for its own weights to arrive
+  > Prefetching is what makes ZeRO-3's extra communication hideable. It is also why the wrapping granularity matters: wrap too finely and there is not enough compute to hide behind.
+- [ ] It avoids re-sharding parameters between the forward and backward passes
+  > Parameters are re-gathered in the backward too, which is part of ZeRO-3's extra traffic.
+- [ ] It reduces the total volume of communication
+  > The volume is unchanged; only its overlap with compute improves.
+- [ ] It is required for CPU offload to work
+  > Offload has its own transfer scheduling and does not depend on this.
+:::
+
 ## Choosing a configuration
 
 | Situation | Configuration |

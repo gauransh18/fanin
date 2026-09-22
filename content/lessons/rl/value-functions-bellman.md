@@ -87,6 +87,19 @@ The proof is short. For any $s$, $|(\mathcal{T}V_1)(s) - (\mathcal{T}V_2)(s)|$ i
 the largest over $a$ of $\gamma\sum_{s'}P(s'|s,a)|V_1(s')-V_2(s')|$, which is at most
 $\gamma\lVert V_1-V_2\rVert_\infty$ since the probabilities sum to one.
 
+::: check
+The Bellman *expectation* equations are linear in the unknowns but the *optimality* equations are not. What makes the difference?
+
+- [x] The optimality equations replace the expectation over actions with a maximum, and $\max$ is not linear
+  > That is why $V^\pi$ can be found by solving a linear system exactly, while $V^*$ needs iteration — value iteration, whose convergence rests on the Bellman operator being a contraction.
+- [ ] The optimality equations involve the discount factor and the expectation ones do not
+  > Both discount identically.
+- [ ] The optimality equations are defined only for stochastic policies
+  > They characterise a deterministic optimal policy.
+- [ ] The optimality equations require the transition model and the expectation ones do not
+  > Both are written in terms of $P$.
+:::
+
 ## Solving a small MDP exactly
 
 ```python

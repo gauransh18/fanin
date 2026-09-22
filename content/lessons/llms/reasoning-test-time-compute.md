@@ -122,6 +122,19 @@ partially and unevenly. Treat "we solved reasoning in maths" as a statement abou
 until evidence says otherwise.
 :::
 
+::: check
+Self-consistency samples $n$ chains at temperature and takes the majority answer. Why does that work?
+
+- [x] Different reasoning paths make different errors, so wrong answers scatter while the correct one is the mode
+  > It needs an answer that can be compared for equality, which is why it applies cleanly to maths and code and awkwardly to open-ended generation.
+- [ ] Higher temperature produces better reasoning
+  > Temperature is there to produce *diverse* chains. Each individual chain is typically worse than a greedy one.
+- [ ] The majority answer has the highest likelihood under the model
+  > The highest-likelihood answer is what greedy decoding gives, and self-consistency frequently beats it.
+- [ ] Averaging reduces variance, as it does for gradients
+  > The mechanism is voting over discrete answers, not averaging a continuous quantity.
+:::
+
 ## The inference-compute tradeoff
 
 | Method | Cost | Typical gain |

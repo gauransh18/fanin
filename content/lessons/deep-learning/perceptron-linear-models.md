@@ -164,6 +164,19 @@ the same phenomenon as the confidence blow-up that label smoothing addresses in 
 1.15.
 :::
 
+::: check
+The perceptron convergence theorem bounds mistakes at $(R/\gamma)^2$ for data separable with margin $\gamma$ and inputs bounded by $R$. What happens when the data is *not* separable?
+
+- [x] The bound says nothing and the algorithm never settles — it keeps updating forever
+  > Which is the practical reason logistic regression is the better ancestor: it has a well-defined optimum whether or not the data separates, and it produces calibrated probabilities rather than a hard sign.
+- [ ] It converges to the minimum-error separator instead
+  > Nothing in the update rule optimises error count. It reacts to individual mistakes.
+- [ ] It converges more slowly, proportional to the overlap
+  > It does not converge at all.
+- [ ] It raises an error once the mistake bound is exceeded
+  > The bound is an analysis, not a check the algorithm performs.
+:::
+
 ## The softmax generalisation
 
 For $K$ classes, use $K$ weight vectors and normalise:

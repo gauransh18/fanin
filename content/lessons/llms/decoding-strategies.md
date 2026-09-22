@@ -142,6 +142,19 @@ continuations.
 The length penalty is not optional. Log-probabilities are negative, so a longer sequence
 always scores worse, and unnormalised beam search terminates as early as it can.
 
+::: check
+Top-$k$ and top-$p$ both truncate the distribution before sampling. How do they differ?
+
+- [x] Top-$k$ keeps a fixed number of tokens; top-$p$ keeps however many are needed to reach cumulative probability $p$, so it adapts to how confident the model is
+  > Where the model is sure, top-$p$ keeps two or three options; where it is unsure, it keeps hundreds. A fixed $k$ is either too permissive in the first case or too restrictive in the second.
+- [ ] Top-$p$ keeps a fixed number and top-$k$ adapts
+  > Reversed — $k$ is the count and $p$ the probability mass.
+- [ ] Top-$k$ renormalises and top-$p$ does not
+  > Both renormalise over what survives.
+- [ ] They are equivalent for any choice of $k$ and $p$
+  > They coincide only by accident on a particular distribution.
+:::
+
 ## Repetition control
 
 ```python

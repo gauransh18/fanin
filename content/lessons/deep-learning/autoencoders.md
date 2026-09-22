@@ -77,6 +77,19 @@ enough, it will simply copy — reconstruction is perfect and the representation
 
 The fixes all amount to adding a second pressure that competes with reconstruction.
 
+::: check
+A bottleneck of width $r$ caps the end-to-end map at rank $r$. What decides which input directions survive?
+
+- [x] The training objective — the bottleneck forces a choice, and reconstruction loss is what makes it
+  > At least $d - r$ input directions are destroyed and cannot be recovered. Changing what the model is asked to reconstruct changes which directions it decides to keep, which is the entire idea behind denoising and masked objectives.
+- [ ] The initialisation, which fixes the subspace before training
+  > Initialisation sets a starting point that training moves away from.
+- [ ] The activation function, which determines the rank
+  > Rank here is capped by the narrowest linear layer; the nonlinearity is what makes the map more than a projection.
+- [ ] Nothing — the surviving directions are arbitrary
+  > They are arbitrary in *basis*, as the PCA comparison shows, and the subspace itself is very much learned.
+:::
+
 ## Denoising
 
 Corrupt the input, reconstruct the clean version:

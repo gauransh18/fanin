@@ -167,6 +167,19 @@ metrics = {
 | `entropy` | slowly falling | Sharp drop: premature collapse |
 | `explained_var` | rising to 0.8+ | Near 0: the critic is useless (lesson 6.08) |
 
+::: check
+PPO replaces TRPO's hard KL constraint with what?
+
+- [x] A clipped surrogate objective — the probability ratio is clipped to $[1-\epsilon, 1+\epsilon]$, so a step beyond that range stops paying
+  > It gets most of TRPO's benefit with first-order optimisation and no conjugate-gradient machinery, which is why it displaced it almost entirely.
+- [ ] A KL penalty added to the loss with a fixed coefficient
+  > That is an adaptive-penalty variant PPO also describes, and the clipped objective is the one that is used.
+- [ ] A trust region on the parameters rather than on the policy
+  > A parameter-space constraint is exactly what lesson 6.09 argued measures the wrong thing.
+- [ ] Nothing — PPO drops the constraint and relies on a small learning rate
+  > A small learning rate does not bound the policy change, which is the whole problem.
+:::
+
 ## Implementation details that matter more than the algorithm
 
 ::: key

@@ -171,6 +171,19 @@ def scaling_efficiency(step_fn, single_gpu_throughput, warmup=10, iters=50):
 | 70–90% | Investigate — usually communication or stragglers |
 | Below 70% | Something is wrong |
 
+::: check
+DDP overlaps gradient all-reduce with the backward pass. How, and why does `no_sync` exist?
+
+- [x] Gradients are bucketed and each bucket's all-reduce launches as soon as it is ready, so communication hides behind the remaining backward — and under gradient accumulation you want that suppressed on all but the last microbatch
+  > Without `no_sync`, every microbatch triggers a full all-reduce and the accumulation costs $N$ times the communication for no benefit.
+- [ ] The all-reduce runs after backward completes, on a separate stream
+  > Waiting for the whole backward would leave nothing to hide behind.
+- [ ] Gradients are compressed, so communication is short enough to ignore
+  > No compression is involved in standard DDP.
+- [ ] `no_sync` disables gradient synchronisation permanently for speed
+  > It suppresses it within a block, and the final microbatch must synchronise or the ranks diverge.
+:::
+
 ## What goes wrong
 
 **Stragglers.** Every all-reduce is a barrier, so the slowest rank sets the pace for all.

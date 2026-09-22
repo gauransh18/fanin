@@ -133,6 +133,19 @@ $BT = B$ and if $B$ is small the same operations become memory-bound.
 That single difference explains why training reaches 40–50% MFU and single-stream decode
 reaches 2–5%.
 
+::: check
+You fuse three elementwise kernels into one. On a memory-bound operation, what does that buy?
+
+- [x] Two round trips to HBM are eliminated — the intermediates never leave the chip, so the traffic falls by roughly two thirds
+  > The arithmetic is identical. On a memory-bound operation, traffic is the runtime, which is why `torch.compile`'s main win on elementwise chains is fusion.
+- [ ] Two kernel launches are saved, which is the main cost
+  > Launch overhead is a few microseconds and matters only for very small tensors.
+- [ ] The arithmetic is reduced by a factor of three
+  > No arithmetic is removed at all.
+- [ ] Nothing, unless the operation was compute-bound
+  > It is precisely when the operation is memory-bound that fusion pays.
+:::
+
 ## Deciding what to optimise
 
 ::: key

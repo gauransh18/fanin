@@ -175,6 +175,19 @@ Because the latent space is compact, imagined rollouts are cheap — thousands c
 parallel on a GPU. This is what makes it viable for continuous control from pixels, where
 environment steps are expensive and model steps are not.
 
+::: check
+Dyna interleaves real experience with imagined experience from a learned model. What is it buying?
+
+- [x] Sample efficiency — each real transition is used many times, through the model, instead of once
+  > Model-free methods need millions of environment steps. When real steps are expensive, dangerous or slow, replaying them through a model is often orders of magnitude cheaper.
+- [ ] Lower variance in the value estimates
+  > Imagined transitions carry the model's own error, which can raise variance as well as bias.
+- [ ] The ability to handle continuous actions
+  > Continuity is orthogonal; Dyna as described is tabular.
+- [ ] Guaranteed convergence to the optimal policy
+  > Convergence now depends on the model being right, which is a weaker guarantee, not a stronger one.
+:::
+
 ## When to use it
 
 | Situation | Model-based? |

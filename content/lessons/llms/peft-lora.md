@@ -147,6 +147,19 @@ This is what makes 70B fine-tuning possible on a single 48 GB GPU. The base weig
 35 GB; gradients flow *through* the quantized weights to the LoRA parameters without ever
 updating the base. Quality loss is small — typically within a point of 16-bit LoRA.
 
+::: check
+QLoRA keeps the frozen base model in 4-bit while training LoRA adapters in 16-bit. Why does quantizing the base not wreck the fine-tune?
+
+- [x] The base is never updated, so its quantization error is a fixed offset the adapter learns around — only the adapter needs full precision to accumulate small updates
+  > Which is what lets a 70B model be fine-tuned on a single GPU. Quantizing weights you *are* training would lose the small gradients entirely.
+- [ ] 4-bit quantization is lossless for transformer weights
+  > It is measurably lossy. The point is where the loss falls.
+- [ ] The adapter is initialised from the quantization error
+  > It is initialised so that $BA = 0$, independent of any quantization.
+- [ ] The base is dequantized to 16-bit before each forward pass and retains full precision
+  > It is dequantized for the matmul, and what comes back is the 4-bit values, not the originals.
+:::
+
 ## Merging for deployment
 
 $$

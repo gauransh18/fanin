@@ -112,6 +112,21 @@ $$
 $n=1$ is TD(0); $n=\infty$ is Monte Carlo. Intermediate $n$ — typically 3 to 10 — usually
 beats both, and this is exactly what GAE generalises in lesson 6.08.
 
+::: check
+What are the three ingredients of the deadly triad?
+
+- [x] Function approximation
+  > A table cannot diverge this way; a network generalising between states can.
+- [x] Bootstrapping
+  > Updating an estimate towards another estimate is what lets an error feed back into itself.
+- [x] Off-policy training
+  > Learning about one policy from another's data removes the corrective feedback that would fix an overestimate.
+- [ ] A discount factor below 1
+  > Discounting is what makes returns well behaved; it is not a source of instability.
+- [ ] Stochastic transitions
+  > Stochasticity adds variance, not divergence. Deterministic environments hit the triad too.
+:::
+
 ## TD(λ) and eligibility traces
 
 Rather than picking one $n$, average all of them with geometrically decaying weights:

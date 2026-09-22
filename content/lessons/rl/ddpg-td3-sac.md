@@ -169,6 +169,19 @@ Omit the correction entirely and the entropy term is wrong, which breaks the tem
 tuning and quietly removes the exploration that makes SAC work.
 :::
 
+::: check
+SAC adds an entropy term to the objective. What does maximising entropy alongside reward buy?
+
+- [x] Exploration that is part of the objective rather than bolted on, and a policy that keeps several good options alive instead of collapsing onto one
+  > It also makes the method notably robust to hyperparameters, which is much of why it became the default for continuous control.
+- [ ] A guarantee that the policy stays deterministic
+  > It does the opposite — the optimal maximum-entropy policy is stochastic by construction.
+- [ ] Lower variance in the critic's targets
+  > The entropy term enters the target, and variance reduction is not what it is for.
+- [ ] Compatibility with discrete action spaces
+  > Discrete SAC exists and is a separate adaptation.
+:::
+
 ## Choosing
 
 | | On/off-policy | Actions | Sample efficiency | Stability |

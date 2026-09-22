@@ -162,6 +162,19 @@ config = {
 Data parallelism has high volume but communicates once per step and overlaps with the
 backward pass (lesson 7.05), which is why it tolerates slower links.
 
+::: check
+Pipeline parallelism splits the model by layers across devices. What is the bubble?
+
+- [x] The idle time at the start and end of each batch while the pipeline fills and drains — with $p$ stages and $m$ microbatches it is about $(p-1)/(m+p-1)$ of the time
+  > More microbatches shrink it, which is why pipeline parallelism wants large batches, and why interleaved schedules exist to shrink it further.
+- [ ] The memory overhead of holding activations for in-flight microbatches
+  > That overhead is real and is a separate cost from the idle time.
+- [ ] The communication between adjacent stages
+  > Stage-to-stage communication is small — one activation tensor — which is what makes pipelining attractive across slow links.
+- [ ] The recomputation needed when a stage's activations are discarded
+  > Recomputation is gradient checkpointing, an orthogonal technique.
+:::
+
 ## Choosing degrees
 
 ::: key

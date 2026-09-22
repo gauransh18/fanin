@@ -171,6 +171,19 @@ def matmul_kernel(a_ptr, b_ptr, c_ptr, M, N, K,
 `tl.dot` compiles to tensor-core instructions (lesson 7.01), which is what makes this
 competitive. The accumulator stays fp32 throughout and is cast only on the store.
 
+::: check
+Triton's `@triton.autotune` tries several block sizes and caches the best. Why is that more than a convenience?
+
+- [x] The optimal block size depends on the shapes, the dtype and the specific GPU, so a hand-picked constant is right for one configuration and wrong for the rest
+  > It is the main reason a Triton kernel can reach 80–95% of hand-tuned CUDA without hand-tuning: the search is done once per shape, at runtime, on the actual hardware.
+- [ ] It compiles the kernel ahead of time, removing JIT overhead
+  > Autotuning adds compile passes; it does not remove them.
+- [ ] It selects between Triton and cuBLAS implementations
+  > It searches Triton configurations only.
+- [ ] It guarantees the kernel is numerically identical across block sizes
+  > Different reduction orders can differ in the last bits, which is a known caveat rather than a guarantee.
+:::
+
 ## Where Triton fits
 
 | | PyTorch | Triton | CUDA |

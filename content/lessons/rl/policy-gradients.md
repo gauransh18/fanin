@@ -150,6 +150,19 @@ Note also that `returns` must be detached. If gradients flow through the return,
 differentiating something with no meaning.
 :::
 
+::: check
+REINFORCE's update is $\nabla_\theta\log\pi_\theta(a_t\mid s_t)\,R(\tau)$. Why does subtracting a state-dependent baseline $b(s_t)$ leave it unbiased?
+
+- [x] $\mathbb{E}_{a\sim\pi}[\nabla_\theta\log\pi_\theta(a\mid s)] = 0$ for any fixed $s$, so anything depending only on $s$ contributes nothing in expectation
+  > The score function has zero mean under its own distribution. That is what makes any state-dependent baseline free, and $V(s)$ the best simple choice — it is the one that cancels most of the variance.
+- [ ] The baseline is small enough that its bias is negligible
+  > It is exactly zero, not merely small, and $V(s)$ is not small.
+- [ ] The baseline is subtracted from both the numerator and denominator
+  > There is no ratio here; it is subtracted from the return.
+- [ ] Only a constant baseline is unbiased; state-dependent ones introduce bias
+  > State-dependent baselines are unbiased too, which is what makes actor–critic possible at all.
+:::
+
 ## Continuous actions
 
 For a continuous action space, output the parameters of a distribution:

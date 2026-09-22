@@ -149,6 +149,19 @@ def pack_examples(examples, max_len, pad_id):
 Without the mask, example 2 attends to example 1 and learns spurious continuations across
 unrelated conversations.
 
+::: check
+SFT on a thousand carefully written examples routinely beats SFT on a hundred thousand scraped ones. Why?
+
+- [x] The model is learning a *format and a style*, not new knowledge — so a consistent, high-quality demonstration set teaches it cleanly while a noisy one teaches it to be inconsistent
+  > The capability came from pretraining. SFT's job is to select and shape it, and every bad example is a demonstration of bad behaviour the model will imitate.
+- [ ] Smaller datasets overfit less
+  > A smaller dataset overfits *more*, all else equal. Quality, not quantity, is what is doing the work.
+- [ ] Large datasets require more epochs, which degrades the base model
+  > Epoch count is a tuning choice and not the mechanism.
+- [ ] Scraped data is usually contaminated with benchmark answers
+  > Contamination is a real evaluation hazard and a separate one.
+:::
+
 ## Where SFT stops
 
 SFT teaches the model to imitate demonstrations. It cannot teach it to be *better* than

@@ -185,6 +185,19 @@ problem that defeats random exploration, and it solved Montezuma's Revenge.
 problem easier rather than the exploration better. Start with easier goals, or shape the
 reward — carefully, per lesson 6.01's warning about degenerate policies.
 
+::: check
+UCB adds a bonus $c\sqrt{\ln t / N(a)}$ to each action's estimated value. What is the principle?
+
+- [x] Optimism in the face of uncertainty — prefer actions you are uncertain about, because either they are good (reward) or bad (information)
+  > Both outcomes are useful, which is what makes the bonus principled rather than a heuristic. UCB achieves logarithmic regret on a bandit, which is optimal.
+- [ ] Prefer actions that have been tried most, since their estimates are reliable
+  > The bonus shrinks as $N(a)$ grows, so it does the opposite.
+- [ ] Add noise proportional to the reward scale, to escape local optima
+  > That describes parameter-space or action-space noise, which is undirected.
+- [ ] Decay exploration over time, as $\epsilon$-greedy schedules do
+  > The $\ln t$ in the numerator means the bonus does not simply decay — it grows slowly for actions that stay untried.
+:::
+
 ## Exploration in language models
 
 RLHF (lesson 5.08) has an exploration problem that is usually not named as one. The policy

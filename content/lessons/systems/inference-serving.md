@@ -157,6 +157,19 @@ throughput and should run at the largest batch that fits.
 decode for every running sequence, spiking their TPOT. Splitting the prefill into chunks and
 interleaving decode steps between them keeps latency smooth at a small throughput cost.
 
+::: check
+Paged attention stores the KV cache in fixed-size blocks rather than one contiguous per-sequence buffer. What does that fix?
+
+- [x] Fragmentation and over-allocation — a contiguous buffer must be sized for the maximum possible length, so most of it sits reserved and unused
+  > Blocks are allocated on demand and shared between sequences with a common prefix, which raises the batch size you can fit and therefore throughput.
+- [ ] The $O(T^2)$ cost of attention over long sequences
+  > Paging is a memory-layout change and does not alter the attention computation.
+- [ ] Numerical drift between cached and recomputed keys
+  > There is no such drift; caching is exact.
+- [ ] The need to recompute the prompt for each new request
+  > That is prefix caching, which paging makes practical but is a distinct idea.
+:::
+
 ## What to measure
 
 ```python

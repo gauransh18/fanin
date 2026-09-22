@@ -159,6 +159,19 @@ early batches are not drawn from twenty highly correlated transitions. And **Dou
 folded in at no cost — selecting with the online network and evaluating with the target
 gives most of Double Q-learning's benefit with no extra network.
 
+::: check
+What is a target network, and why does it help?
+
+- [x] A slowly updated copy of $Q$ used to compute the Bellman target, so the target stops moving every time the network does
+  > Without it, updating $Q(s,a)$ also moves $Q(s',a')$ for similar states under function approximation, creating a feedback loop that amplifies rather than settles.
+- [ ] A second network trained on a different batch, whose predictions are averaged in
+  > Averaging two independently trained networks is ensembling, a different technique.
+- [ ] A frozen network that is never updated at all
+  > It is periodically synchronised — either copied every $N$ steps or blended with a soft update.
+- [ ] A network that predicts the next state rather than its value
+  > That is a dynamics model, which belongs to model-based methods.
+:::
+
 ## The improvements
 
 Rainbow combined six extensions, each worth a measurable amount:

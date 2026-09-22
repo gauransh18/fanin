@@ -158,6 +158,19 @@ def prompt_lookup(tokens, k=10, n=3):
 
 Zero cost, zero training, and on copy-heavy tasks it beats a draft model.
 
+::: check
+The acceptance rule accepts a drafted token with probability $\min(1, p(x)/q(x))$ and otherwise samples from $p'(x) \propto \max(0, p(x) - q(x))$. Why the residual?
+
+- [x] It is what makes the overall distribution exactly $p$ — the residual supplies precisely the mass the acceptance step under-delivered
+  > Sampling from $p$ directly on rejection would over-represent tokens the draft was already likely to propose. The residual is the correction that keeps the method exact rather than approximate.
+- [ ] It biases the correction towards tokens the draft missed, improving speed
+  > It is a correctness requirement, not a speed heuristic.
+- [ ] It prevents the same token being drafted again next round
+  > Nothing prohibits that, and nothing needs to.
+- [ ] It normalises for the difference in the two models' temperatures
+  > Both are sampled at the same temperature; the rule holds regardless.
+:::
+
 ## Tree attention
 
 Rather than one linear draft, propose a **tree** of candidates and verify them all in one

@@ -155,6 +155,19 @@ Using the dtype's minimum instead of `-inf` keeps the softmax finite: a uniform
 distribution over the row, whose output is then discarded anyway.
 :::
 
+::: check
+Why are $Q$ and $K$ separate projections rather than using $X$ directly?
+
+- [x] $XX^\top$ is symmetric, so position $i$ would attend to $j$ exactly as much as $j$ attends to $i$
+  > Relationships in language are not symmetric — a pronoun should attend strongly to its antecedent without the antecedent attending equally back. Separate $W_Q$ and $W_K$ break that symmetry.
+- [ ] Using $X$ directly would make the scores too large for softmax
+  > Magnitude is what the $1/\sqrt{d_k}$ scaling handles, and it would apply either way.
+- [ ] The projections reduce dimension, making attention cheaper
+  > In a single head $W_Q$ and $W_K$ are square; the dimension reduction belongs to the multi-head split.
+- [ ] Without them the gradient with respect to $X$ would be undefined
+  > $XX^\top$ is perfectly differentiable.
+:::
+
 ## The cost
 
 | Operation | FLOPs | Memory |
