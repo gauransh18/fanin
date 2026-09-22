@@ -186,7 +186,7 @@ function landingPage(present, trialTracks, checkCount) {
   const body = `
 <section class="hero">
   <div class="wrap hero-inner">
-    <p class="eyebrow">AI research curriculum · no account, no tier, no paywall</p>
+    <p class="eyebrow">AI research curriculum · fully open</p>
     <h1>Learn it by <em>answering</em>.</h1>
     <p class="hero-lede">
       ${totals.lessons} lessons from linear algebra to distributed training, in the order
