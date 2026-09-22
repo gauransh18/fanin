@@ -835,9 +835,10 @@
     var tally = document.querySelector('[data-tally]');
     if (tally) tally.dataset.full = NEED && n >= NEED ? '1' : '0';
     if (completeBtn && NEED) {
-      var ready = n >= NEED;
-      completeBtn.dataset.locked = ready || isDone(LESSON) ? '0' : '1';
-      completeBtn.setAttribute('aria-disabled', ready || isDone(LESSON) ? 'false' : 'true');
+      // Dimmed, not disabled: pressing it while questions remain scrolls to the
+      // first one, which is a useful thing to be able to do. Marking it
+      // aria-disabled would tell assistive technology otherwise.
+      completeBtn.dataset.locked = n >= NEED || isDone(LESSON) ? '0' : '1';
     }
     return n;
   }

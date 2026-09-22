@@ -633,14 +633,14 @@ async function lessonPage(lesson, raw) {
         <button class="complete-btn" type="button" id="complete-btn" data-lesson="${lessonId(
           lesson
         )}" data-minutes="${lesson.minutes}" data-checks="${checks.length}"
-                aria-pressed="false">
+                aria-pressed="false"${checks.length ? ' aria-describedby="check-tally"' : ''}>
           <span class="box" aria-hidden="true"></span>
           <span class="label">${checks.length ? 'Clear this lesson' : 'Mark complete'}</span>
           <span class="xp-hint"></span>
         </button>
         ${
           checks.length
-            ? `<span class="check-tally" data-tally>
+            ? `<span class="check-tally" id="check-tally" data-tally>
                  <span class="tally-n">0</span> of ${checks.length} answered
                </span>`
             : ''

@@ -15,6 +15,22 @@ hardest material is the part most worth giving away.
 There is no backend, no analytics, no account system, and nothing that could later grow
 a paywall. Lesson progress is kept in your own browser and never leaves it.
 
+## Learning by answering
+
+Every lesson carries questions — 228 of them across the curriculum, placed at the end of
+the section they test. Answering one gives immediate feedback and an explanation for
+**every** option, right or wrong, so a miss teaches rather than just scoring zero. Clearing
+a lesson's questions is what marks it complete; there is no box to tick.
+
+Answers earn XP (20 first try, 8 after a miss, plus a combo bonus every fifth in a row),
+XP earns levels, and each track ends in a **trial** — ten questions drawn from across it,
+no explanations until the end, 80% to pass. A track badge takes both: every lesson cleared
+and the trial passed.
+
+The correct answer ships inside the page, base64-encoded, because there is no server to
+check against. That is enough to stop a stray ctrl-F spoiling a question and is not
+pretending to be more.
+
 ## The curriculum
 
 | # | Track | Lessons |
@@ -53,7 +69,8 @@ content/
 src/
   build.mjs             static site generator
   check.mjs             integrity checks — run in CI
-  markdown.mjs          Markdown subset: callouts, tables, TeX, collapsible solutions
+  markdown.mjs          Markdown subset: callouts, tables, TeX, solutions, checks
+  test-progress.mjs     51 tests over the XP, streak, level, badge and trial engine
   highlight.mjs         build-time syntax highlighting
   templates.mjs         page shell
   assets/               styles.css, app.js, self-hosted fonts and KaTeX
@@ -93,7 +110,24 @@ Show that softmax is invariant to adding a constant to every logit.
 ::: solution
 Subtracting the max is exactly this, used for numerical stability.
 :::
+
+::: check
+Which of these is the reason for the $1/\sqrt{d_k}$ scaling?
+
+- [x] Raw scores have standard deviation $\sqrt{d_k}$, and softmax would saturate
+  > At $p \approx 1$ the softmax Jacobian vanishes and nothing upstream gets a gradient.
+- [ ] It keeps the dot products inside float32's range
+  > Range is not the problem; the shape of the distribution is.
+:::
 ```
+
+A `::: check` block holds a question, its options, which are correct, and — for every
+option — why. Mark more than one option `[x]` and it becomes a select-all-that-apply. For a
+number answer, replace the options with `= 64` (optionally `= 3.14 ± 0.01`) and a single
+`>` explanation. Options are shuffled at build time from a seed of the lesson id and the
+check's index, so the correct answer is not wherever you wrote it but does not move between
+builds. A malformed check — no correct option, an option with no explanation, fewer than
+two options — fails the build with the lesson and check named.
 
 `prereqs` are lessons this one leans on and **must come earlier** in the
 curriculum; `seealso` points **forwards**. `node src/check.mjs` enforces both
