@@ -305,7 +305,67 @@ function landingPage(present) {
   });
 }
 
-function curriculumPage(present) {
+// The path: every lesson in the curriculum as one node, in order, grouped by
+// track and ending in that track's trial. It is the same information the
+// lesson rows below carry, in a shape you can see all of at once.
+function pathMap(present, trialTracks) {
+  return `
+<section class="path" aria-label="The whole curriculum">
+  <div class="path-head">
+    <h2>The path</h2>
+    <p class="path-sub">
+      <span data-overall-progress data-all-lessons="${allLessons.map(lessonId).join(' ')}">0</span>
+      of ${totals.lessons} cleared. Jump in anywhere — nothing is locked.
+    </p>
+  </div>
+  <ol class="path-tracks">
+    ${tracks
+      .map(
+        (track, i) => `<li class="path-track"
+        style="--track:${track.fill};--track-ink:${track.inkLight};--track-ink-dark:${track.inkDark}">
+      <a class="path-label" href="${u(`/learn/${track.id}/`)}">
+        <span class="path-num">${String(i + 1).padStart(2, '0')}</span>
+        <span class="path-name">${esc(track.short)}</span>
+        <span class="path-count" data-track-progress
+              data-track-lessons="${track.lessons.map(([s]) => `${track.id}/${s}`).join(' ')}">
+          <span data-progress-label>0 / ${track.lessons.length}</span>
+        </span>
+      </a>
+      <ol class="path-nodes">
+        ${track.lessons
+          .map(([slug, title], n) => {
+            const id = `${track.id}/${slug}`;
+            const number = `${i + 1}.${String(n + 1).padStart(2, '0')}`;
+            return `<li><a class="node" href="${u(`/learn/${track.id}/${slug}/`)}"
+              data-lesson-id="${id}" data-path-node
+              title="${esc(`${number} ${title}`)}"
+              aria-label="${esc(`${number} ${title}`)}"><span>${String(n + 1).padStart(2, '0')}</span></a></li>`;
+          })
+          .join('')}
+        ${
+          trialTracks.has(track.id)
+            ? `<li><a class="node node-trial" href="${u(`/learn/${track.id}/trial/`)}"
+                 data-trial-node="${track.id}"
+                 title="${esc(`${track.short} trial — pass it to earn ${track.badge}`)}"
+                 aria-label="${esc(`${track.short} trial`)}">
+                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l2.6 5.6 6.1.8-4.5 4.2 1.2 6.1L12 16.8 6.6 19.7l1.2-6.1L3.3 9.4l6.1-.8z"/></svg>
+               </a></li>`
+            : ''
+        }
+      </ol>
+    </li>`
+      )
+      .join('')}
+  </ol>
+  <p class="path-key">
+    <span class="key-item"><i class="node" data-done="1"></i> cleared</span>
+    <span class="key-item"><i class="node" data-current="1"></i> up next</span>
+    <span class="key-item"><i class="node node-trial"></i> track trial</span>
+  </p>
+</section>`;
+}
+
+function curriculumPage(present, trialTracks) {
   setPage('/curriculum/');
   const allIds = allLessons.map(lessonId).join(' ');
 
@@ -345,7 +405,8 @@ function curriculumPage(present) {
       ${totals.lessons} lessons across ${totals.tracks} tracks, roughly ${hours(
     totals.minutes
   )} of reading.
-      Nothing here is locked. Tick lessons off as you go — that state lives in this browser only.
+      Nothing here is locked. Every lesson carries questions you answer on the page, and clearing
+      one is what marks it off — that state lives in this browser only.
     </p>
     <div class="overall" data-overall-progress-wrap>
       <div class="overall-row">
@@ -357,6 +418,9 @@ function curriculumPage(present) {
       <div class="progress"><i data-overall-bar></i></div>
     </div>
   </section>
+
+  ${pathMap(present, trialTracks)}
+
   ${sections}
 </div>`;
 
@@ -780,9 +844,25 @@ function aboutPage() {
       until you hit something you already know.
     </p>
     <p>
-      Every lesson has a <strong>Mark complete</strong> button. The
-      <a href="${u('/curriculum/')}">curriculum index</a> and each track page show what you have
-      ticked off. Clearing your browser data clears it; there is no server copy, by design.
+      Every lesson has questions in it — a few per page, placed at the end of the section they
+      test. Answer one and you are told immediately whether you are right and, for every option,
+      <em>why</em>. A wrong answer explains itself and leaves the question open, so nobody is ever
+      stuck behind one; it simply pays less. Clearing all of a lesson's questions is what marks
+      the lesson off.
+    </p>
+    <p>
+      Answers earn XP, XP earns levels, and finishing a track means clearing its lessons
+      <em>and</em> passing its trial — ten questions drawn from across the track with no
+      explanations until the end. The <a href="${u('/curriculum/')}">curriculum index</a> shows
+      the whole path at a glance and <a href="${u('/progress/')}">your progress page</a> has the
+      rest. All of it is derived from one record in this browser. Clearing your browser data
+      clears it; there is no server copy, by design.
+    </p>
+    <p>
+      The answers ship inside the page, base64-encoded, because there is no server to check them
+      against. That is enough to stop a stray <code>⌘F</code> spoiling a question and it is not
+      pretending to be more — if you want to read them, you can, and the explanations are the
+      part worth reading anyway.
     </p>
 
     <h2>Corrections and contributions</h2>
@@ -887,10 +967,28 @@ function progressPage() {
       <span class="stat-cap">longest streak</span>
     </div>
     <div class="stat-tile">
-      <span class="stat-num" data-badge-count>0 / 16</span>
+      <span class="stat-num" data-accuracy>&mdash;</span>
+      <span class="stat-cap">right first try</span>
+    </div>
+    <div class="stat-tile">
+      <span class="stat-num" data-badge-count>0</span>
       <span class="stat-cap">badges</span>
     </div>
   </div>
+
+  <section class="panel quests-panel">
+    <div class="panel-head">
+      <h2>Today</h2>
+      <p class="panel-sub"><span data-quests-done>0</span> of 3 done</p>
+    </div>
+    <ul class="quests" data-quests>
+      <li class="quest quest-empty">Three goals, picked fresh each day.</li>
+    </ul>
+    <p class="panel-note">
+      Quests reset at midnight in your own timezone. Nothing is timed and
+      nothing is lost by skipping a day &mdash; only the streak.
+    </p>
+  </section>
 
   <section class="panel">
     <div class="panel-head">
@@ -919,7 +1017,7 @@ function progressPage() {
   <section class="panel">
     <div class="panel-head">
       <h2>Badges</h2>
-      <p class="panel-sub"><span data-badge-count>0 / 16</span> earned</p>
+      <p class="panel-sub"><span data-badge-count>0</span> earned</p>
     </div>
     <ul class="badge-grid" id="badge-grid"></ul>
   </section>
@@ -1044,7 +1142,10 @@ async function build() {
   }
 
   await write('index.html', landingPage(present));
-  await write(path.join('curriculum', 'index.html'), curriculumPage(present));
+  const trialTracks = new Set(
+    tracks.filter((t) => (pools.get(t.id) || []).length >= TRIAL_SIZE).map((t) => t.id)
+  );
+  await write(path.join('curriculum', 'index.html'), curriculumPage(present, trialTracks));
   await write(path.join('about', 'index.html'), aboutPage());
   await write(path.join('progress', 'index.html'), progressPage());
   await write('404.html', notFoundPage());

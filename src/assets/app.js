@@ -449,6 +449,16 @@
       el.dataset.done = isDone(el.dataset.lessonId) ? '1' : '0';
     });
 
+    // On the path, mark the first lesson you have not cleared. It is the only
+    // node that says "here", and it is what makes the map readable at a glance.
+    var nodes = [].slice.call(document.querySelectorAll('[data-path-node]'));
+    var next = null;
+    nodes.forEach(function (el) {
+      delete el.dataset.current;
+      if (!next && el.dataset.done !== '1') next = el;
+    });
+    if (next) next.dataset.current = '1';
+
     document.querySelectorAll('[data-track-progress]').forEach(function (el) {
       var ids = (el.dataset.trackLessons || '').split(' ').filter(Boolean);
       var done = ids.filter(isDone).length;
@@ -464,16 +474,21 @@
       el.dataset.complete = done && done === ids.length ? '1' : '0';
     });
 
-    var overall = document.querySelector('[data-overall-progress]');
-    if (overall) {
+    // More than one of these can share a page -- the curriculum has the
+    // headline count and the path's own.
+    document.querySelectorAll('[data-overall-progress]').forEach(function (overall) {
       var all = (overall.dataset.allLessons || '').split(' ').filter(Boolean);
+      if (!all.length) return;
       var n = all.filter(isDone).length;
+      var pct = Math.round((n / all.length) * 100);
       overall.textContent = String(n);
-      var pctEl = document.querySelector('[data-overall-pct]');
-      if (pctEl && all.length) pctEl.textContent = Math.round((n / all.length) * 100) + '%';
-      var bar2 = document.querySelector('[data-overall-bar]');
-      if (bar2 && all.length) bar2.style.width = Math.round((n / all.length) * 100) + '%';
-    }
+      document.querySelectorAll('[data-overall-pct]').forEach(function (el) {
+        el.textContent = pct + '%';
+      });
+      document.querySelectorAll('[data-overall-bar]').forEach(function (el) {
+        el.style.width = pct + '%';
+      });
+    });
 
     var btn = document.getElementById('complete-btn');
     if (btn) {
@@ -497,6 +512,11 @@
 
   // The trial card on a track page carries its own state.
   function paintTrialCards() {
+    document.querySelectorAll('[data-trial-node]').forEach(function (node) {
+      var t = trials[node.dataset.trialNode];
+      node.dataset.passed = t && t.passed ? '1' : '0';
+    });
+
     document.querySelectorAll('[data-trial-card]').forEach(function (card) {
       var t = trials[card.dataset.trialCard];
       var state = card.querySelector('[data-trial-state]');
@@ -568,6 +588,31 @@
     var grid = document.getElementById('activity-grid');
     if (grid) paintHeatmap(grid, s);
 
+    var acc = document.querySelector('[data-accuracy]');
+    if (acc) {
+      acc.textContent = s.checksRight ? s.accuracy + '%' : '\u2014';
+      acc.title = s.checksRight
+        ? s.firstTry + ' of ' + s.checksRight + ' answered right first try'
+        : 'Answer a check to start this one off';
+    }
+
+    var quests = document.querySelector('[data-quests]');
+    if (quests) {
+      quests.innerHTML = s.quests.map(function (q) {
+        var pct = q.goal ? Math.round((q.have / q.goal) * 100) : 0;
+        return '<li class="quest" data-done="' + (q.done ? '1' : '0') + '">' +
+          '<span class="quest-mark" aria-hidden="true"></span>' +
+          '<span class="quest-body">' +
+            '<span class="quest-name">' + escapeHtml(q.name) + '</span>' +
+            '<span class="progress quest-bar"><i style="width:' + pct + '%"></i></span>' +
+          '</span>' +
+          '<span class="quest-count">' + q.have + '/' + q.goal + '</span></li>';
+      }).join('');
+      var done = s.quests.filter(function (q) { return q.done; }).length;
+      var el = document.querySelector('[data-quests-done]');
+      if (el) el.textContent = String(done);
+    }
+
     var badgeGrid = document.getElementById('badge-grid');
     if (badgeGrid) {
       var earned = s.badges.filter(function (b) { return b.earned; }).length;
@@ -580,6 +625,24 @@
       // There is more than one of these on the page.
       document.querySelectorAll('[data-badge-count]').forEach(function (el) {
         el.textContent = earned + ' / ' + s.badges.length;
+      });
+    }
+
+    // Finishing a quest is worth noticing, once, on the visit it happens.
+    var seen = meta.questsSeen && meta.questsSeen.d === today() ? meta.questsSeen.ids : [];
+    var fresh = s.quests.filter(function (q) {
+      return q.done && seen.indexOf(q.id) < 0;
+    });
+    if (fresh.length) {
+      meta.questsSeen = {
+        d: today(),
+        ids: seen.concat(fresh.map(function (q) { return q.id; })),
+      };
+      saveMeta();
+      fresh.forEach(function (q, i) {
+        setTimeout(function () {
+          showToast('Quest done', q.name, 'quest');
+        }, 350 * (i + 1));
       });
     }
   }
