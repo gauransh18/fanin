@@ -150,26 +150,6 @@ function landingPage(present, trialTracks, checkCount) {
   setPage('/');
   const done = allLessons.filter((l) => present.has(lessonId(l))).length;
 
-  const cards = tracks
-    .map((track, i) => {
-      const ids = track.lessons.map(([slug]) => `${track.id}/${slug}`).join(' ');
-      const mins = track.lessons.reduce((s, [, , m]) => s + m, 0);
-      return `<a class="track-card" href="${u(`/learn/${track.id}/`)}" style="--track:${track.fill}"
-         data-track-progress data-track-lessons="${ids}">
-        <span class="track-card-top">${trackDot(track)}<span class="track-card-num">TRACK ${String(
-        i + 1
-      ).padStart(2, '0')}</span></span>
-        <h3>${esc(track.title)}</h3>
-        <p>${esc(track.blurb)}</p>
-        <span class="track-card-foot">
-          <span>${track.lessons.length} lessons</span><span class="sep"></span>
-          <span>${hours(mins)}</span><span class="sep"></span>
-          <span data-progress-label>0 / ${track.lessons.length}</span>
-        </span>
-        <span class="progress"><i></i></span>
-      </a>`;
-    })
-    .join('\n');
 
   const paths = [
     {
@@ -245,21 +225,12 @@ function landingPage(present, trialTracks, checkCount) {
 <section class="section">
   <div class="wrap">
     <div class="section-head">
-      <h2>Seven tracks, built to be read in order</h2>
-      <p>
-        Each track assumes the ones before it and nothing else. You can enter anywhere —
-        every lesson names the handful of ideas it leans on and links straight to them.
-      </p>
-    </div>
-    <div class="track-list">${cards}</div>
-  </div>
-</section>
-
-<section class="section">
-  <div class="wrap">
-    <div class="section-head">
       <h2>Three ways in</h2>
-      <p>The order below is the one the curriculum was designed for, but most people arrive mid-way through it.</p>
+      <p>
+        The path above is the order this was designed for. Most people arrive part of the
+        way through it — every lesson names what it leans on and links straight there, so
+        entering in the middle costs nothing.
+      </p>
     </div>
     <div class="paths">${pathCards}</div>
   </div>
@@ -267,34 +238,13 @@ function landingPage(present, trialTracks, checkCount) {
 
 <section class="section">
   <div class="wrap">
-    <div class="manifesto">
-      <div class="section-head">
-        <h2>Why there is no paid tier</h2>
-      </div>
-      <div class="manifesto-body">
-        <p>
-          The standard model for a curriculum like this is to open the first few lessons,
-          then put attention, RLHF and the systems material behind a subscription. The
-          free part teaches you what a tensor is. The paid part is the reason you came.
-        </p>
-        <p>
-          This one is inverted on purpose. The hardest material — FlashAttention, ZeRO
-          sharding, PPO, speculative decoding — is the part most worth giving away, because
-          it is the part that is genuinely hard to assemble from scattered papers and blog
-          posts. Everything here is written once and open to everyone.
-        </p>
-        <p>
-          The whole site is static files in a public repository. There is no backend, no
-          analytics, no account system, and nothing that could later grow a paywall. Your
-          progress is stored in your own browser and never leaves it. If this project is
-          ever abandoned, the content is ${site.license} — fork it and keep going.
-        </p>
-        <p class="manifesto-cta">
-          <a class="btn btn-ghost" href="${site.repo}" target="_blank" rel="noopener noreferrer">Read the source</a>
-          <a class="btn btn-ghost" href="${u('/about/')}">More about the project</a>
-        </p>
-      </div>
-    </div>
+    <p class="landing-foot">
+      No backend, no analytics, no account system, and nothing that could later grow a
+      paywall. Your progress lives in this browser and never leaves it &mdash;
+      <a href="${u('/about/')}">the reasoning is on the About page</a>, and the whole site
+      is <a href="${site.repo}" target="_blank" rel="noopener noreferrer">a public
+      repository</a> you can fork if this is ever abandoned.
+    </p>
   </div>
 </section>`;
 

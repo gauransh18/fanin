@@ -3704,3 +3704,94 @@ h2:hover > .anchor, h3:hover > .anchor, h4:hover > .anchor, .anchor:focus-visibl
 .trial-tally b { font-family: var(--mono); }
 .trial-verdict { font-family: var(--mono); letter-spacing: .01em; }
 .trial-bar > i { box-shadow: 0 0 10px -2px var(--glow); }
+
+/* --------------------------------------------------- entry points ------- */
+
+.paths { gap: .6rem; }
+.path-card, .paths > .path {
+  --notch: 8px;
+  border-radius: 0;
+  background:
+    linear-gradient(180deg, var(--panel-top), var(--panel-bot)),
+    var(--surface);
+  border: 1px solid var(--line);
+  box-shadow: inset 0 1px 0 var(--edge);
+  clip-path: polygon(
+    var(--notch) 0, 100% 0, 100% calc(100% - var(--notch)),
+    calc(100% - var(--notch)) 100%, 0 100%, 0 var(--notch));
+}
+.paths > .path { margin: 0; padding: 1.15rem 1.2rem; }
+.paths > .path .path-num {
+  font: 600 var(--fs-xs)/1 var(--mono);
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: var(--accent);
+  opacity: 1;
+}
+.paths > .path h3 { letter-spacing: -.01em; }
+.path-cta { font-family: var(--mono); letter-spacing: .02em; }
+
+.landing-foot {
+  max-width: 62ch;
+  margin: 0;
+  padding-top: 1.6rem;
+  border-top: 1px solid var(--line);
+  font: 400 var(--fs-sm)/1.7 var(--sans);
+  color: var(--muted);
+}
+
+/* ------------------------------------------------------------- toasts --- */
+
+.toast {
+  --notch: 6px;
+  border-radius: 0;
+  background:
+    linear-gradient(180deg, var(--panel-top), var(--panel-bot)),
+    var(--surface);
+  border-left: 3px solid var(--accent);
+  box-shadow: inset 0 1px 0 var(--edge), var(--shadow), 0 0 26px -14px var(--glow);
+  clip-path: polygon(
+    0 0, 100% 0, 100% calc(100% - var(--notch)),
+    calc(100% - var(--notch)) 100%, 0 100%);
+}
+.toast[data-kind="xp"] { border-left-color: var(--good); }
+.toast[data-kind="combo"] { border-left-color: var(--warn); }
+.toast[data-kind="badge"], .toast[data-kind="quest"] { border-left-color: var(--accent); }
+.toast-title { font-family: var(--mono); letter-spacing: .04em; }
+.toast-body { font-family: var(--mono); font-size: var(--fs-xs); }
+.toast .dot { display: none; }
+
+/* -------------------------------------------------------- the palette --- */
+
+.palette {
+  --notch: 10px;
+  border-radius: 0;
+  background:
+    linear-gradient(180deg, var(--panel-top), var(--panel-bot)),
+    var(--surface);
+  box-shadow: inset 0 1px 0 var(--edge), var(--shadow);
+  clip-path: polygon(
+    var(--notch) 0, 100% 0, 100% calc(100% - var(--notch)),
+    calc(100% - var(--notch)) 100%, 0 100%, 0 var(--notch));
+}
+.palette-input { font-family: var(--sans); }
+.palette-hit .n, .palette-hit .k { font-family: var(--mono); letter-spacing: .04em; }
+.palette-foot { font-family: var(--mono); font-size: var(--fs-xs); letter-spacing: .06em; }
+
+/* ----------------------------------------------------- change requests -- */
+
+.suggest-dialog {
+  --notch: 10px;
+  border-radius: 0;
+  background:
+    linear-gradient(180deg, var(--panel-top), var(--panel-bot)),
+    var(--surface);
+  box-shadow: inset 0 1px 0 var(--edge), var(--shadow);
+  clip-path: polygon(
+    var(--notch) 0, 100% 0, 100% calc(100% - var(--notch)),
+    calc(100% - var(--notch)) 100%, 0 100%, 0 var(--notch));
+}
+.suggest-kind { border-radius: 0; }
+.k-label { font-family: var(--mono); letter-spacing: .02em; }
+.quote-chip { border-radius: 0; font-family: var(--mono); letter-spacing: .03em; }
+.suggest-btn { font-family: var(--mono); font-size: var(--fs-xs); letter-spacing: .04em; }
