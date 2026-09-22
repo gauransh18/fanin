@@ -60,6 +60,19 @@ big.bfloat16()   # tensor(70144., dtype=torch.bfloat16) -- fine, less precise
 torch.tensor(1.0001).bfloat16()   # tensor(1.0000)
 ```
 
+::: check
+A run in fp16 dies with `nan` at step 3,000. What is the most likely mechanism?
+
+- [x] A value exceeded fp16's maximum of 65,504, became `inf`, and poisoned everything downstream
+  > fp16 gives 5 bits to the exponent against bf16's 8, so it overflows in a range fp32 handles comfortably. An un-scaled gradient or a large attention logit is enough. bf16 trades mantissa bits for exactly this range.
+- [ ] fp16 has too few mantissa bits, so rounding accumulated into `nan`
+  > Rounding error degrades precision; it does not manufacture a `nan`. bf16 has *fewer* mantissa bits than fp16 and does not have this failure.
+- [ ] The learning rate was too high, which always shows up as `nan` in fp16 first
+  > A high learning rate can cause divergence in any precision. The fp16-specific failure is the range limit.
+- [ ] Indices overflowed int64
+  > int64 covers far more than any realistic index. Token IDs are nowhere near its limit.
+:::
+
 ## Devices, and the transfer you did not notice
 
 A tensor lives on exactly one device. Operations require all operands on the same one.
@@ -109,6 +122,21 @@ print((running / n).item())      # one sync, at the end
 **Pinned memory** lets a CPU→GPU copy overlap with compute, because the pages cannot be
 swapped out. `DataLoader(..., pin_memory=True)` combined with `.to(device,
 non_blocking=True)` is nearly free throughput — lesson 2.10 covers the rest.
+
+::: check
+Which of these force a GPU-to-CPU synchronisation, stalling the kernel queue?
+
+- [x] `loss.item()` inside the training loop
+  > Any operation that needs the value on the CPU drains the queue. This is why logging `.item()` every step can cost more than the logging.
+- [x] `print(tensor)` on a CUDA tensor
+  > Printing has to read the values, so it waits for the work producing them.
+- [x] An `if` branching on a tensor's value
+  > A Python branch needs a concrete boolean, which means the value has to come back.
+- [ ] `x = x + 1` on a CUDA tensor
+  > That queues another kernel and returns immediately. Nothing is read back.
+- [ ] `x.shape`
+  > Shape is metadata held on the host side. Reading it touches no device memory.
+:::
 
 ## Creating tensors without surprises
 

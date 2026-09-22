@@ -67,6 +67,19 @@ assert pred.shape == target.shape, f'{pred.shape} vs {target.shape}'
 One line, and the class of bug disappears.
 :::
 
+::: check
+`pred` has shape `(32,)` and `target` has shape `(32, 1)`. What does `((pred - target) ** 2).mean()` compute?
+
+- [x] The mean over a 32×32 matrix of every pairwise difference — a real number that is not the loss you wanted
+  > Aligned from the right, the 1 stretches against 32 and the missing leading dimension stretches too. No exception is raised, the number decreases during training, and the model learns the wrong thing.
+- [ ] The correct mean squared error; the trailing dimension is ignored
+  > A trailing singleton is never ignored. It is exactly what triggers the broadcast.
+- [ ] A shape error, since the tensors have different ranks
+  > Different ranks are legal — the shorter one is padded with leading 1s. That permissiveness is the whole problem.
+- [ ] The mean of 32 values, each squared twice
+  > There is no double squaring. The count is 1,024 values, not 32.
+:::
+
 ## Deliberate broadcasting
 
 Used on purpose, it is elegant. Pairwise squared distances between two sets of points,
@@ -121,6 +134,19 @@ The `[:, None, None, :]` places the length-$T$ mask on the **key** axis and leav
 and query axes to broadcast. Getting those `None`s in the wrong place produces a mask
 that is transposed — the model attends to the future and the loss looks suspiciously
 good. Lesson 4.07 covers how to catch that.
+
+::: check
+Computing pairwise distances as `((A[:, None, :] - B[None, :, :]) ** 2).sum(-1)` is elegant. When does it stop being usable?
+
+- [x] Once the intermediate gets large — 10,000 × 10,000 points in 768 dimensions is 307 GB
+  > Broadcasting costs nothing for the *inputs*, but the elementwise difference is materialised in full before the reduction. `torch.cdist` avoids it by never forming the three-dimensional tensor.
+- [ ] Once either tensor is non-contiguous, since broadcasting requires contiguity
+  > Broadcasting works on any strides; it sets the stretched dimension's stride to 0.
+- [ ] Once the two point sets have different dimensionality
+  > That would be a genuine shape error, and it would be raised immediately rather than being a scaling problem.
+- [ ] It never stops; broadcasting allocates nothing
+  > Nothing is allocated for the inputs. The output is the whole cost, and here the output of the subtraction is three-dimensional.
+:::
 
 ## In-place operations refuse to broadcast the target
 

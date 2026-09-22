@@ -94,6 +94,19 @@ torch.allclose(x.grad, torch.softmax(x, dim=1))     # True
 Note the `None` for `dim` — it is an input to `forward`, so `backward` must account for
 it positionally.
 
+::: check
+A custom `LogSumExp` saves `softmax(x)` in the forward pass. What does that buy the backward pass?
+
+- [x] Backward needs no exponentials at all, because $\partial\,\text{LSE}/\partial x_i$ *is* softmax
+  > The analytic gradient of the whole composition is better conditioned than the product of its pieces' gradients — which is exactly why log-sum-exp and softmax cross-entropy are the canonical cases for a custom backward.
+- [ ] It avoids saving the input, halving memory
+  > The softmax is the same size as the input, so memory is unchanged. Stability is the win here.
+- [ ] It lets the backward run in a lower precision
+  > Nothing about saving softmax changes the dtype. It changes which operations backward has to perform.
+- [ ] It makes the function differentiable, which it otherwise would not be
+  > Log-sum-exp is smooth everywhere. The naive composition is differentiable too — just numerically worse.
+:::
+
 ## Straight-through estimators
 
 Quantization rounds, and rounding has zero gradient almost everywhere. The
@@ -130,6 +143,19 @@ A straight-through estimator is a **biased** gradient estimator. It works when t
 forward and backward functions stay close — rounding is near-identity — and degrades
 badly when they do not. Clipping the pass-through to the quantization range
 (`grad_output * (x.abs() <= 1)`) is a standard improvement.
+:::
+
+::: check
+Your custom `backward` returns tensors of the wrong shape. What happens?
+
+- [x] Nothing catches it automatically — `backward` must return one gradient per forward input, with that input's shape, and getting it wrong is a bug autograd will not find
+  > This is what `torch.autograd.gradcheck` exists for. Write the function, then check it against finite differences before trusting a single training step.
+- [ ] Autograd raises a shape error immediately
+  > It may, if the shape is incompatible with the accumulation target — but broadcasting frequently absorbs the mismatch and produces plausible wrong numbers instead.
+- [ ] The gradient is silently zeroed for safety
+  > There is no such safety net. Whatever you return is what accumulates.
+- [ ] PyTorch falls back to numerical differentiation
+  > It never falls back. `gradcheck` does numerical differentiation, and only when you call it.
 :::
 
 ## Always gradcheck

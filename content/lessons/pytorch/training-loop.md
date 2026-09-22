@@ -109,6 +109,19 @@ def evaluate(model, loader, device):
     return (total / n).item()
 ```
 
+::: check
+Which orderings in the training loop are genuinely load-bearing?
+
+- [x] Clip after backward and before step
+  > Clipping needs the gradients to exist, and has to happen before the optimizer consumes them.
+- [x] `zero_grad` after step rather than before backward
+  > Both work for plain training. Only "after step" survives gradient accumulation, where gradients must live across microbatches.
+- [x] `scheduler.step()` after `optimizer.step()`
+  > The scheduler reads the optimizer's state. Calling it first gives an off-by-one learning rate for the entire run.
+- [ ] Forward before moving the batch to the device
+  > The batch has to be on the device *before* the forward pass, not after — this ordering is not optional, it is impossible.
+:::
+
 ## The lines that are easy to get wrong
 
 ::: key
@@ -128,6 +141,19 @@ step's graph and memory grows without bound — the exact bug from lesson 2.06.
 **`model.train()` restored after eval.** Forgetting this leaves dropout off and BatchNorm
 in inference mode for the rest of training. The loss curve looks *better*, because dropout
 is disabled, which is what makes it hard to notice.
+:::
+
+::: check
+With gradient accumulation over `accum` microbatches, the loop calls `(loss / accum).backward()`. Why the division?
+
+- [x] Gradients accumulate by summing, so dividing makes the total the *mean* over microbatches — matching what one large batch would give
+  > Without it, the effective gradient scale grows with `accum`, and the learning rate you tuned at `accum=1` is suddenly `accum` times too large.
+- [ ] To keep the loss value comparable when logging
+  > The logged number does change, but the reason is the gradient, not the display. You would still divide if you logged nothing.
+- [ ] To prevent overflow in bf16
+  > bf16 has fp32's exponent range and does not overflow here. This division is about scale, not range.
+- [ ] Because `backward` assigns rather than accumulates, so only the last microbatch would count
+  > It is the other way around: `backward` accumulates, which is precisely why the sum needs normalising.
 :::
 
 ## Checkpoint everything the run depends on

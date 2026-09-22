@@ -90,6 +90,19 @@ manual = -F.log_softmax(logits, dim=1).gather(1, labels[:, None]).mean()
 torch.allclose(manual, F.cross_entropy(logits, labels))   # True
 ```
 
+::: check
+`idx` contains duplicate indices. Why does `x[idx] += 1` lose updates?
+
+- [x] Advanced indexing copies, so the increment happens on a temporary and the write-back keeps only the last value per position
+  > Read, increment, write — with duplicates, several increments target the same slot and all but one are discarded. `x.index_add_(0, idx, values)` accumulates properly, which is what sparse gradient accumulation and scatter-based routing need.
+- [ ] Integer overflow in the index tensor
+  > Indices are int64 and nowhere near overflowing. The loss is structural, not numerical.
+- [ ] `+=` is not defined for tensors and silently becomes `=`
+  > `+=` works fine. The issue is that the left side was never a view of `x` to begin with.
+- [ ] PyTorch deduplicates indices automatically for safety
+  > It does not deduplicate, and if it did you would lose the same updates — just deliberately.
+:::
+
 ## scatter: write along one axis
 
 `scatter_(dim, index, src)` is gather's inverse — it writes `src` into the positions
@@ -117,6 +130,19 @@ counts           # tensor([1., 0., 3., 0., 1.])
 unspecified and can differ between runs on GPU. `scatter_add_` is well-defined in value
 but its floating-point summation order is also non-deterministic, so results can differ
 in the last bits. Lesson 2.15 covers how to force determinism when you need it.
+:::
+
+::: check
+`logits` is `(4, 10)` and `labels` is `(4,)`. Why does `logits.gather(1, labels)` fail where `logits.gather(1, labels.unsqueeze(1))` works?
+
+- [x] The index tensor must have the same number of dimensions as the input
+  > `gather` supplies one coordinate per output position, and the output has the index's shape. A 1-D index against a 2-D input has nowhere to put the second axis. This is the most common `gather` stumbling block.
+- [ ] `gather` requires the index to be int64, and `unsqueeze` casts it
+  > `unsqueeze` changes shape, never dtype. `labels` was already int64.
+- [ ] Because dim 1 is being gathered, the index has to be a column vector by convention
+  > It is not a convention about columns — the same rank requirement applies whichever dim you gather along.
+- [ ] It does not fail; both forms give the same result
+  > The first raises. `logits[torch.arange(4), labels]` is the form that works without an unsqueeze, and is clearer here.
 :::
 
 ## Embeddings are index_select

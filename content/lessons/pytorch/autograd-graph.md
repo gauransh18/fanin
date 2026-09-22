@@ -115,6 +115,19 @@ except RuntimeError as e:
                            #  computation has been modified..."
 ```
 
+::: check
+Why must you call `optimizer.zero_grad()` every step?
+
+- [x] `backward()` accumulates into `.grad` rather than assigning, so last step's gradient would be added to this one's
+  > Accumulation is deliberate: it is what makes gradient accumulation over microbatches and weight tying work at all. Clearing is the caller's job precisely because the framework cannot know which you meant.
+- [ ] Because `.grad` holds stale memory that must be freed each step
+  > The buffer is reused, not leaked. Zeroing writes over it rather than releasing it.
+- [ ] Because the graph is freed after backward and `.grad` becomes invalid
+  > The graph being freed is a separate fact, and it does not invalidate `.grad` — leaf gradients survive precisely so the optimizer can read them.
+- [ ] You do not have to; modern optimizers zero automatically
+  > `set_to_none=True` changes *how* they are cleared, but somebody still has to call it.
+:::
+
 ## no_grad versus detach versus inference_mode
 
 | Tool | Graph built? | Memory saved? | Typical use |
@@ -126,6 +139,19 @@ except RuntimeError as e:
 `inference_mode` is stricter than `no_grad`: it also skips version counting, so tensors
 created inside it can never be used in autograd later. It is faster, and it will raise if
 you try to reuse its outputs in a training graph.
+
+::: check
+`y = x * 2` is a vector and `y.backward()` raises. Why, and what fixes it?
+
+- [x] Backward needs a scalar or an explicit seed vector; `y.backward(torch.ones_like(y))` supplies one
+  > This is lesson 1.08's asymmetry in API form. Reverse mode gets all gradients in one pass *because* it starts from a single number; with a vector output you have to say which combination you meant.
+- [ ] `x` is not a leaf tensor, so there is nowhere to accumulate
+  > `x` was created by the user with `requires_grad=True`, which makes it a leaf. That part is fine.
+- [ ] The graph was already freed by a previous backward
+  > That raises a different error, and only after a backward has actually run.
+- [ ] Multiplication by a constant is not recorded
+  > It is recorded — `y.grad_fn` is a `MulBackward0`.
+:::
 
 ## Reading the graph
 

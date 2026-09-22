@@ -87,6 +87,19 @@ If that number is smaller than your architecture implies, you have an unregister
 container. It is a five-second check that catches an expensive class of bug.
 :::
 
+::: check
+A model stores its layers in a plain Python list instead of an `nn.ModuleList`. The forward pass is correct and the loss goes down. What is wrong?
+
+- [x] Those layers appear in no `.parameters()` call, so the optimizer never updates them and `.to('cuda')` never moves them
+  > The remaining trained layers compensate, which is why the loss still falls and nothing raises. The model is quietly much worse than it should be — the worst kind of bug, because every signal says it is fine.
+- [ ] The forward pass will fail once the model is moved to a GPU
+  > It often does fail on device mismatch, but not always, and by then the parameters have already been silently frozen for however long you trained on CPU.
+- [ ] Python lists are not picklable, so checkpointing breaks
+  > Lists pickle fine. The layers are simply absent from `state_dict()`, so the checkpoint is incomplete rather than unwritable.
+- [ ] Gradients accumulate without being zeroed
+  > No gradients are produced for those layers at all, since the optimizer never sees them.
+:::
+
 ## train() and eval() only flip a flag
 
 `model.train()` and `model.eval()` set `self.training` recursively. They change nothing
@@ -140,6 +153,19 @@ where a gradient vanishes without inserting print statements into a library.
 Hooks leak. A forward hook that stores un-detached outputs keeps the entire graph alive,
 and a hook registered inside a loop accumulates. Always keep the handle and call
 `.remove()`, ideally in a `try/finally` or a context manager.
+:::
+
+::: check
+You need a causal mask to travel with the model, move with `.to()`, and not be trained. What do you use?
+
+- [x] `register_buffer('mask', ...)`, with `persistent=False` if you would rather recompute it than store it in every checkpoint
+  > Buffers are exactly this: state that belongs to the model but is not learned — running statistics, RoPE tables, step counters, masks.
+- [ ] `nn.Parameter(..., requires_grad=False)`
+  > This works for the device question but puts the mask in `.parameters()`, where optimizers and weight decay will find it. Freezing by flag is easy to undo by accident.
+- [ ] A plain attribute, `self.mask = torch.tril(...)`
+  > A plain attribute tensor is not moved by `.to()`, so it stays on whichever device it was built on — often surfacing only under distributed training.
+- [ ] A module-level constant outside the class
+  > It would never move with the model, and one shared mask across instances of different sizes is its own bug.
 :::
 
 ## Initialization and parameter groups

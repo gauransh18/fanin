@@ -86,6 +86,19 @@ opt = torch.optim.AdamW(model.parameters(), lr=3e-4,
                         betas=(0.9, 0.95), weight_decay=0.1)
 ```
 
+::: check
+Why is Adam's bias correction not cosmetic?
+
+- [x] Without it the first update is roughly $\sqrt{1/(1-\beta_2)} \approx 32$ times too large, and training diverges in a few steps
+  > Both moments start at zero, so $\hat v_1 = (1-\beta_2)g_1^2 \approx 0.001g_1^2$ until corrected. This is also why warmup and Adam interact — both are managing the same early instability.
+- [ ] It keeps the moments unbiased estimators of the true gradient statistics forever
+  > The correction factor $1-\beta^t$ tends to 1, so it stops doing anything after a few hundred steps. It is an early-training fix.
+- [ ] It prevents division by zero when the gradient is zero
+  > That is what $\epsilon$ is for, and it is a separate term.
+- [ ] It compensates for gradient clipping changing the gradient scale
+  > Clipping is applied before the optimizer and is entirely independent of the moments' initialisation.
+:::
+
 ## What the state costs
 
 | Optimizer | State tensors | Bytes per parameter (fp32) |
@@ -145,6 +158,19 @@ high learning rate, leaving performance on the table; run longer than planned an
 rate has already bottomed out. If you might extend a run, use a **warmup–stable–decay**
 schedule instead: constant in the middle, with a short decay phase appended whenever you
 decide to stop. It also lets you branch multiple final models from one stable checkpoint.
+:::
+
+::: check
+In plain Adam, an L2 penalty added to the gradient gets scaled by $1/\sqrt{\hat v}$. What does AdamW change and why does it matter?
+
+- [x] It applies decay directly to the parameters, so parameters with large gradients no longer receive *less* decay than intended
+  > Passing the penalty through the adaptive scaling inverts the intent: the weights you most wanted to rein in get shrunk least. Decoupling restores the behaviour you thought you were configuring.
+- [ ] It removes weight decay from Adam entirely, relying on the adaptive step instead
+  > The decay is still there — it is applied at a different point in the update.
+- [ ] It changes the decay from L2 to L1, producing sparsity
+  > The penalty stays quadratic; only where it is applied changes.
+- [ ] It applies decay only to biases and normalization parameters
+  > Conventional practice is the reverse — decay the matrices, exempt biases and norms — and that is a parameter-grouping choice, independent of AdamW.
 :::
 
 ## Gradient clipping

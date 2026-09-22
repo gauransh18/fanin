@@ -46,6 +46,19 @@ Transpose does not rearrange anything. It swaps two numbers in the stride tuple.
 why transposing a 10 GB tensor is instantaneous — and why the result is no longer
 contiguous.
 
+::: check
+Transposing a 10 GB tensor returns instantly. What actually happened?
+
+- [x] Two numbers in the stride tuple were swapped; the buffer was untouched
+  > A view shares storage and changes only the lens. That is also why the result is no longer contiguous, and why writing through the view is visible in the original.
+- [ ] The copy was queued asynchronously and will complete later
+  > No copy is scheduled at all. `data_ptr()` on both tensors returns the same address.
+- [ ] PyTorch stored a lazy transpose that is applied when the tensor is read
+  > Strides are not lazy — they are how every read already works. There is no deferred operation to apply.
+- [ ] The tensor was small enough to fit in cache
+  > 10 GB is not in any cache, and size is irrelevant: a transpose is $O(1)$ at any size.
+:::
+
 ## Contiguity, and why it matters
 
 A tensor is **contiguous** when its elements sit in memory in the order a row-major
@@ -75,6 +88,19 @@ y.contiguous().view(-1)   # explicit: copy, then a free view
 Use `view` when you want a guarantee that nothing is copied. Use `reshape` when you do
 not care. A `reshape` in a hot loop that silently copies a large tensor every iteration
 is a classic invisible performance bug — lesson 2.13 shows how to find it.
+:::
+
+::: check
+You want a guarantee that a reshape in a hot loop is not silently copying a large tensor. Which call do you reach for?
+
+- [x] `view`, which fails loudly when the strides do not permit a free reshape
+  > `reshape` returns a view when it can and a copy when it cannot, and never tells you which. A `reshape` copying a large tensor every iteration is a classic invisible performance bug.
+- [ ] `reshape`, which never copies
+  > It copies whenever the strides are incompatible — for instance after a transpose.
+- [ ] `contiguous`, which guarantees no copy
+  > `contiguous` is the opposite: it *is* the copy, made explicit. It is a fine thing to call, just not a way to avoid copying.
+- [ ] `permute`, which is always a view
+  > `permute` is indeed always a view, but it reorders dimensions rather than reshaping them.
 :::
 
 ## The shape-manipulation vocabulary

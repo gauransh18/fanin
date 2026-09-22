@@ -62,6 +62,19 @@ loss.backward()              # outside -- this is correct
 ```
 :::
 
+::: check
+Under autocast, which operations are kept in fp32 rather than run in 16 bits?
+
+- [x] `softmax` and `log_softmax`
+  > They exponentiate, which risks overflow, and they feed losses where precision matters most.
+- [x] `layer_norm` and `sum`
+  > Reductions over many values lose precision to rounding, and a normalization's statistics are exactly such a reduction.
+- [ ] `matmul` and `linear`
+  > These are the ones you *want* in 16 bits: they are dominated by accumulation over many terms, which tensor cores do in fp32 internally anyway. This is where the speed comes from.
+- [ ] `einsum` and `bmm`
+  > Same story — they dispatch to the same tensor-core paths and belong in the 16-bit tier.
+:::
+
 ## Loss scaling, if you must use fp16
 
 Gradients are typically much smaller than activations. In fp16, values below about
@@ -119,6 +132,19 @@ With a learning rate of $10^{-4}$ and weights near 1, *every single update* woul
 if weights were stored in bf16. The fp32 master copy is what makes the arithmetic work,
 and it is why lesson 2.01's memory accounting has both a 2-byte and a 4-byte copy of
 every parameter.
+
+::: check
+Where does `loss.backward()` belong relative to the `autocast` context?
+
+- [x] Outside it — autocast applies to the forward pass only
+  > Each operation's backward automatically uses the dtype chosen for its forward, so wrapping the backward call does nothing useful and can confuse the caching allocator.
+- [ ] Inside it, so gradients are computed in bf16
+  > Gradient dtypes are already decided by the forward policy. Wrapping the backward does not change them.
+- [ ] Inside it, but only when using `GradScaler`
+  > `GradScaler` wraps the *step*, not the context, and is an fp16 concern that bf16 does not need at all.
+- [ ] Either; the context has no effect on backward
+  > It has no *useful* effect, which is not the same as none — the advice is to keep it outside.
+:::
 
 ## Verifying it worked
 

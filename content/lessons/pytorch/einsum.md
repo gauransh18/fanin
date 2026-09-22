@@ -121,6 +121,19 @@ k = torch.randn(2, 16, 64)
 torch.einsum('bqd,de,bke->bqk', q, W, k).shape    # (2, 16, 16)
 ```
 
+::: check
+What is the strongest argument for writing attention scores as `einsum('bhqd,bhkd->bhqk', q, k)` rather than `q @ k.transpose(-2, -1)`?
+
+- [x] A wrong subscript gives a shape error or a visibly wrong output shape; a wrong `transpose` gives the right shape and wrong numbers
+  > The second failure is the dangerous one — it trains, it converges to something, and nothing ever complains. Naming the query and key axes separately also means the line reads six months later instead of being re-derived.
+- [ ] `einsum` is faster, because it fuses the contraction into one kernel
+  > It usually dispatches to the same BLAS call. Speed is not the argument, and `einsum` can be *slower* when it picks a poor contraction order.
+- [ ] `einsum` handles non-contiguous tensors while `matmul` does not
+  > Both handle them; `matmul` will insert a copy if it needs one.
+- [ ] `einsum` avoids materialising the score matrix
+  > It materialises exactly the same $T \times T$ output. Avoiding that is what FlashAttention does, and it is a different technique entirely.
+:::
+
 ## The cost trap
 
 `einsum` does not automatically choose the cheapest contraction order for three or more
@@ -194,6 +207,19 @@ query position.
 Reading them together: the first contracts the feature axis to compare positions; the
 second contracts the position axis to mix features. That is the whole of attention, and
 the subscripts say so.
+:::
+
+::: check
+In `einsum('bhqd,bhkd->bhqk', q, k)`, which index is contracted away?
+
+- [x] `d`, because it appears in the inputs but not the output
+  > That is rule one: an index missing from the output is summed over. `b` and `h` appear in both inputs *and* the output, so they are batched rather than contracted.
+- [ ] `q` and `k`, because they name different axes in the two inputs
+  > Both survive into the output `bhqk`, which is exactly why the result is a square score matrix per head.
+- [ ] `b` and `h`, because they are shared between the inputs
+  > Shared *and* present in the output means batched. Sharing alone does not contract.
+- [ ] Nothing; the output has four indices, as do the inputs
+  > Counting indices does not settle it. `d` is gone from the output and `q`, `k` have taken its place.
 :::
 
 ## What to carry forward

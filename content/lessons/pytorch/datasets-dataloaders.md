@@ -98,6 +98,19 @@ change. For language-model pretraining, the better answer is to concatenate docu
 and chop into fixed blocks, eliminating padding entirely.
 :::
 
+::: check
+You use an `IterableDataset` with `num_workers=8` and do not read `get_worker_info()`. What happens?
+
+- [x] Every worker runs the same `__iter__`, so each epoch contains eight copies of everything
+  > Your effective dataset is eight times smaller than you think, and the model sees each example eight times per "epoch". Map-style datasets avoid this because the sampler owns the ordering; with iterable style, sharding is yours to do.
+- [ ] Workers deadlock waiting for a shared iterator
+  > Each worker gets its own copy of the dataset object, so there is no contention — which is exactly why the duplication is silent.
+- [ ] PyTorch raises an error requiring explicit sharding
+  > It does not. The run proceeds and looks normal.
+- [ ] Only worker 0 produces data and the others idle
+  > All eight produce data. That is the problem.
+:::
+
 ## Diagnosing a data-bound loop
 
 ```python
@@ -190,6 +203,19 @@ more processes.
 **Check the batch size.** At 40% utilisation with a small model, the kernels may simply
 be too small to fill the GPU — the memory-bound regime of lesson 1.03. Doubling the batch
 often doubles throughput at no cost per sample.
+:::
+
+::: check
+`drop_last=True` discards the final partial batch. Beyond keeping shapes uniform, why does it matter under `torch.compile`?
+
+- [x] A differently sized final batch triggers a recompilation, once per epoch
+  > Compiled graphs are specialised on shape. One odd batch per epoch is enough to pay the compile cost repeatedly for no benefit — lesson 2.14 has the details.
+- [ ] `torch.compile` cannot handle variable batch sizes at all
+  > It handles them by recompiling, or by marking a dimension dynamic. The cost, not the capability, is the issue.
+- [ ] The partial batch produces incorrect gradients
+  > Its gradients are perfectly correct; they just represent fewer examples.
+- [ ] Dropping it improves convergence by keeping the batch statistics stable
+  > Batch statistics do wobble on a small final batch, but that is a minor effect next to the recompilation cost.
 :::
 
 ## What to carry forward

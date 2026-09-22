@@ -131,6 +131,19 @@ the batch, activations are the target and gradient checkpointing (lesson 7.08) i
 lever.
 :::
 
+::: check
+Timing `y = model(x)` on CUDA with `time.perf_counter()` and no synchronisation reports about 50 μs. What have you measured?
+
+- [x] The kernel launch, not the kernel — GPU work is queued and the call returns immediately
+  > You have to `torch.cuda.synchronize()` before and after, or better, use CUDA events which timestamp on-device without stalling the host.
+- [ ] The real runtime; PyTorch synchronises automatically at the end of a forward pass
+  > It does not. Synchronisation happens only when something needs a value on the host.
+- [ ] The compile time, which is separate from execution
+  > Nothing is compiled in eager mode, and under `torch.compile` compilation is far slower than 50 μs.
+- [ ] The host-to-device transfer of `x`
+  > `x` was already on the device. And a transfer would be timed just as misleadingly.
+:::
+
 ## Is it compute-bound or memory-bound?
 
 Apply lesson 1.03's arithmetic intensity. Compute achieved FLOP/s and achieved bandwidth,
@@ -160,6 +173,19 @@ roofline(lambda: a + b, n * n,      3 * n * n * 2)    # memory-bound
 
 If you are near peak bandwidth and far from peak FLOP/s, more arithmetic is free — fuse
 more work into the kernel. If you are near peak FLOP/s, only a better algorithm helps.
+
+::: check
+A benchmark skips the warm-up loop. How wrong can the result be?
+
+- [x] 10–100× too slow, because the first call includes cuDNN autotuning, memory-pool growth, and under `torch.compile` the entire compilation
+  > Which sends people optimising whatever the first call happened to be slow at. Warm up, then measure.
+- [ ] A few percent — warm-up is a refinement, not a correctness issue
+  > A compile pass alone can be seconds against milliseconds of steady-state work.
+- [ ] Too *fast*, since the caches are cold and less data is moved
+  > Cold caches make the first call slower, not faster.
+- [ ] It only matters on CPU, where the JIT needs to warm up
+  > It matters far more on GPU, where autotuning and compilation dominate the first call.
+:::
 
 ## The usual culprits
 

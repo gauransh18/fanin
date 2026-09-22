@@ -74,6 +74,19 @@ number of devices**. A run that is bit-identical on 8×A100 will not be on 8×H1
 and an archived environment, not a seed.
 :::
 
+::: check
+Two runs with identical seeds on the same GPU produce visibly different losses by step 10,000. What is the most likely cause?
+
+- [x] Floating-point addition is not associative, and GPU reductions sum in whatever order thread blocks finish
+  > Two identically seeded runs can differ in the last bits of every reduction, and over a long run those differences compound. Atomics, cuDNN algorithm selection and NCCL reduction order add more of the same.
+- [ ] A generator was left unseeded
+  > Possible and worth checking — but even with all four generators seeded, the reduction-order problem remains.
+- [ ] The data loader shuffled differently
+  > That would be an unseeded generator, which `worker_init_fn` handles. The point of this lesson is what survives *after* you have seeded everything.
+- [ ] Non-determinism in the optimizer's update rule
+  > Optimizer updates are elementwise and deterministic given their inputs. The non-determinism is upstream, in how the gradients were reduced.
+:::
+
 ## Reporting results honestly
 
 A single seed is an anecdote. The variance between seeds is often larger than the
@@ -179,6 +192,19 @@ reported best-of and they reported last, that alone can explain a point.
 **The resolution in most real cases** is step 1 plus step 5: the difference is within
 seed noise, amplified by best-checkpoint selection. Report mean ± sd over seeds and the
 discrepancy usually disappears.
+:::
+
+::: check
+What does `torch.use_deterministic_algorithms(True)` do when it meets an operation with no deterministic implementation?
+
+- [x] It raises, naming the operation — which is the point, since it tells you exactly which line is the problem
+  > Silently proceeding would leave you believing the run is deterministic when it is not. Expect to pay 10–30% throughput, so use it for debugging and regression tests rather than production training.
+- [ ] It falls back to a slower CPU implementation
+  > There is no automatic fallback. You get an error and a decision to make.
+- [ ] It runs the operation anyway and logs a warning
+  > A warning would be easy to miss, which is why it is an error.
+- [ ] It seeds the operation so the non-determinism is at least repeatable
+  > Reduction order is not driven by a seedable generator; it is driven by which thread blocks finish first.
 :::
 
 ## What to carry forward

@@ -81,6 +81,19 @@ Common breaks and their fixes:
 | Mutating a Python list of tensors | Build the list, then `torch.stack` |
 | `try/except` around tensor code | Hoist it out of the traced region |
 
+::: check
+Why is `fullgraph=True` the right setting during development?
+
+- [x] A silent graph break turns a compiled model into an eager one with extra overhead, and the only symptom is a speedup that never appeared
+  > Making the break an error is how you find out immediately rather than after a week of wondering. Ship without it if you must; develop with it.
+- [ ] It produces faster code than the default mode
+  > It produces the same code when there are no breaks. What it changes is whether breaks are tolerated.
+- [ ] It enables backward-pass compilation, which is off by default
+  > AOTAutograd compiles the backward either way.
+- [ ] It disables recompilation on shape changes
+  > Recompilation on new shapes is a separate mechanism, controlled by dynamic-shape settings.
+:::
+
 ## Recompilation
 
 Dynamo specialises on tensor **shapes**, dtypes and devices. A new combination triggers a
@@ -152,6 +165,19 @@ def awkward_custom_thing(x):
 
 Compiling the transformer blocks and leaving tokenization, sampling and logging in eager
 mode is a common and effective split.
+
+::: check
+Where does most of `torch.compile`'s speedup come from on elementwise-heavy code?
+
+- [x] Fusing chains like `x.add(b).relu().mul(s)` into one kernel with one round trip to HBM instead of three
+  > It is the arithmetic-intensity argument from lesson 1.03, applied automatically. Each eager operation reads and writes the whole tensor; the fused kernel does it once.
+- [ ] Replacing matmuls with faster algorithms
+  > Matmuls already dispatch to heavily tuned cuBLAS kernels. There is little left on the table there, which is why transformers gain less than elementwise-heavy models.
+- [ ] Running operations in lower precision automatically
+  > Precision is autocast's job and is orthogonal to compilation.
+- [ ] Caching results between calls with identical inputs
+  > Nothing is memoised. What is cached is the compiled graph, not its outputs.
+:::
 
 ## When it does not help
 
