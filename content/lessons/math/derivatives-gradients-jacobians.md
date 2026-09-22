@@ -122,7 +122,7 @@ A width-4096 layer has a $4096\times4096$ Jacobian — 67 MB in fp32, per layer 
 
 - [x] It only ever needs vector–Jacobian products $\mathbf{v}^\top J$, which have a closed form per layer type
   > For a linear layer that is $\mathbf{v}^\top W$; for an elementwise activation it is $\mathbf{v} \odot g'(\mathbf{x})$. Each costs about as much as the forward pass, and nothing $4096^2$ is ever allocated.
-- [ ] It computes the Jacobian in chunks and discards each chunk after use
+- [ ] It computes the Jacobian in chunks, discarding each chunk once used
   > Still quadratic work. The saving is that the product with $\mathbf{v}$ is computable *directly*, skipping the matrix entirely.
 - [ ] It approximates the Jacobian with finite differences
   > Autograd is exact. Finite differences are what you use to *check* it, in gradcheck.

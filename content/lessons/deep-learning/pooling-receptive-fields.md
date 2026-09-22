@@ -74,13 +74,13 @@ layers into about 20.
 ::: check
 Convolution is translation *equivariant* and max pooling is translation *invariant*. What is the difference, and where does each belong?
 
-- [x] Equivariant means the output shifts with the input; invariant means it does not change. Classification wants equivariance in the middle and invariance at the end
-  > Feature extraction needs to know *where* things are; the final classification does not. That is why global average pooling sits just before the classifier head.
+- [x] Equivariant output shifts with the input; invariant output does not change
+  > Classification wants equivariance in the middle and invariance at the end. Feature extraction needs to know *where* things are; the final classification does not. That is why global average pooling sits just before the classifier head.
 - [ ] They are the same property under different names
   > They are opposites in what happens to the output, and conflating them is the usual source of confusion about what pooling buys.
 - [ ] Invariance is stronger and therefore always preferable
   > Discarding position early would destroy the information later layers need to localise anything.
-- [ ] Only pooling has either property; convolution has neither
+- [ ] Only pooling has either property; a convolution has neither of them
   > Translation equivariance is one of convolution's three defining priors.
 :::
 

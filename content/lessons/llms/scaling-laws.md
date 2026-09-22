@@ -57,8 +57,8 @@ than several years of architectural work.
 ::: check
 Chinchilla found that the 2020 Kaplan analysis had over-weighted model size. What was the methodological error?
 
-- [x] The learning-rate schedule was held fixed across model sizes, which handicapped the larger-data runs
-  > Redoing it properly gave $N_{\text{opt}} \propto C^{0.5}$ and $D_{\text{opt}} \propto C^{0.5}$ — scale both equally, roughly 20 tokens per parameter.
+- [x] The learning-rate schedule was held fixed across model sizes
+  > That handicapped the longer, larger-data runs. Redoing it properly gave $N_{\text{opt}} \propto C^{0.5}$ and $D_{\text{opt}} \propto C^{0.5}$ — scale both equally, roughly 20 tokens per parameter.
 - [ ] The compute budget was measured in GPU-hours rather than FLOPs
   > Both analyses worked in FLOPs via the $6ND$ rule.
 - [ ] The models were evaluated on a contaminated test set

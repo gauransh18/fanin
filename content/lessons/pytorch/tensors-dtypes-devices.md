@@ -132,9 +132,9 @@ Which of these force a GPU-to-CPU synchronisation, stalling the kernel queue?
   > Printing has to read the values, so it waits for the work producing them.
 - [x] An `if` branching on a tensor's value
   > A Python branch needs a concrete boolean, which means the value has to come back.
-- [ ] `x = x + 1` on a CUDA tensor
+- [ ] `x = x + 1` on a tensor that is already on the GPU
   > That queues another kernel and returns immediately. Nothing is read back.
-- [ ] `x.shape`
+- [ ] Reading `x.shape` on a CUDA tensor
   > Shape is metadata held on the host side. Reading it touches no device memory.
 :::
 

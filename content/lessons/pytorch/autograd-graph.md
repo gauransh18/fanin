@@ -145,7 +145,7 @@ you try to reuse its outputs in a training graph.
 
 - [x] Backward needs a scalar or an explicit seed vector; `y.backward(torch.ones_like(y))` supplies one
   > This is lesson 1.08's asymmetry in API form. Reverse mode gets all gradients in one pass *because* it starts from a single number; with a vector output you have to say which combination you meant.
-- [ ] `x` is not a leaf tensor, so there is nowhere to accumulate
+- [ ] `x` is not a leaf tensor, so there is nowhere for the gradient to land
   > `x` was created by the user with `requires_grad=True`, which makes it a leaf. That part is fine.
 - [ ] The graph was already freed by a previous backward
   > That raises a different error, and only after a backward has actually run.

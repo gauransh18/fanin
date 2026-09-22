@@ -89,8 +89,8 @@ opt = torch.optim.AdamW(model.parameters(), lr=3e-4,
 ::: check
 Why is Adam's bias correction not cosmetic?
 
-- [x] Without it the first update is roughly $\sqrt{1/(1-\beta_2)} \approx 32$ times too large, and training diverges in a few steps
-  > Both moments start at zero, so $\hat v_1 = (1-\beta_2)g_1^2 \approx 0.001g_1^2$ until corrected. This is also why warmup and Adam interact — both are managing the same early instability.
+- [x] Without it the first update is about 32× too large and training diverges
+  > $\hat v_1 = (1-\beta_2)g_1^2$ until corrected, and $\sqrt{1/(1-\beta_2)} \approx 32$. Both moments start at zero, so $\hat v_1 = (1-\beta_2)g_1^2 \approx 0.001g_1^2$ until corrected. This is also why warmup and Adam interact — both are managing the same early instability.
 - [ ] It keeps the moments unbiased estimators of the true gradient statistics forever
   > The correction factor $1-\beta^t$ tends to 1, so it stops doing anything after a few hundred steps. It is an early-training fix.
 - [ ] It prevents division by zero when the gradient is zero

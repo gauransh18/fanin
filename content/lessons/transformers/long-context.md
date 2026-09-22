@@ -51,7 +51,7 @@ Of attention memory, attention compute and KV cache memory, which is the binding
   > That was the binding limit until FlashAttention stopped materialising the score matrix.
 - [ ] Attention compute, which dominates at every length
   > It dominates only past roughly $6d$ tokens — around 24k for a 4096-dimensional model. Below that, long context is nearly free.
-- [ ] Positional encoding, which cannot represent long distances
+- [ ] Positional encoding, which cannot represent distances that large
   > Extrapolation is a real problem with real fixes (interpolation, NTK scaling, YaRN). It is a quality constraint, not a memory one.
 :::
 
@@ -123,8 +123,8 @@ This turns repeated long-context queries from $O(T)$ prefill into $O(1)$.
 ::: check
 A model reliably uses information at the start and end of a long context and misses it in the middle. What follows for a RAG system?
 
-- [x] Put the most important retrieved passages at the beginning and end rather than trusting uniform retrieval across the window
-  > Two causes contribute: training data treats document beginnings as important, and attention sinks concentrate weight on early positions while recency favours the end.
+- [x] Put the most important retrieved passages at the beginning and the end
+  > Uniform placement across the window trusts a uniformity that is not there. Two causes contribute: training data treats document beginnings as important, and attention sinks concentrate weight on early positions while recency favours the end.
 - [ ] Retrieve fewer passages, since the middle is wasted
   > Fewer passages helps, but ordering is the cheaper and more direct response to this specific effect.
 - [ ] Increase the context window so the middle is proportionally smaller

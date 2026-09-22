@@ -191,7 +191,7 @@ Which test would catch a causal mask that accidentally lets position $i$ see pos
   > It is an exact, weight-independent property — either information flowed backwards or it did not. A loss curve would never tell you, because a leaky mask makes training *easier*.
 - [ ] Asserting the loss decreases over 100 steps
   > A model with a leaky mask trains beautifully. That is what makes the bug dangerous.
-- [ ] Comparing the output shape against the expected shape
+- [ ] Comparing the model's output shape against the shape you expected
   > Shape is unaffected by which positions attend to which.
 - [ ] Checking that all logits are finite
   > Finiteness would catch an all-$-\infty$ row, which is the opposite failure.

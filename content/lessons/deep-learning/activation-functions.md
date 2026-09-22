@@ -147,9 +147,9 @@ tuning the activation; spend it on data.
 ::: check
 A layer reports 94% zero activations and is not learning. What has happened, and how did it get there?
 
-- [x] Dying ReLU — those units are negative for every input, so their gradient is zero for every input, and they cannot recover
-  > Large learning rates and large negative biases cause it. A network can lose 40% of its units this way with no error raised; you simply get a smaller network than you paid for. Log the zero fraction per layer to catch it.
-- [ ] Normal ReLU sparsity, which is typically around half
+- [x] Dying ReLU: those units are negative for every input and cannot recover
+  > Their gradient is zero for every input, so nothing can revive them. Large learning rates and large negative biases cause it. A network can lose 40% of its units this way with no error raised; you simply get a smaller network than you paid for. Log the zero fraction per layer to catch it.
+- [ ] Ordinary ReLU sparsity, which sits around half for a healthy layer
   > Around half is normal and useful. Above about 90% is the signal that something is dead rather than sparse.
 - [ ] The activations underflowed in fp16
   > Underflow would produce zeros too, but ReLU clamps at exactly zero by design and the pattern here is per-unit and permanent.

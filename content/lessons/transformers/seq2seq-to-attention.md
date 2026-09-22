@@ -176,9 +176,9 @@ just by changing what "position" means.
 ::: check
 Every attention mechanism since 2014 is the same three steps. What are they, in order?
 
-- [x] Score each position, normalise the scores with softmax, then average the values by those weights
+- [x] Score every position, softmax the scores, average the values by them
   > Bahdanau scored with a small MLP and scaled dot-product attention scores with a dot product, but the shape of the computation has not changed since.
-- [ ] Project, normalise, then concatenate across heads
+- [ ] Project the inputs, normalise them, then concatenate across heads
   > That describes the multi-head wrapper around attention, not attention itself.
 - [ ] Mask, score, then sample
   > Masking is an optional modification to step one, and sampling happens at the output of the whole model, not inside attention.

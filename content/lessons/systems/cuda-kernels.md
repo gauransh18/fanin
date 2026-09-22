@@ -150,9 +150,9 @@ A CUDA kernel launched with $\lceil n/256 \rceil$ blocks of 256 threads includes
 
 - [x] The last block has threads past the end of the array and writes out of bounds
   > 256 rarely divides $n$, so the guard is not optional. Out-of-bounds writes corrupt whatever is next in memory and surface far from the kernel that caused them.
-- [ ] Nothing; CUDA bounds-checks device memory
+- [ ] Nothing: CUDA bounds-checks every device memory access
   > It does not. That is what `compute-sanitizer` exists to find.
-- [ ] The extra threads idle harmlessly
+- [ ] The threads beyond the array idle harmlessly without writing
   > They execute the same code as everyone else, including the store.
 - [ ] The kernel fails to launch
   > It launches happily and corrupts memory.

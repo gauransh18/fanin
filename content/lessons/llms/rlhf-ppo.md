@@ -101,7 +101,7 @@ The RLHF objective penalises KL divergence from the SFT model. Why can you not s
   > The policy gradient is perfectly well defined without a KL term. What is undefined is whether the reward still means anything.
 - [ ] It is required for the value model to converge
   > The value model estimates returns under whatever policy exists. It does not need the KL term.
-- [ ] It prevents the policy from diverging numerically
+- [ ] Without it the policy's parameters diverge numerically within a few steps
   > Numerical divergence is not the failure mode. Collapse onto a single high-scoring response pattern is.
 :::
 
@@ -125,8 +125,8 @@ noisy.
 ::: check
 How many model copies does PPO-based RLHF keep in memory, and which of them train?
 
-- [x] Four — policy, frozen reference, frozen reward, and a value model — of which the policy and the value model train
-  > Four copies of a 7B model is roughly 56 GB in bf16 before optimizer state. That memory, plus keeping four models synchronised across a cluster, is the practical reason RLHF is hard and why DPO's removal of two of them mattered.
+- [x] Four: policy, reference, reward and value — of which two train
+  > The reference and the reward model are frozen; the policy and the value model learn. Four copies of a 7B model is roughly 56 GB in bf16 before optimizer state. That memory, plus keeping four models synchronised across a cluster, is the practical reason RLHF is hard and why DPO's removal of two of them mattered.
 - [ ] Two — policy and reward — both training
   > The reference is needed for the KL term and the value model for the advantage. Neither the reference nor the reward trains.
 - [ ] Three — policy, reference and reward — with only the policy training

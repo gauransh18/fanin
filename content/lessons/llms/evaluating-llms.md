@@ -133,7 +133,7 @@ Why is benchmark contamination structurally hard to avoid?
   > A model that memorised the test set scores well and has learned nothing. Decontamination at the data stage and held-out private sets are the responses; detecting it after the fact is hard.
 - [ ] Because benchmark licences forbid filtering them out
   > Licences are not the obstacle; finding every paraphrase and mirror is.
-- [ ] Because models memorise everything they see at least once
+- [ ] Because a model memorises everything it is shown at least once in training
   > They memorise some things and not others, which is what makes detection statistical rather than certain.
 - [ ] Because test sets are too small to remove from a corpus
   > Size makes them easy to *store* and hard to *find*, since they appear in many reformatted copies.

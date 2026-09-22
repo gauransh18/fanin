@@ -104,7 +104,7 @@ With $d = 512$ and $h = 8$, each head works in 64 dimensions rather than 512. Wh
   > That would be the cost of eight *full-width* heads, which is not what multi-head attention does.
 - [ ] It is eight times lower, since each head is narrower
   > Each head is narrower and there are eight of them. The product is the same.
-- [ ] It depends on sequence length, which decides whether heads help
+- [ ] It depends on the sequence length, which is what decides whether heads help
   > Sequence length scales the whole attention cost equally regardless of how it is partitioned.
 :::
 

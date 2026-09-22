@@ -120,7 +120,7 @@ What does the discount factor $\gamma$ do, beyond expressing a preference for so
   > It also sets an effective horizon of roughly $1/(1-\gamma)$ steps — $\gamma = 0.99$ means about 100 steps matter. Treating it as a mere preference misses that it is also a mathematical necessity and a horizon knob.
 - [ ] It normalises rewards to $[0,1]$
   > It does not rescale individual rewards at all.
-- [ ] It compensates for the Markov assumption being approximate
+- [ ] It compensates for the Markov assumption only holding approximately
   > Discounting and state representation are independent concerns.
 - [ ] It guarantees the optimal policy is deterministic
   > A finite MDP has a deterministic optimal policy for any valid $\gamma$.

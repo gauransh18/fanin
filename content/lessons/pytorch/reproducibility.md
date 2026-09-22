@@ -77,13 +77,13 @@ and an archived environment, not a seed.
 ::: check
 Two runs with identical seeds on the same GPU produce visibly different losses by step 10,000. What is the most likely cause?
 
-- [x] Floating-point addition is not associative, and GPU reductions sum in whatever order thread blocks finish
-  > Two identically seeded runs can differ in the last bits of every reduction, and over a long run those differences compound. Atomics, cuDNN algorithm selection and NCCL reduction order add more of the same.
+- [x] GPU reductions sum in whatever order thread blocks happen to finish
+  > Floating-point addition is not associative, so the order changes the result. Two identically seeded runs can differ in the last bits of every reduction, and over a long run those differences compound. Atomics, cuDNN algorithm selection and NCCL reduction order add more of the same.
 - [ ] A generator was left unseeded
   > Possible and worth checking — but even with all four generators seeded, the reduction-order problem remains.
 - [ ] The data loader shuffled differently
   > That would be an unseeded generator, which `worker_init_fn` handles. The point of this lesson is what survives *after* you have seeded everything.
-- [ ] Non-determinism in the optimizer's update rule
+- [ ] Non-determinism inside the optimizer's own update rule
   > Optimizer updates are elementwise and deterministic given their inputs. The non-determinism is upstream, in how the gradients were reduced.
 :::
 

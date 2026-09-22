@@ -163,8 +163,8 @@ the parameter count matched.
 ::: check
 Why does the block apply the MLP with an expansion of $4d$ rather than keeping width $d$ throughout?
 
-- [x] A narrow-to-wide-to-narrow sandwich gives the position-wise transform somewhere to compute before projecting back into the residual stream
-  > Lesson 1.02's shape table read forwards: a $4d\times d$ lift, a nonlinearity, then a $d\times4d$ squash. Contracting instead would impose a rank ceiling on the block.
+- [x] The wide middle gives the position-wise transform somewhere to compute
+  > It then projects back into the residual stream at width $d$. Lesson 1.02's shape table read forwards: a $4d\times d$ lift, a nonlinearity, then a $d\times4d$ squash. Contracting instead would impose a rank ceiling on the block.
 - [ ] It matches the number of attention heads
   > Head count and MLP expansion are independent; models routinely have 32 heads and an expansion of 4.
 - [ ] Wider layers are cheaper per FLOP on tensor cores

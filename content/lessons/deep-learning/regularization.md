@@ -150,7 +150,7 @@ Why exempt LayerNorm gains and biases from weight decay?
   > They are few, and the effect on them is large precisely because there is nothing else setting their scale.
 - [ ] Decay is undefined for one-dimensional tensors
   > It is perfectly well defined. The reason is what it does, not whether it can.
-- [ ] They are not trained, so decay would have no effect
+- [ ] They are not trained parameters, so decay would have nothing to act on
   > They are trained. That is what makes decaying them harmful.
 :::
 

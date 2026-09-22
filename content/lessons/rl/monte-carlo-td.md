@@ -91,8 +91,8 @@ TD usually wins in practice: lower variance dominates, and the bias shrinks as $
 ::: check
 Monte Carlo value estimation is unbiased. What does it cost?
 
-- [x] High variance, since the return depends on every random choice for the rest of the episode — and it needs episodes to terminate at all
-  > TD(0) trades the other way: it bootstraps from the current estimate, so it is biased and low variance, and works on continuing tasks. Everything between is the $n$-step spectrum.
+- [x] High variance, and it needs episodes to terminate at all
+  > The return depends on every random choice for the rest of the episode. TD(0) trades the other way: it bootstraps from the current estimate, so it is biased and low variance, and works on continuing tasks. Everything between is the $n$-step spectrum.
 - [ ] Bias that grows with the discount factor
   > It has no bias. That is the one thing it guarantees.
 - [ ] It cannot be used with function approximation

@@ -169,7 +169,7 @@ The config sets `vocab_size = 50_304` where the tokenizer produces 50,257 tokens
   > The extra rows are never predicted in practice and cost a negligible amount of memory. It is a free few percent on the largest matmul in the model.
 - [ ] The extra tokens are reserved for special control symbols
   > Special tokens are already inside 50,257. These rows are pure padding.
-- [ ] A power-of-two vocabulary is required by `F.cross_entropy`
+- [ ] `F.cross_entropy` requires a vocabulary that is a power of two
   > 50,304 is not a power of two, and cross-entropy has no such requirement.
 - [ ] It prevents index-out-of-range errors during sampling
   > Sampling is bounded by the logits tensor either way.
@@ -283,7 +283,7 @@ The code splits heads with `view(B, T, n_head, d_head).transpose(1, 2)` and the 
   > The last dimension is the one holding the concatenated heads, so it must be split before anything moves. Reordering first mixes the position axis into the head split — a shape-correct, silently wrong result, which is lesson 2.02's failure mode exactly.
 - [ ] It raises a contiguity error
   > It may, which would at least be loud. The dangerous case is the one where it does not.
-- [ ] Gradients stop flowing through the attention block
+- [ ] Gradients stop flowing backwards through the attention block entirely
   > Both `view` and `transpose` are differentiable and keep the graph intact.
 - [ ] The KV cache would store the wrong number of heads
   > The head count is the same either way; it is the assignment of values to heads that breaks.

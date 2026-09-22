@@ -135,8 +135,8 @@ decontamination has almost certainly not done it.
 ::: check
 Raising the confidence threshold on language identification improves corpus quality. What does it also do?
 
-- [x] Disproportionately removes code-switched and dialectal text, which is a real fairness cost rather than a neutral filter
-  > Every filter encodes a judgement about what counts as good text. Naming that explicitly is the difference between a considered pipeline and an accidental one.
+- [x] Disproportionately removes code-switched and dialectal text
+  > That is a real fairness cost rather than a neutral filter. Every filter encodes a judgement about what counts as good text. Naming that explicitly is the difference between a considered pipeline and an accidental one.
 - [ ] Nothing else; language ID is orthogonal to content
   > It is not orthogonal to *whose* content survives.
 - [ ] Removes code, which is often misclassified

@@ -59,7 +59,7 @@ A detector is 99% accurate for an event that occurs once in 10,000 cases. It fir
   > 99% accurate is $p(+\mid\text{event})$. You want $p(\text{event}\mid+)$, and Bayes' rule says those differ enormously when the prior is tiny.
 - [ ] About 50%, since the evidence is one bit
   > There is no general rule that one bit of evidence lands you at even odds. The prior decides where you start.
-- [ ] Impossible to say without the false-negative rate
+- [ ] Impossible to say without knowing the false-negative rate as well
   > "99% accurate" here fixes both error rates, which is enough. A separate false-negative rate would refine the number, not change the conclusion.
 :::
 
@@ -107,7 +107,7 @@ A transformer attends over its full context rather than the last $k$ tokens. In 
   > That refusal is most of why transformers displaced RNNs, and it is also the trade sliding-window and sparse attention make back: they reintroduce a Markov-like assumption to buy compute. Asking "which conditional independences am I assuming?" is the right way to read a long-context method.
 - [ ] Assuming all tokens are marginally independent
   > Marginal independence would mean context tells you nothing, which is the opposite of what attention is for.
-- [ ] Assuming tokens are conditionally independent given the position
+- [ ] Assuming every token is conditionally independent given its position
   > Nothing in attention conditions on position alone; position is added to content, not substituted for it.
 - [ ] Making no probabilistic assumption at all
   > Rejecting an independence assumption is itself a modelling choice, and a costly one — it is what makes attention quadratic.

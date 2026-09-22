@@ -113,7 +113,7 @@ sharpness in each.
 ::: check
 A language model's loss stops falling while validation loss is still flat. What is the most informative next number to look at?
 
-- [x] Perplexity, $e^{\mathcal{L}}$, which says how many equally likely tokens the model is effectively choosing between
+- [x] Perplexity, $e^{\mathcal{L}}$ — the effective number of choices per token
   > Loss in nats is hard to feel. A loss of 2.3 is a choice among about ten plausible next tokens; 1.6 is about five. That framing is what makes a training curve readable rather than a line going down.
 - [ ] The gradient norm, which decides whether training has converged
   > A useful diagnostic that says nothing about whether the current loss is good.

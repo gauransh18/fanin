@@ -138,11 +138,11 @@ lesson 5.07.
 ::: check
 Why should you use `BCEWithLogitsLoss` rather than a sigmoid followed by `BCELoss`?
 
-- [x] The fused version computes the loss in a numerically stable form; the unfused one overflows past roughly ±80 logits and returns `inf`
-  > The fusion uses the log-sum-exp trick internally — the same stability argument as the custom autograd function in lesson 2.07.
+- [x] The unfused version overflows past roughly ±80 logits and returns `inf`
+  > The fused one computes the loss in a numerically stable form. The fusion uses the log-sum-exp trick internally — the same stability argument as the custom autograd function in lesson 2.07.
 - [ ] It is faster, saving one kernel launch
   > It does save a launch, which is not why the advice exists.
-- [ ] `BCELoss` is deprecated and will be removed
+- [ ] `BCELoss` is deprecated and scheduled for removal from PyTorch
   > It is still there, and correct for inputs already in $(0,1)$ from some other source.
 - [ ] It applies class weights automatically
   > Both take a `weight` argument, and neither infers one.

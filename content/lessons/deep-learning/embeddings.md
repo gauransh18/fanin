@@ -131,7 +131,7 @@ A one-hot vector times a weight matrix gives the same numbers as an embedding lo
   > One-hot vectors are all equidistant and encode no relationships. Every pair of one-hot vectors has dot product zero. The efficiency arguments are real and secondary; the geometry is the point.
 - [ ] It avoids a $V \times d$ matrix product per token
   > True, and the least important of the three reasons given.
-- [ ] It avoids materialising a 50,000-element mostly-zero vector
+- [ ] It avoids materialising a mostly-zero vector of 50,000 elements per token
   > Also true, also secondary to what the dense representation buys.
 - [ ] The one-hot form cannot be backpropagated through
   > It can — it is an ordinary matrix product.

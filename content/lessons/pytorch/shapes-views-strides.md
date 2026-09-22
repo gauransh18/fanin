@@ -97,9 +97,9 @@ You want a guarantee that a reshape in a hot loop is not silently copying a larg
   > `reshape` returns a view when it can and a copy when it cannot, and never tells you which. A `reshape` copying a large tensor every iteration is a classic invisible performance bug.
 - [ ] `reshape`, which never copies
   > It copies whenever the strides are incompatible — for instance after a transpose.
-- [ ] `contiguous`, which guarantees no copy
+- [ ] `contiguous`, which guarantees the tensor is never copied
   > `contiguous` is the opposite: it *is* the copy, made explicit. It is a fine thing to call, just not a way to avoid copying.
-- [ ] `permute`, which is always a view
+- [ ] `permute`, which is always a view and never copies
   > `permute` is indeed always a view, but it reorders dimensions rather than reshaping them.
 :::
 

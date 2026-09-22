@@ -158,8 +158,8 @@ and a hook registered inside a loop accumulates. Always keep the handle and call
 ::: check
 You need a causal mask to travel with the model, move with `.to()`, and not be trained. What do you use?
 
-- [x] `register_buffer('mask', ...)`, with `persistent=False` if you would rather recompute it than store it in every checkpoint
-  > Buffers are exactly this: state that belongs to the model but is not learned — running statistics, RoPE tables, step counters, masks.
+- [x] `register_buffer('mask', ...)`
+  > Add `persistent=False` if you would rather recompute it than store it in every checkpoint. Buffers are exactly this: state that belongs to the model but is not learned — running statistics, RoPE tables, step counters, masks.
 - [ ] `nn.Parameter(..., requires_grad=False)`
   > This works for the device question but puts the mask in `.parameters()`, where optimizers and weight decay will find it. Freezing by flag is easy to undo by accident.
 - [ ] A plain attribute, `self.mask = torch.tril(...)`

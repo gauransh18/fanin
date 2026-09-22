@@ -182,7 +182,7 @@ Eckart–Young says the truncated SVD $A_k$ is the best rank-$k$ approximation t
   > It is one of the more expensive ones — $O(mn\min(m,n))$. Randomised methods are faster and worse.
 - [ ] It preserves the largest entries of $A$
   > Individual entries are not preserved at all. What is preserved is the leading directions of the map.
-- [ ] It is optimal only when the singular values decay quickly
+- [ ] It is optimal only when the singular values decay quickly enough
   > Optimality holds regardless. Fast decay makes the optimum *good*; slow decay means even the best rank-$k$ approximation is poor.
 :::
 

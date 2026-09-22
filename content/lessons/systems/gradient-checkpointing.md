@@ -121,8 +121,8 @@ Selective checkpointing typically recovers most of full checkpointing's memory s
 ::: check
 Gradient checkpointing adds about 33% more FLOPs. Why is it often *faster* end to end?
 
-- [x] The memory freed allows a 2–4× larger batch, which raises arithmetic intensity on everything else and improves utilisation
-  > Measure throughput in tokens per second, not FLOPs. This is lesson 7.02's roofline argument: below the ridge, extra arithmetic is nearly free and what you actually buy is better hardware use.
+- [x] The memory freed allows a 2–4× larger batch
+  > That raises arithmetic intensity on everything else and improves utilisation. Measure throughput in tokens per second, not FLOPs. This is lesson 7.02's roofline argument: below the ridge, extra arithmetic is nearly free and what you actually buy is better hardware use.
 - [ ] Recomputation runs in lower precision than the original forward
   > It runs in the same precision; the result has to match.
 - [ ] The recomputed activations are cached and reused across steps

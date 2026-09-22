@@ -61,7 +61,7 @@ A loss surface in $10^9$ dimensions has a point where the gradient is exactly ze
   > A decreasing loss says the path was downhill, not that the destination is a bowl in every one of a billion directions.
 - [ ] A local maximum, if the learning rate overshot
   > A maximum needs *all* eigenvalues negative, which is exactly as improbable as all positive.
-- [ ] A global minimum, because deep networks are overparameterised
+- [ ] A global minimum, since overparameterised networks reach them easily
   > Overparameterisation makes many low-loss regions reachable, but it says nothing about the curvature at a given critical point.
 :::
 
@@ -196,7 +196,7 @@ claim can be made precise.
 ::: check
 Adam approximates $H^{-1}$ with $\text{diag}(1/\sqrt{\mathbb{E}[g^2]})$. Compared with the exact Newton step, what does that buy and what does it give up?
 
-- [x] It costs $O(N)$ memory rather than $O(N^2)$, at the price of ignoring every off-diagonal coupling between parameters
+- [x] $O(N)$ memory instead of $O(N^2)$, ignoring every off-diagonal coupling
   > Newton's $H$ has $N^2$ entries — $4.9\times10^{19}$ at 7B parameters — and inverting it is $O(N^3)$. A diagonal proxy is the most curvature you can afford per parameter.
 - [ ] It converges quadratically, like Newton, but with less memory
   > Quadratic convergence comes from the *exact* inverse Hessian. A diagonal approximation does not deliver it.

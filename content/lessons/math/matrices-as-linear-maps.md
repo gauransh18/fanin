@@ -196,11 +196,11 @@ In backpropagation through $\mathbf{y} = W\mathbf{x}$, the incoming gradient is 
 
 - [x] $(A\mathbf{x}) \cdot \mathbf{y} = \mathbf{x} \cdot (A^\top\mathbf{y})$
   > The transpose is the map that moves a matrix across a dot product, and a gradient is exactly a dot product waiting to happen. Lesson 1.08 works the derivation through.
-- [ ] $(A^\top)^\top = A$
+- [ ] $(A^\top)^\top = A$, so transposing twice returns the original
   > True, and useless here. It says nothing about how $A$ interacts with a dot product.
-- [ ] $(AB)^\top = B^\top A^\top$
+- [ ] $(AB)^\top = B^\top A^\top$, the rule for transposing a product
   > This one tells you how transposes compose through a product, which matters for multi-layer chains, but it is not what puts $W^\top$ in the backward pass to begin with.
-- [ ] $A^\top A = I$ for any $A$
+- [ ] $A^\top A = I$, so the transpose is the inverse
   > Only true for an orthogonal matrix, which a weight matrix is generally not.
 :::
 

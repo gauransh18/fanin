@@ -52,8 +52,8 @@ all of lesson 4.10 and the serving work in track 7.
 ::: check
 Why must the causal mask include the diagonal?
 
-- [x] Without it position 0 would have nothing to attend to, its softmax row would be all $-\infty$, and the output would be `nan`
-  > A position sees itself. Excluding the diagonal is a real and subtle bug — and one that surfaces as a `nan` rather than as a wrong-looking mask.
+- [x] Without it position 0 attends to nothing, and its softmax row gives `nan`
+  > Every entry in that row would be $-\infty$, so the normalisation divides by zero. A position sees itself. Excluding the diagonal is a real and subtle bug — and one that surfaces as a `nan` rather than as a wrong-looking mask.
 - [ ] Including the diagonal is optional; it only changes how much a token weights itself
   > For every position but the first it is a modelling difference. For position 0 it is the difference between a distribution and a division by zero.
 - [ ] It is needed so the mask is symmetric

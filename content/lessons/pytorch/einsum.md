@@ -124,8 +124,8 @@ torch.einsum('bqd,de,bke->bqk', q, W, k).shape    # (2, 16, 16)
 ::: check
 What is the strongest argument for writing attention scores as `einsum('bhqd,bhkd->bhqk', q, k)` rather than `q @ k.transpose(-2, -1)`?
 
-- [x] A wrong subscript gives a shape error or a visibly wrong output shape; a wrong `transpose` gives the right shape and wrong numbers
-  > The second failure is the dangerous one — it trains, it converges to something, and nothing ever complains. Naming the query and key axes separately also means the line reads six months later instead of being re-derived.
+- [x] A wrong subscript fails loudly; a wrong `transpose` fails silently
+  > One gives a shape error or a visibly wrong output shape, the other the right shape and wrong numbers. The second failure is the dangerous one — it trains, it converges to something, and nothing ever complains. Naming the query and key axes separately also means the line reads six months later instead of being re-derived.
 - [ ] `einsum` is faster, because it fuses the contraction into one kernel
   > It usually dispatches to the same BLAS call. Speed is not the argument, and `einsum` can be *slower* when it picks a poor contraction order.
 - [ ] `einsum` handles non-contiguous tensors while `matmul` does not

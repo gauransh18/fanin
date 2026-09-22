@@ -164,7 +164,7 @@ An agent produces the right tool calls in the right order but the wrong final an
   > The trajectory was correct, so the failure is in how the results were used. Categorising failures this way is what makes them fixable: wrong tool points at descriptions, right tool with wrong arguments points at parameter documentation or context, and a repeated identical call points at a loop the agent cannot escape.
 - [ ] The tool descriptions are vague
   > Vague descriptions show up as the *wrong tool* being called, which is not what happened here.
-- [ ] The sandbox returned stale results
+- [ ] The sandbox returned stale or cached results
   > Possible, and it would be a tool problem, which the correct trajectory has already largely ruled out.
 - [ ] The horizon is too long
   > Long horizons compound errors, and the trajectory here was right the whole way.

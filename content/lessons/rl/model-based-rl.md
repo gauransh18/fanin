@@ -114,11 +114,11 @@ them to an augmented buffer, and train SAC on the mixture.
 ::: check
 What limits how far a learned dynamics model can be rolled out?
 
-- [x] Compounding error — each step's prediction feeds the next, so small errors multiply and the imagined trajectory leaves the distribution the model was fitted on
-  > Short rollouts from real states, model ensembles, and uncertainty-aware termination are the standard responses. The horizon, not the one-step accuracy, is what decides whether the model helps.
+- [x] Compounding error: each step's prediction feeds the next
+  > Small errors multiply, and the imagined trajectory leaves the distribution the model was fitted on. Short rollouts from real states, model ensembles, and uncertainty-aware termination are the standard responses. The horizon, not the one-step accuracy, is what decides whether the model helps.
 - [ ] Memory, since each imagined step must be stored
   > Imagined transitions are the same size as real ones and are cheap to store.
-- [ ] The model cannot represent stochastic transitions
+- [ ] A learned model cannot represent stochastic transitions accurately
   > Probabilistic models and ensembles represent them routinely.
 - [ ] Rollouts cannot be batched on a GPU
   > They batch extremely well, which is much of the appeal.
@@ -178,13 +178,13 @@ environment steps are expensive and model steps are not.
 ::: check
 Dyna interleaves real experience with imagined experience from a learned model. What is it buying?
 
-- [x] Sample efficiency — each real transition is used many times, through the model, instead of once
+- [x] Sample efficiency: each real transition is replayed many times through the model
   > Model-free methods need millions of environment steps. When real steps are expensive, dangerous or slow, replaying them through a model is often orders of magnitude cheaper.
 - [ ] Lower variance in the value estimates
   > Imagined transitions carry the model's own error, which can raise variance as well as bias.
 - [ ] The ability to handle continuous actions
   > Continuity is orthogonal; Dyna as described is tabular.
-- [ ] Guaranteed convergence to the optimal policy
+- [ ] A guarantee of convergence to the optimal policy, which model-free methods lack
   > Convergence now depends on the model being right, which is a weaker guarantee, not a stronger one.
 :::
 

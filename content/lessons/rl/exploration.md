@@ -66,8 +66,8 @@ large state space is the hard part.
 ::: check
 DQN with $\epsilon$-greedy scored exactly zero on Montezuma's Revenge for years. Why exactly zero rather than merely low?
 
-- [x] The first reward needs roughly 100 specific actions in sequence, and a random walk covers distance $\sqrt{t}$ rather than $t$
-  > The agent never once saw a reward to learn from. Undirected exploration does not accumulate: each random action is independent, so the agent oscillates around where it already is. With no reward ever observed, there is nothing for any value-based method to fit.
+- [x] The first reward needs about 100 specific actions in sequence
+  > A random walk covers distance $\sqrt{t}$ rather than $t$, so it never arrives. The agent never once saw a reward to learn from. Undirected exploration does not accumulate: each random action is independent, so the agent oscillates around where it already is. With no reward ever observed, there is nothing for any value-based method to fit.
 - [ ] The reward was too small to register against the noise
   > A reward of any size would have been transformative. None was ever reached.
 - [ ] The state space was too large for the network to represent

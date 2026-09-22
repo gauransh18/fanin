@@ -49,8 +49,8 @@ raised since 1989. Treat it as a floor, not an explanation.
 ::: check
 The universal approximation theorem says a one-hidden-layer network can approximate any continuous function on a compact set. What does it therefore explain about why neural networks work?
 
-- [x] Nothing — it establishes existence, not how many units you need, whether gradient descent finds it, or whether it generalises
-  > The bound can be exponential in the input dimension, and existence is not reachability. Treat the theorem as a floor that rules out an objection nobody serious has raised since 1989, not as an explanation.
+- [x] Nothing: it establishes existence and nothing more
+  > It says nothing about how many units you need, whether gradient descent finds one, or whether it generalises. The bound can be exponential in the input dimension, and existence is not reachability. Treat the theorem as a floor that rules out an objection nobody serious has raised since 1989, not as an explanation.
 - [ ] That depth is unnecessary, since width suffices
   > In principle width suffices; in practice there are functions a depth-$k$ network computes with $O(n)$ units that need $\Omega(2^n)$ at depth $k-1$.
 - [ ] That networks will generalise if they are wide enough

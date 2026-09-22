@@ -137,8 +137,8 @@ Three rules that follow:
 ::: check
 BPE encoding applies its learned merges in the order they were learned. Why does that ordering matter?
 
-- [x] It makes the tokenizer deterministic and exactly reproducible, which matters because a train/inference mismatch silently corrupts every input
-  > A tokenizer is part of the model's contract. Applying merges in a different order is a different tokenizer, and nothing will raise an error when you use the wrong one.
+- [x] It makes the tokenizer deterministic and exactly reproducible
+  > Which matters because a train/inference mismatch silently corrupts every input. A tokenizer is part of the model's contract. Applying merges in a different order is a different tokenizer, and nothing will raise an error when you use the wrong one.
 - [ ] It guarantees the shortest possible encoding of any string
   > Greedy merge application is not optimal in that sense; schemes like Unigram search over segmentations precisely because BPE does not.
 - [ ] It ensures every token has a unique byte representation

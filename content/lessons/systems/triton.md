@@ -96,8 +96,8 @@ the measured speedup is close to that. Triton kernels like this one are why
 ::: check
 What is the main conceptual difference between writing a CUDA kernel and a Triton kernel?
 
-- [x] CUDA is written from one thread's point of view; Triton is written from one block's, operating on whole arrays with the compiler handling coalescing, shared memory and vectorisation
-  > `tl.arange(0, BLOCK)` produces a vector of offsets, so a single `tl.load` fetches a block. That shift is what gets you to 80–95% of hand-tuned CUDA in Python.
+- [x] CUDA is written per thread; Triton is written per block, over whole arrays
+  > The compiler then handles coalescing, shared memory and vectorisation. `tl.arange(0, BLOCK)` produces a vector of offsets, so a single `tl.load` fetches a block. That shift is what gets you to 80–95% of hand-tuned CUDA in Python.
 - [ ] Triton runs on the CPU and CUDA on the GPU
   > Both compile to GPU code. Triton emits PTX.
 - [ ] Triton is interpreted, so it is slower but easier to debug

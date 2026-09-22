@@ -38,6 +38,17 @@ for (const lesson of allLessons) {
   if (!data.summary) errors.push(`${lesson.slug}: no summary in frontmatter`);
   if (body.trim().length < 500) warnings.push(`${lesson.slug}: body under 500 chars`);
 
+  // A correct option that is much longer than every wrong one gives the answer
+  // away by shape alone -- a reader can score well by picking the longest option
+  // without understanding anything. The claim belongs in the option and its
+  // justification in the explanation below it.
+  const optionLengths = (block) => {
+    const opts = [...block.matchAll(/^\s*-\s*\[([ xX])\]\s+(.*)$/gm)];
+    const right = opts.filter((m) => m[1].toLowerCase() === 'x').map((m) => m[2].length);
+    const wrong = opts.filter((m) => m[1].toLowerCase() !== 'x').map((m) => m[2].length);
+    return { right, wrong };
+  };
+
   // Every ::: check block must parse, and a lesson is expected to have some.
   const blocks = body.match(/^:::[ \t]*check[ \t]*$[\s\S]*?^:::[ \t]*$/gm) || [];
   for (const [n, block] of blocks.entries()) {
@@ -46,6 +57,21 @@ for (const lesson of allLessons) {
       parseCheck(inner);
     } catch (err) {
       errors.push(`${lesson.slug}: check ${n + 1}: ${err.message}`);
+      continue;
+    }
+    const { right, wrong } = optionLengths(inner);
+    if (right.length && wrong.length) {
+      const ratio = Math.max(...right) / Math.max(...wrong);
+      if (ratio > 2) {
+        errors.push(
+          `${lesson.slug}: check ${n + 1}: the correct option is ${ratio.toFixed(1)}x ` +
+          `longer than every wrong one — move the justification into its explanation`
+        );
+      } else if (ratio > 1.7) {
+        warnings.push(
+          `${lesson.slug}: check ${n + 1}: correct option ${ratio.toFixed(1)}x the longest wrong one`
+        );
+      }
     }
   }
   checkCounts.set(lesson.slug, blocks.length);

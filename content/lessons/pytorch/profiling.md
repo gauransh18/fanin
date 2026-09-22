@@ -177,8 +177,8 @@ more work into the kernel. If you are near peak FLOP/s, only a better algorithm 
 ::: check
 A benchmark skips the warm-up loop. How wrong can the result be?
 
-- [x] 10–100× too slow, because the first call includes cuDNN autotuning, memory-pool growth, and under `torch.compile` the entire compilation
-  > Which sends people optimising whatever the first call happened to be slow at. Warm up, then measure.
+- [x] 10–100× too slow, because the first call includes autotuning and compilation
+  > cuDNN autotuning, memory-pool growth and, under `torch.compile`, the whole compile pass. Which sends people optimising whatever the first call happened to be slow at. Warm up, then measure.
 - [ ] A few percent — warm-up is a refinement, not a correctness issue
   > A compile pass alone can be seconds against milliseconds of steady-state work.
 - [ ] Too *fast*, since the caches are cold and less data is moved

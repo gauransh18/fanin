@@ -116,7 +116,7 @@ FlashAttention is 2–4× faster than standard attention. Where does the speedup
   > Nothing is skipped; the result is numerically the same, not an approximation.
 - [ ] Running the softmax in lower precision
   > The online softmax is carefully kept accurate. Precision is not the lever.
-- [ ] Parallelising across heads, which standard attention does not
+- [ ] Parallelising across attention heads, which standard attention cannot do
   > Standard attention already parallelises across heads.
 :::
 
@@ -177,7 +177,7 @@ Tiling attention runs into one obstacle. What is it, and what solves it?
   > An online softmax with a running maximum and running sum fixes it. Each new block rescales the accumulated output by $e^{m - m^{\text{new}}}$, so the result is exact rather than approximate.
 - [ ] The causal mask cannot be applied tile by tile
   > It applies cleanly per tile, and whole tiles above the diagonal can be skipped entirely.
-- [ ] Query blocks and key blocks must be the same size
+- [ ] Query blocks and key blocks are required to be the same size
   > They need not be; the block sizes are tuned independently against SRAM capacity.
 - [ ] Tiles cannot be written back to HBM in parallel
   > The output is accumulated per query block and written once. Parallel writes are not the difficulty.

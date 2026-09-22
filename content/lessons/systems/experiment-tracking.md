@@ -150,11 +150,11 @@ Which of these must be versioned for a result to be reproducible?
   > A hash from a dirty tree identifies nothing.
 - [x] A content hash of the processed dataset, not the download URL
   > Datasets get re-scraped, re-filtered and silently updated. The URL is not the data.
-- [x] The complete resolved configuration, including every default in effect
+- [x] The complete resolved configuration, defaults included
   > Recording only the overrides leaves every default free to change underneath you.
 - [x] Library, CUDA and GPU versions, and the world size
   > These change kernel selection and therefore numerical results — lesson 2.15's point, in operational form.
-- [ ] The wall-clock time the run started
+- [ ] The wall-clock time at which the run was started
   > Useful for bookkeeping, and it explains no variance in the result.
 :::
 

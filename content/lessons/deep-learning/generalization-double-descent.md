@@ -101,8 +101,8 @@ still falling means the solution is still changing, even if the metrics are flat
 ::: check
 Sample-wise double descent means more data can temporarily *hurt*. How?
 
-- [x] Adding data moves a fixed-size model towards its interpolation threshold, where the single interpolating solution is whatever the data forces
-  > The same peak, approached along a different axis. It is a striking reminder that "more data is always better" is a statement about the underparameterised regime.
+- [x] It moves a fixed-size model towards its interpolation threshold
+  > At the threshold the single interpolating solution is whatever the data forces. The same peak, approached along a different axis. It is a striking reminder that "more data is always better" is a statement about the underparameterised regime.
 - [ ] More data increases label noise, which dominates at the margin
   > Noise proportion is unchanged by collecting more of the same distribution.
 - [ ] Larger datasets require smaller learning rates, slowing convergence

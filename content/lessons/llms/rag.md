@@ -75,9 +75,9 @@ quantization). FAISS, Qdrant and pgvector all implement these.
 ::: check
 A RAG system returns a wrong answer. Why is that hard to diagnose without extra instrumentation?
 
-- [x] Every stage — chunking, embedding, search, reranking, prompt assembly, generation — fails the same way from the outside, so the stages have to be measured separately
-  > Retrieval recall at $k$, reranker precision and answer faithfulness are different numbers. A single end-to-end accuracy figure tells you that something is wrong and nothing about what.
-- [ ] Because embedding models are not interpretable
+- [x] Every stage fails the same way from the outside: a wrong answer
+  > Chunking, embedding, search, reranking, prompt assembly and generation are indistinguishable at the exit, so they have to be measured separately. Retrieval recall at $k$, reranker precision and answer faithfulness are different numbers. A single end-to-end accuracy figure tells you that something is wrong and nothing about what.
+- [ ] Because embedding models are not interpretable enough to inspect
   > Interpretability of the embedding is not required to measure whether the right chunk was retrieved.
 - [ ] Because the generator's output is stochastic
   > Sampling adds variance, which is controllable and not the structural problem here.
@@ -189,9 +189,9 @@ Chunk size trades two things off. Which way does each run?
   > 128 tokens frequently retrieves the right sentence without the paragraph that makes it usable.
 - [x] Large chunks are complete but dilute the embedding, hurting retrieval precision
   > A single vector summarising 2,048 tokens is an average of too many things to match a specific query well.
-- [ ] Small chunks are cheaper to embed per document
+- [ ] Small chunks are cheaper to embed and index per document
   > More chunks per document, not fewer — the total token count is the same and the per-chunk overhead is higher.
-- [ ] Large chunks improve reranking accuracy
+- [ ] Large chunks give a cross-encoder reranker more to work with
   > A cross-encoder reranker reads the query and chunk together and generally does better on focused passages.
 :::
 

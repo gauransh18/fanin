@@ -103,8 +103,8 @@ Llama, Mistral, Gemma and most recent models use RMSNorm.
 ::: check
 Why do transformers use LayerNorm rather than BatchNorm?
 
-- [x] BatchNorm couples examples in a batch, and padding positions in variable-length sequences corrupt the statistics outright
-  > It also degrades below about batch 16, computes different functions in train and eval, and needs `SyncBatchNorm` plus a per-layer synchronisation under distributed training. LayerNorm has none of these.
+- [x] BatchNorm couples examples in a batch, and padding corrupts the statistics
+  > A variable-length sequence pads its tail, and those positions land in the mean and variance. It also degrades below about batch 16, computes different functions in train and eval, and needs `SyncBatchNorm` plus a per-layer synchronisation under distributed training. LayerNorm has none of these.
 - [ ] LayerNorm is cheaper to compute
   > They cost about the same. RMSNorm is the cheaper one, and it is cheaper than *both*.
 - [ ] BatchNorm cannot be applied to three-dimensional tensors

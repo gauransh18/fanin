@@ -76,11 +76,11 @@ A matrix $A$ is applied one hundred times in a row to a vector. Which quantity d
 
 - [x] The spectral radius $\rho(A) = \max_i|\lambda_i|$
   > $A^k = V\Lambda^k V^{-1}$, so each eigendirection scales by $\lambda_i^k$. The largest magnitude dominates everything else within a few steps.
-- [ ] The determinant of $A$
+- [ ] The determinant of $A$, which measures how it scales volume
   > The determinant is the *product* of the eigenvalues. A matrix with eigenvalues $10$ and $0.1$ has determinant 1 and still explodes along the first direction.
 - [ ] The trace of $A$
   > The trace is the sum of the eigenvalues, which can be small or zero while an individual eigenvalue is large.
-- [ ] The Frobenius norm of $A$
+- [ ] The Frobenius norm of $A$, which bounds its growth
   > It bounds the spectral radius from above but does not determine it, and a matrix can have a large norm with every eigenvalue inside the unit circle.
 :::
 

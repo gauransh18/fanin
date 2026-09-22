@@ -84,13 +84,13 @@ far better than a direct sliding-window loop.
 ::: check
 Which priors does a convolution impose that make it right for images and wrong for language?
 
-- [x] Locality — an output depends only on a $k\times k$ neighbourhood
+- [x] Locality: an output sees only a $k\times k$ neighbourhood
   > True for pixels, false when the relevant dependency is a thousand tokens away.
-- [x] Translation equivariance
+- [x] Translation equivariance: shift the input, the output shifts with it
   > Shift the input and the output shifts identically. A cat detector should work anywhere in the frame. Language dependencies are not translation-equivariant in any useful sense.
-- [ ] Permutation invariance over positions
+- [ ] Permutation invariance: reorder the pixels and nothing changes
   > Convolutions are emphatically not permutation invariant; order is what they read. That prior belongs to set-based architectures.
-- [ ] Scale invariance across resolutions
+- [ ] Scale invariance: the same features are found at any resolution
   > A fixed kernel is not scale invariant at all, which is why architectures add pyramids and multi-scale features to get it.
 :::
 

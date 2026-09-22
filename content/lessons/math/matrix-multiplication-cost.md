@@ -193,8 +193,8 @@ into $W$ once and pay nothing per token thereafter.
 ::: check
 A LoRA adapter computes $\Delta W\mathbf{x}$ where $\Delta W = BA$, with $B \in \mathbb{R}^{4096\times8}$ and $A \in \mathbb{R}^{8\times4096}$. Why does the implementation compute $B(A\mathbf{x})$ rather than $(BA)\mathbf{x}$?
 
-- [x] Bracketing right keeps the rank-8 bottleneck, avoiding both the $4096^2$ product and the temporary that holds it
-  > Two skinny multiplies through an 8-dimensional waist cost about 250× less than forming the full $4096 \times 4096$ matrix first, and allocate nothing large. Same answer, different bill.
+- [x] Bracketing right keeps the rank-8 bottleneck and skips the $4096^2$ product
+  > Neither the full matrix nor the temporary holding it is ever formed. Two skinny multiplies through an 8-dimensional waist cost about 250× less than forming the full $4096 \times 4096$ matrix first, and allocate nothing large. Same answer, different bill.
 - [ ] $(BA)\mathbf{x}$ would give a different result
   > Matrix multiplication is associative, so the two agree exactly. Only the cost differs.
 - [ ] $BA$ cannot be formed because the inner dimension is only 8
