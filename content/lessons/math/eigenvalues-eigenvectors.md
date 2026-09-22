@@ -71,6 +71,19 @@ the **spectral radius** $\rho(A) = \max_i |\lambda_i|$.
 - $\rho(A) = 1$ — the marginal case, and the only one that is stable.
 :::
 
+::: check
+A matrix $A$ is applied one hundred times in a row to a vector. Which quantity decides whether the result blows up or dies?
+
+- [x] The spectral radius $\rho(A) = \max_i|\lambda_i|$
+  > $A^k = V\Lambda^k V^{-1}$, so each eigendirection scales by $\lambda_i^k$. The largest magnitude dominates everything else within a few steps.
+- [ ] The determinant of $A$
+  > The determinant is the *product* of the eigenvalues. A matrix with eigenvalues $10$ and $0.1$ has determinant 1 and still explodes along the first direction.
+- [ ] The trace of $A$
+  > The trace is the sum of the eigenvalues, which can be small or zero while an individual eigenvalue is large.
+- [ ] The Frobenius norm of $A$
+  > It bounds the spectral radius from above but does not determine it, and a matrix can have a large norm with every eigenvalue inside the unit circle.
+:::
+
 ## This is the vanishing gradient problem
 
 A recurrent network applies roughly the same weight matrix at every timestep. Over $T$
@@ -102,6 +115,19 @@ for t in [1, 10, 50, 100]:
     print(f'step {t:3d}  norm {y.norm():.3e}')
 # norms fall off like rho**t -- this is gradient vanishing, in miniature
 ```
+
+::: check
+An RNN's recurrent weight has $\rho(W) = 0.9$. Over 100 timesteps, roughly what factor multiplies the gradient flowing back?
+
+- [x] About $2.6\times10^{-5}$ — the signal effectively does not reach
+  > $0.9^{100} \approx 2.6\times10^{-5}$. The model cannot learn a dependency across that span because nothing arrives to learn from. This is the vanishing gradient problem, exactly.
+- [ ] About $0.9$ — the decay is per-application, not cumulative
+  > It compounds. Each step multiplies again, so the exponent is the number of steps.
+- [ ] About $90$ — repeated application accumulates magnitude
+  > A factor below 1 shrinks. Above 1 is the exploding case: $1.1^{100} \approx 13{,}780$.
+- [ ] It depends on the input, not on $W$
+  > The input sets the starting vector, but the growth rate over many steps is set by $W$'s spectrum.
+:::
 
 ## Symmetric matrices are the nice case
 
@@ -146,6 +172,19 @@ Geometrically, the loss surface is a long narrow valley: you must take small ste
 avoid oscillating across the narrow axis, so you creep along the long one. Momentum,
 Adam's per-parameter scaling, and every normalization layer in lesson 3.06 are attacks
 on exactly this problem.
+:::
+
+::: check
+You have a non-square matrix and want its principal directions. Which tool applies?
+
+- [x] The SVD, which exists for every matrix of every shape
+  > Eigenvalues need a square matrix, and even then diagonalisation can fail with repeated eigenvalues. The SVD has neither restriction — lesson 1.06 is the next page for a reason.
+- [ ] Eigendecomposition, after padding the matrix to square with zeros
+  > Padding changes the map. The eigenvectors you would get describe the padded matrix, not the original.
+- [ ] Eigendecomposition of $A^\top A$, which is equivalent
+  > This is closer than it looks — the eigenvectors of $A^\top A$ *are* the right singular vectors — but forming $A^\top A$ squares the condition number and loses precision. Compute the SVD directly.
+- [ ] Neither; a non-square matrix has no principal directions
+  > It has two sets of them, one in the input space and one in the output space. That is precisely what the SVD gives you.
 :::
 
 ## What to carry forward

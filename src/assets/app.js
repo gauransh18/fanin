@@ -990,11 +990,17 @@
         nextBtn.disabled = true;
         nextBtn.textContent = i === round.length - 1 ? 'Finish' : 'Next question';
       }
-      if (pickedNote) pickedNote.textContent = 'Pick an answer to continue.';
+      if (pickedNote) {
+        pickedNote.textContent = round[i] && round[i].dataset.kind === 'numeric'
+          ? 'Type an answer to continue.'
+          : 'Pick an answer to continue.';
+      }
     }
 
     // One answer, recorded but not judged out loud.
     function arm(el) {
+      if (el.dataset.kind === 'numeric') return armNumeric(el);
+
       var right = {};
       try {
         var raw = atob(el.dataset.k || '');
@@ -1037,6 +1043,34 @@
       };
     }
 
+    // A number answer in a trial: typing enables Next, and the input reports
+    // right or wrong only once the round is over.
+    function armNumeric(el) {
+      var input = el.querySelector('input');
+      var go = el.querySelector('.check-num button');
+      if (go) go.hidden = true;           // Next is the only way forward here
+      el.addEventListener('submit', function (e) { e.preventDefault(); });
+      if (input) {
+        input.addEventListener('input', function () {
+          var any = !!input.value.trim();
+          if (nextBtn) nextBtn.disabled = !any;
+          if (pickedNote) pickedNote.textContent = any ? '' : 'Type an answer to continue.';
+        });
+      }
+      el.judge = function () {
+        var ok = input ? numericOk(el, input.value) : false;
+        if (input) {
+          input.disabled = true;
+          input.dataset.mark = ok ? 'right' : 'wrong';
+          if (!ok && !input.value.trim()) input.value = '(no answer)';
+        }
+        var why = el.querySelector('[data-why]');
+        if (why) why.dataset.show = '1';
+        el.dataset.state = 'solved';
+        return ok;
+      };
+    }
+
     function begin() {
       round = shuffle(pool).slice(0, SIZE);
       at = 0;
@@ -1051,6 +1085,12 @@
           delete b.dataset.mark;
         });
         el.querySelectorAll('.opt-row').forEach(function (r) { r.dataset.show = '0'; });
+        el.querySelectorAll('input').forEach(function (inp) {
+          inp.disabled = false;
+          inp.value = '';
+          delete inp.dataset.mark;
+        });
+        el.querySelectorAll('[data-why]').forEach(function (w) { w.dataset.show = '0'; });
       });
       round.forEach(function (el, n) {
         var tag = el.querySelector('.check-tag');

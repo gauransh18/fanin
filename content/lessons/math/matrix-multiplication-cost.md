@@ -88,6 +88,13 @@ in practice, so that is about $2\times10^8$ GPU-seconds — near 6,500 GPU-days,
 a month on 220 GPUs. Lesson 7.14 turns this into a budget.
 :::
 
+::: check
+You train a 3-billion-parameter model on 1 trillion tokens. Using the $6N$ rule, how many FLOPs is that, in units of $10^{21}$?
+
+= 18
+> $6 \times 3\times10^{9} \times 1\times10^{12} = 1.8\times10^{22}$, which is $18 \times 10^{21}$. Lesson 5.03 turns this number into a training budget.
+:::
+
 ## Why the cost model is a lie (and when)
 
 $2mnk$ counts arithmetic. It does not count *memory movement*, and on modern hardware
@@ -131,6 +138,19 @@ timed(4096, 4096, 4096)
 timed(1, 4096, 4096)
 ```
 
+::: check
+The same matmul kernel hits near peak TFLOP/s at $4096 \times 4096 \times 4096$ but a small fraction of peak at $1 \times 4096 \times 4096$. Why?
+
+- [x] The second has low arithmetic intensity, so the GPU waits on memory rather than computing
+  > With one row, the weights still have to be read in full but there is almost no arithmetic to do with them. The FLOP count no longer predicts runtime because FLOPs were never the bottleneck.
+- [ ] The second does far fewer FLOPs, so it finishes faster
+  > It does do fewer FLOPs — but the measure here is FLOPs *per second*, and that rate collapses. Doing less work more slowly is the whole problem.
+- [ ] Non-square matrices cannot use tensor cores
+  > Tensor cores handle non-square shapes fine. The limit is bandwidth, not instruction support.
+- [ ] Numerical error accumulates differently in skinny matrices
+  > Accuracy is not what is being measured, and bf16 error does not depend on shape this way.
+:::
+
 ## Associativity is free performance
 
 Matrix multiplication is associative: $(AB)C = A(BC)$. The results are identical; the
@@ -168,6 +188,19 @@ roughly $6.7\times10^7$ total.
 That is about **250× cheaper**, and it also avoids allocating a 16M-element temporary.
 The materialised form is still useful at deployment time, when you merge the adapter
 into $W$ once and pay nothing per token thereafter.
+:::
+
+::: check
+A LoRA adapter computes $\Delta W\mathbf{x}$ where $\Delta W = BA$, with $B \in \mathbb{R}^{4096\times8}$ and $A \in \mathbb{R}^{8\times4096}$. Why does the implementation compute $B(A\mathbf{x})$ rather than $(BA)\mathbf{x}$?
+
+- [x] Bracketing right keeps the rank-8 bottleneck, avoiding both the $4096^2$ product and the temporary that holds it
+  > Two skinny multiplies through an 8-dimensional waist cost about 250× less than forming the full $4096 \times 4096$ matrix first, and allocate nothing large. Same answer, different bill.
+- [ ] $(BA)\mathbf{x}$ would give a different result
+  > Matrix multiplication is associative, so the two agree exactly. Only the cost differs.
+- [ ] $BA$ cannot be formed because the inner dimension is only 8
+  > It forms perfectly well — $B$ is $4096\times8$ and $A$ is $8\times4096$, giving a $4096\times4096$ result. That it *can* be formed is the trap.
+- [ ] Materialising $\Delta W$ loses precision in bf16
+  > There is a small extra rounding step, but it is not the reason. At deployment you do merge $\Delta W$ into $W$ once, precisely because the cost is then paid only once.
 :::
 
 ## What to carry forward

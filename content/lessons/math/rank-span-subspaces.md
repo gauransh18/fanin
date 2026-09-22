@@ -69,6 +69,13 @@ The two subspaces inside $\mathbb{R}^n$ are orthogonal complements: the row spac
 the null space meet only at zero, and together they span everything. So any input
 splits uniquely into a part the matrix acts on and a part it annihilates.
 
+::: check
+An autoencoder maps $\mathbb{R}^{768} \to \mathbb{R}^{32} \to \mathbb{R}^{768}$ with two linear layers. How many input directions does the composite map send to zero?
+
+= 736
+> Rank is capped by the narrowest link, so the composite has rank at most 32. Rank–nullity then gives a null space of $768 - 32 = 736$ dimensions. No amount of training widens that while the bottleneck holds.
+:::
+
 ## Why low rank is everywhere
 
 **Bottlenecks force it.** An autoencoder that maps $\mathbb{R}^{768} \to \mathbb{R}^{32}
@@ -97,6 +104,19 @@ A = torch.randn(r, d)                    # 65,536 parameters total
 torch.linalg.matrix_rank(B @ A)          # tensor(8)
 (B.numel() + A.numel()) / W_full.numel() # 0.0039 -- 0.4% of the parameters
 ```
+
+::: check
+Why does LoRA freeze $W$ and learn $\Delta W = BA$ with $r \ll d$, rather than learning $\Delta W$ directly?
+
+- [x] Fine-tuning updates are observed to be close to low rank, so the extra degrees of freedom in a full $\Delta W$ mostly go unused
+  > At $d = 4096$ and $r = 8$, the factored form has 65,536 parameters against 16.7M — 0.4% — and empirically loses little, because the update was never using the rest.
+- [ ] A low-rank matrix is faster to multiply, which is the main saving
+  > Applying the factors in sequence is indeed cheaper, but the headline win is the count of *trainable* parameters and the optimizer state that comes with them.
+- [ ] A full $\Delta W$ would not fit in memory
+  > It is the same size as $W$, which is already resident. Memory for optimizer states is the pressure, not the matrix itself.
+- [ ] Low rank regularises the model, preventing overfitting
+  > There is a regularising side effect, but the premise is empirical redundancy, not a deliberate capacity constraint.
+:::
 
 ## Rank in floating point is a threshold, not a fact
 
@@ -134,6 +154,19 @@ bottleneck — it forces the network to spend its 64 surviving directions on wha
 matters most — but it also means this block cannot pass through a residual signal
 unchanged, which is one reason transformer MLP blocks expand to $4d$ rather than
 contracting, and why the residual connection of lesson 3.08 bypasses the block entirely.
+:::
+
+::: check
+`torch.linalg.matrix_rank` returns 5 for a trained weight matrix whose singular values are $[100, 90, 80, 0.001, 0.0009]$. What should you conclude?
+
+- [x] Practically it behaves as rank 3; the rank count alone is not informative
+  > Exact rank is discrete and floating-point noise destroys it. Read the spectrum and find where it decays — two directions carrying $10^{-5}$ of the leading scale are doing nothing.
+- [ ] The matrix is full rank, so it cannot be compressed
+  > It compresses beautifully: dropping the last two singular values costs almost nothing and is exactly what low-rank approximation does.
+- [ ] The rank function is buggy and should be reported
+  > It is behaving as documented, thresholding at a tolerance the matrix happens to clear. The number is correct and still not the number you want.
+- [ ] The last two values indicate numerical instability in training
+  > Small singular values are ordinary in trained weights. They signal redundancy, not instability.
 :::
 
 ## What to carry forward

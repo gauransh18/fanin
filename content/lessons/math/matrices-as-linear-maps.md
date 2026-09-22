@@ -70,6 +70,19 @@ A transformer's feed-forward block is exactly this pattern: a $4d \times d$ lift
 nonlinearity, then a $d \times 4d$ squash back. Lesson 4.05 uses nothing more than
 this.
 
+::: check
+A layer holds a weight $W \in \mathbb{R}^{512 \times 768}$. Which is true?
+
+- [x] It maps $\mathbb{R}^{768} \to \mathbb{R}^{512}$, and $W$ has 768 columns
+  > Input dimension is second. There are 768 columns because there are 768 input basis vectors, and each column lives in $\mathbb{R}^{512}$ because that is where outputs go.
+- [ ] It maps $\mathbb{R}^{512} \to \mathbb{R}^{768}$, lifting into a wider space
+  > The reversal is exactly the trap. The second dimension is the input, so this squashes rather than lifts.
+- [ ] It maps $\mathbb{R}^{768} \to \mathbb{R}^{512}$, and $W$ has 512 columns
+  > The direction is right but the count is not: a column per input basis vector means 768 of them.
+- [ ] The direction depends on whether you write $W\mathbf{x}$ or $\mathbf{x}W$
+  > Only one of those is even defined for these shapes. $W\mathbf{x}$ needs $\mathbf{x}$ to have 768 entries; $\mathbf{x}W$ would need 512.
+:::
+
 ## The four transformations worth recognising
 
 **Scaling.** A diagonal matrix stretches each axis independently. Diagonal matrices
@@ -121,6 +134,19 @@ and $r \ll d$ *is* a single linear map, but it has far fewer parameters. LoRA, l
 5.06, is built entirely on this observation.
 :::
 
+::: check
+A colleague stacks ten `nn.Linear` layers with no activation between them and reports that the model underfits badly. What is the underlying reason?
+
+- [x] The ten layers compose into a single linear map, so the model has the power of one layer
+  > $W_{10}(\cdots W_1\mathbf{x}) = (W_{10}\cdots W_1)\mathbf{x}$. Depth without a nonlinearity buys nothing at all in representational terms — this is the entire reason activation functions exist.
+- [ ] Ten layers is too few to fit anything interesting
+  > Depth is not the issue. Ten *nonlinear* layers would be a perfectly capable network.
+- [ ] The gradients vanish through ten multiplications
+  > Vanishing gradients would make it hard to *train* a deep net, but here there is nothing to train towards: the function class itself is only linear maps.
+- [ ] Matrix multiplication is not associative, so the layers interfere
+  > It is associative, and that is exactly why they collapse. If it were not, they would not fold into one matrix.
+:::
+
 ## The transpose, and what it actually means
 
 $A^\top$ swaps rows and columns, so $(A^\top)_{ij} = A_{ji}$. Mechanically trivial;
@@ -163,6 +189,19 @@ Parameters: $512 \times 768 = 393{,}216$ in the weight, plus 512 in the bias, gi
 $393{,}728$. Note that the bias makes the layer *affine*, not linear — $f(\mathbf{0})
 \neq \mathbf{0}$ — which is why frameworks call it `nn.Linear` rather than
 `nn.LinearMap`.
+:::
+
+::: check
+In backpropagation through $\mathbf{y} = W\mathbf{x}$, the incoming gradient is multiplied by $W^\top$. Which identity is that a consequence of?
+
+- [x] $(A\mathbf{x}) \cdot \mathbf{y} = \mathbf{x} \cdot (A^\top\mathbf{y})$
+  > The transpose is the map that moves a matrix across a dot product, and a gradient is exactly a dot product waiting to happen. Lesson 1.08 works the derivation through.
+- [ ] $(A^\top)^\top = A$
+  > True, and useless here. It says nothing about how $A$ interacts with a dot product.
+- [ ] $(AB)^\top = B^\top A^\top$
+  > This one tells you how transposes compose through a product, which matters for multi-layer chains, but it is not what puts $W^\top$ in the backward pass to begin with.
+- [ ] $A^\top A = I$ for any $A$
+  > Only true for an orthogonal matrix, which a weight matrix is generally not.
 :::
 
 ## What to carry forward

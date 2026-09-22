@@ -73,6 +73,19 @@ This single fact is why attention works. In lesson 4.02 a query vector is dotted
 against every key vector, and the resulting numbers are exactly "how much does this
 key point the same way as my query". Nothing more sophisticated is happening.
 
+::: check
+Two token embeddings have a dot product of exactly zero. What does that tell you about them?
+
+- [x] Neither has any component pointing along the other
+  > That is what orthogonality means: the alignment between them is nil. In lesson 4.02 this is a query that finds nothing to attend to in that key.
+- [ ] They are the same vector up to a sign
+  > Identical vectors give a large positive dot product, and opposite ones a large negative. Zero is the case in between.
+- [ ] At least one of them must be the zero vector
+  > The zero vector does give zero against everything, but so does any orthogonal pair of perfectly ordinary vectors.
+- [ ] They have the same length
+  > Length never enters. A vector of norm 1000 can be orthogonal to one of norm 0.001.
+:::
+
 ## Three ways to measure length
 
 A **norm** $\lVert \cdot \rVert$ assigns a non-negative size to a vector. Any norm must
@@ -132,6 +145,13 @@ torch.linalg.vector_norm(x, ord=2)         # tensor(13.)   sqrt(9+16+144)
 torch.linalg.vector_norm(x, ord=1)         # tensor(19.)   3+4+12
 torch.linalg.vector_norm(x, ord=float('inf'))  # tensor(12.)
 ```
+
+::: check
+A gradient vector in $\mathbb{R}^{4096}$ has every component equal to $1$. What is its $\ell_2$ norm?
+
+= 64
+> $\sqrt{4096} = 64$. The same vector has $\ell_1$ norm $4096$ and $\ell_\infty$ norm $1$ — three answers for one gradient, which is why "the gradient norm was 64" means nothing until someone says which norm.
+:::
 
 ## Unit vectors and cosine similarity
 
@@ -195,6 +215,19 @@ mean $n$), so the denominator is approximately $n$.
 
 The ratio therefore has mean $0$ and standard deviation approximately
 $\sqrt{n}/n = 1/\sqrt{n}$. Lesson 1.11 makes the concentration step precise.
+:::
+
+::: check
+You widen a model's embeddings from 768 dimensions to 3072, changing nothing else. What happens to the typical cosine similarity between two unrelated embeddings?
+
+- [x] It roughly halves, from about $0.036$ to about $0.018$
+  > The spread scales like $1/\sqrt{n}$. Quadrupling $n$ doubles $\sqrt{n}$, so the typical similarity halves — and the space gets correspondingly roomier for nearly orthogonal concepts.
+- [ ] It is unchanged, because cosine similarity is scale-free
+  > Cosine similarity is invariant to each vector's *length*, not to the number of dimensions. Dimension is precisely what sets the spread.
+- [ ] It roughly doubles
+  > It moves the other way: more dimensions means random directions are *less* aligned, not more.
+- [ ] It becomes exactly zero
+  > It concentrates towards zero but never reaches it. The spread shrinks like $1/\sqrt{n}$, which is small, not nothing.
 :::
 
 ## What to carry forward

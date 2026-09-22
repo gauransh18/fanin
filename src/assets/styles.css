@@ -2618,3 +2618,9 @@ h2:hover > .anchor, h3:hover > .anchor, h4:hover > .anchor, .anchor:focus-visibl
   .trial-controls .btn { width: 100%; }
   .trial-skip-note { text-align: center; }
 }
+.check-num input[data-mark="right"] { color: var(--good); border-color: var(--good); }
+.check-num input[data-mark="wrong"] {
+  color: var(--bad);
+  border-color: var(--bad);
+  background: var(--bad-soft);
+}
