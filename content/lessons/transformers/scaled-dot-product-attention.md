@@ -65,6 +65,24 @@ extremes.
 Dividing by $\sqrt{d_k}$ returns the scores to unit variance, keeping the softmax in its
 responsive region.
 
+::: check
+A head uses $d_k = 256$. Someone removes the $1/\sqrt{d_k}$ scaling and finds training
+stalls almost immediately. What has gone wrong?
+
+- [x] Softmax has saturated, so its gradient is near zero
+  > Raw scores now have standard deviation $16$, and $e^{16}$ against $e^{0}$ puts
+  > essentially all the weight on one position. At $p \approx 1$ the softmax Jacobian
+  > $p_i(\delta_{ij} - p_j)$ vanishes, and nothing upstream receives a gradient.
+- [ ] The dot products overflow to infinity in float32
+  > Scores near $\pm 48$ are nowhere close to the float32 range. The damage is to the
+  > *shape* of the distribution, not to the arithmetic.
+- [ ] $Q$ and $K$ are no longer distinguishable
+  > The projections are untouched by the scale factor; only the magnitude of their
+  > dot products changes.
+- [ ] The value matrix is now the wrong shape
+  > $V$ is not involved in the scores at all, and no shape depends on the scaling.
+:::
+
 ```python
 import torch
 import torch.nn.functional as F

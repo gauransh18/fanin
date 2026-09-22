@@ -458,6 +458,7 @@ async function lessonPage(lesson, raw) {
   let contentHtml;
   let plain = '';
   let isDraft = false;
+  const checks = [];
 
   if (raw) {
     const { data, body } = parseFrontmatter(raw);
@@ -465,7 +466,13 @@ async function lessonPage(lesson, raw) {
     summary = data.summary || '';
     prereqs = list(data.prereqs);
     seealso = list(data.seealso);
-    contentHtml = render(body, { url: u, headings });
+    contentHtml = render(body, {
+      url: u,
+      headings,
+      checks,
+      seed: lessonId(lesson),
+      where: `${lesson.number} ${lesson.title}`,
+    });
     plain = toPlainText(body);
   } else {
     isDraft = true;
@@ -547,10 +554,19 @@ async function lessonPage(lesson, raw) {
       <div class="complete-row">
         <button class="complete-btn" type="button" id="complete-btn" data-lesson="${lessonId(
           lesson
-        )}" data-minutes="${lesson.minutes}" aria-pressed="false">
-          <span class="box" aria-hidden="true"></span><span class="label">Mark complete</span>
+        )}" data-minutes="${lesson.minutes}" data-checks="${checks.length}"
+                aria-pressed="false">
+          <span class="box" aria-hidden="true"></span>
+          <span class="label">${checks.length ? 'Clear this lesson' : 'Mark complete'}</span>
           <span class="xp-hint"></span>
         </button>
+        ${
+          checks.length
+            ? `<span class="check-tally" data-tally>
+                 <span class="tally-n">0</span> of ${checks.length} answered
+               </span>`
+            : ''
+        }
         <span class="complete-note">Saved in this browser only. Nothing is sent anywhere.</span>
       </div>
 
@@ -604,7 +620,7 @@ async function lessonPage(lesson, raw) {
     math: /class="tex"/.test(contentHtml) || /class="tex"/.test(tocItems),
   });
 
-  return { html, plain, summary, isDraft };
+  return { html, plain, summary, isDraft, checks };
 }
 
 function aboutPage() {

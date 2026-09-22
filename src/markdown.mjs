@@ -58,6 +58,141 @@ const CALLOUTS = {
   history: 'Where this came from',
 };
 
+
+// ----------------------------------------------------------------- checks ---
+// A check is a question the reader answers on the page. There is no server, so
+// the answer ships with the page. It travels base64'd, which is enough to stop
+// a stray ctrl-F spoiling it and is not pretending to be anything more.
+
+const encodeKey = (s) => Buffer.from('fanin:' + s, 'utf8').toString('base64');
+
+// Deterministic shuffle: the correct option is not left wherever the author
+// happened to write it, but stays in the same place across builds so a reader
+// who reloads does not see the options move.
+function shuffleOrder(n, seed) {
+  let h = 2166136261;
+  for (let i = 0; i < seed.length; i++) {
+    h ^= seed.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  const order = Array.from({ length: n }, (_, i) => i);
+  for (let i = n - 1; i > 0; i--) {
+    h = Math.imul(h ^ (h >>> 15), 2246822507);
+    h = Math.imul(h ^ (h >>> 13), 3266489909);
+    const j = (h >>> 0) % (i + 1);
+    const t = order[i];
+    order[i] = order[j];
+    order[j] = t;
+  }
+  return order;
+}
+
+// Parses the body of a ::: check block into a plain object, or throws with a
+// message naming what is wrong. The build turns that into a failed build
+// rather than a page with a broken question on it.
+export function parseCheck(body) {
+  const lines = body.replace(/\r\n/g, '\n').split('\n');
+  const prompt = [];
+  const options = [];
+  let numeric = null;
+  let cursor = null; // where a following "> ..." explanation attaches
+
+  for (const line of lines) {
+    const opt = /^\s*-\s*\[([ xX])\]\s+(.*)$/.exec(line);
+    if (opt) {
+      cursor = { text: opt[2].trim(), correct: opt[1].toLowerCase() === 'x', why: [] };
+      options.push(cursor);
+      continue;
+    }
+    const num = /^\s*=\s*(-?[\d.eE+-]+)\s*(?:(?:\+\/-|±)\s*([\d.eE+-]+))?\s*$/.exec(line);
+    if (num) {
+      numeric = { value: Number(num[1]), tol: num[2] ? Number(num[2]) : 0, why: [] };
+      cursor = numeric;
+      continue;
+    }
+    const why = /^\s*>\s?(.*)$/.exec(line);
+    if (why && cursor) { cursor.why.push(why[1]); continue; }
+    if (options.length || numeric) {
+      if (line.trim()) throw new Error(`stray line inside a check: ${line.trim()}`);
+      continue;
+    }
+    prompt.push(line);
+  }
+
+  if (!prompt.join('').trim()) throw new Error('check has no question');
+  if (numeric && options.length) throw new Error('check mixes a numeric answer with options');
+
+  if (numeric) {
+    if (!Number.isFinite(numeric.value)) throw new Error('numeric check has no finite answer');
+    if (!numeric.why.join('').trim()) throw new Error('numeric check has no explanation');
+    return { kind: 'numeric', prompt: prompt.join('\n').trim(), numeric };
+  }
+
+  if (options.length < 2) throw new Error('check needs at least two options');
+  const right = options.filter((o) => o.correct).length;
+  if (!right) throw new Error('check has no correct option');
+  options.forEach((o, i) => {
+    if (!o.why.join('').trim()) throw new Error(`option ${i + 1} has no explanation`);
+  });
+  return { kind: right > 1 ? 'multi' : 'choice', prompt: prompt.join('\n').trim(), options };
+}
+
+function checkBlock(body, ctx, seed) {
+  let parsed;
+  try {
+    parsed = parseCheck(body);
+  } catch (err) {
+    throw new Error(`${ctx.where || 'check'}: ${err.message}`);
+  }
+  if (ctx.checks) ctx.checks.push(parsed);
+  const promptHtml = render(parsed.prompt, ctx);
+
+  if (parsed.kind === 'numeric') {
+    const n = parsed.numeric;
+    return (
+      `<form class="check" data-kind="numeric" data-k="${encodeKey(n.value + '|' + n.tol)}">` +
+      `<p class="check-tag">Your turn</p>` +
+      `<div class="check-q">${promptHtml}</div>` +
+      `<div class="check-num">` +
+      `<input type="text" inputmode="decimal" autocomplete="off" spellcheck="false"` +
+      ` aria-label="Your answer" placeholder="Your answer">` +
+      `<button class="btn btn-primary" type="submit">Check</button>` +
+      `</div>` +
+      `<p class="opt-why" data-why>${inline(n.why.join(' ').trim(), ctx)}</p>` +
+      `<p class="check-result" role="status" aria-live="polite"></p>` +
+      `</form>`
+    );
+  }
+
+  const order = shuffleOrder(parsed.options.length, seed);
+  const shown = order.map((i) => parsed.options[i]);
+  const key = shown.map((o, i) => (o.correct ? i : -1)).filter((i) => i >= 0).join(',');
+
+  const opts = shown
+    .map(
+      (o, i) =>
+        `<li class="opt-row"><button class="opt" type="button" data-i="${i}">` +
+        `<span class="opt-mark" aria-hidden="true"></span>` +
+        `<span class="opt-text">${inline(o.text, ctx)}</span></button>` +
+        `<p class="opt-why" data-why>${inline(o.why.join(' ').trim(), ctx)}</p></li>`
+    )
+    .join('');
+
+  return (
+    `<div class="check" data-kind="${parsed.kind}" data-k="${encodeKey(key)}">` +
+    `<p class="check-tag">Your turn${
+      parsed.kind === 'multi' ? ' <span class="check-hint">· select all that apply</span>' : ''
+    }</p>` +
+    `<div class="check-q">${promptHtml}</div>` +
+    `<ul class="check-opts">${opts}</ul>` +
+    (parsed.kind === 'multi'
+      ? `<div class="check-actions"><button class="btn btn-primary" type="button" data-submit>Check answer</button></div>`
+      : '') +
+    `<p class="check-result" role="status" aria-live="polite"></p>` +
+    `</div>`
+  );
+}
+
 // ---------------------------------------------------------------- inline ----
 
 function inline(src, ctx) {
@@ -172,7 +307,16 @@ function listBlock(lines, ctx) {
 }
 
 export function render(markdown, ctx = {}) {
-  const context = { url: ctx.url || ((h) => h), headings: ctx.headings || [] };
+  const context = {
+    url: ctx.url || ((h) => h),
+    headings: ctx.headings || [],
+    // Shared across nested renders so every check on a page gets its own
+    // shuffle seed, and the build can report which one failed.
+    seed: ctx.seed || 'fanin',
+    where: ctx.where || '',
+    counter: ctx.counter || { n: 0 },
+    checks: ctx.checks || [],
+  };
   const lines = markdown.replace(/\r\n/g, '\n').split('\n');
   const out = [];
   let i = 0;
@@ -221,6 +365,14 @@ export function render(markdown, ctx = {}) {
         body.push(lines[i++]);
       }
       i++;
+      if (kind === 'check') {
+        const n = context.counter.n++;
+        out.push(
+          checkBlock(body.join('\n'), { ...context, where: `${context.where} check ${n + 1}`.trim() },
+                     context.seed + '#' + n)
+        );
+        continue;
+      }
       const inner = render(body.join('\n'), context);
       const label = title || CALLOUTS[kind] || kind;
       if (kind === 'solution') {
@@ -316,6 +468,9 @@ export function toPlainText(markdown) {
   return markdown
     .replace(/```[\s\S]*?```/g, ' ')
     .replace(/\$\$[\s\S]*?\$\$/g, ' ')
+    // Checks are stripped whole: their explanations would otherwise turn up
+    // in search results and spoil the question.
+    .replace(/^:::\s*check[\s\S]*?^:::\s*$/gm, ' ')
     .replace(/^:::.*$/gm, ' ')
     .replace(/[#>*_`|]/g, ' ')
     .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
