@@ -80,8 +80,8 @@ Two consequences that shape how transformers are optimised:
 ::: check
 An H100 has a ridge point around 295 FLOP/byte. What follows for an operation well below it?
 
-- [x] Extra arithmetic is free in wall-clock terms, because the units are idle waiting for data
-  > This is why FlashAttention can do *more* FLOPs and run faster, and why gradient checkpointing costs far less than its 30% FLOP overhead suggests. It is the single most useful fact in performance engineering.
+- [x] Extra arithmetic is free in wall-clock terms
+  > The units are idle waiting for data. This is why FlashAttention can do *more* FLOPs and run faster, and why gradient checkpointing costs far less than its 30% FLOP overhead suggests. It is the single most useful fact in performance engineering.
 - [ ] Reducing FLOPs is the highest-leverage optimisation
   > Below the ridge, cutting FLOPs changes nothing — the data movement is the constraint.
 - [ ] The kernel is running at peak and cannot be improved
@@ -136,8 +136,8 @@ reaches 2–5%.
 ::: check
 You fuse three elementwise kernels into one. On a memory-bound operation, what does that buy?
 
-- [x] Two round trips to HBM are eliminated — the intermediates never leave the chip, so the traffic falls by roughly two thirds
-  > The arithmetic is identical. On a memory-bound operation, traffic is the runtime, which is why `torch.compile`'s main win on elementwise chains is fusion.
+- [x] Two round trips to HBM are eliminated
+  > The intermediates never leave the chip, so the traffic falls by roughly two thirds. The arithmetic is identical. On a memory-bound operation, traffic is the runtime, which is why `torch.compile`'s main win on elementwise chains is fusion.
 - [ ] Two kernel launches are saved, which is the main cost
   > Launch overhead is a few microseconds and matters only for very small tensors.
 - [ ] The arithmetic is reduced by a factor of three

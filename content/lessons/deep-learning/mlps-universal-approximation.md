@@ -82,8 +82,8 @@ structured data.
 ::: check
 Why is there no activation on the final `nn.Linear` in the example MLP?
 
-- [x] It produces logits, and `F.cross_entropy` applies log-softmax internally — adding softmax yourself applies it twice
-  > The double-softmax bug is insidious: the model still trains, just badly, because the gradients are flattened rather than wrong in an obvious way.
+- [x] It produces logits, and `F.cross_entropy` applies log-softmax internally
+  > Adding softmax yourself applies it twice. The double-softmax bug is insidious: the model still trains, just badly, because the gradients are flattened rather than wrong in an obvious way.
 - [ ] Activations are never applied to the last layer of any network
   > A regression head with a bounded target may well end in a sigmoid or tanh. It depends on the output's meaning.
 - [ ] It would break backpropagation through the loss

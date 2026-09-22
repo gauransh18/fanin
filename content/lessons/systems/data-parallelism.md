@@ -118,8 +118,8 @@ scaling efficiency.
 ::: check
 Why must `sampler.set_epoch(epoch)` be called on a `DistributedSampler`?
 
-- [x] Without it every rank replays the same shuffle order every epoch, so the model sees an identical sequence of batches each time round
-  > The epoch number is what seeds the permutation. Forgetting it is silent: the run proceeds, the loss falls, and the effective dataset ordering never changes.
+- [x] Without it every rank replays the same shuffle order every epoch
+  > The model sees an identical sequence of batches each time round. The epoch number is what seeds the permutation. Forgetting it is silent: the run proceeds, the loss falls, and the effective dataset ordering never changes.
 - [ ] It tells the sampler which rank it is running on
   > The rank is fixed at construction. The epoch is what varies.
 - [ ] It resets the gradient accumulation counter
@@ -174,8 +174,8 @@ def scaling_efficiency(step_fn, single_gpu_throughput, warmup=10, iters=50):
 ::: check
 DDP overlaps gradient all-reduce with the backward pass. How, and why does `no_sync` exist?
 
-- [x] Gradients are bucketed and each bucket's all-reduce launches as soon as it is ready, so communication hides behind the remaining backward — and under gradient accumulation you want that suppressed on all but the last microbatch
-  > Without `no_sync`, every microbatch triggers a full all-reduce and the accumulation costs $N$ times the communication for no benefit.
+- [x] Gradients are bucketed and each bucket's all-reduce launches as soon as it is ready
+  > Communication hides behind the remaining backward — and under gradient accumulation you want that suppressed on all but the last microbatch. Without `no_sync`, every microbatch triggers a full all-reduce and the accumulation costs $N$ times the communication for no benefit.
 - [ ] The all-reduce runs after backward completes, on a separate stream
   > Waiting for the whole backward would leave nothing to hide behind.
 - [ ] Gradients are compressed, so communication is short enough to ignore

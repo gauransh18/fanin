@@ -70,8 +70,8 @@ GPT, Llama, Mistral, Qwen — everything at the frontier.
 ::: check
 Masked language modelling corrupts 15% of tokens and predicts them. What does that cost relative to autoregressive training?
 
-- [x] Only the masked 15% of positions produce a training signal, so 85% of the compute per sequence yields no gradient
-  > An autoregressive model gets a signal at every position. That efficiency gap is one of the reasons decoder-only models scaled better, quite apart from what each architecture can do.
+- [x] Only the masked 15% of positions produce a training signal
+  > 85% of the compute per sequence yields no gradient. An autoregressive model gets a signal at every position. That efficiency gap is one of the reasons decoder-only models scaled better, quite apart from what each architecture can do.
 - [ ] Nothing — every position still contributes through the bidirectional context
   > Positions contribute as *context*, which is not the same as producing a loss term.
 - [ ] It requires twice the memory, because attention is bidirectional

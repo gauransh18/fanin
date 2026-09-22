@@ -141,8 +141,8 @@ timed(1, 4096, 4096)
 ::: check
 The same matmul kernel hits near peak TFLOP/s at $4096 \times 4096 \times 4096$ but a small fraction of peak at $1 \times 4096 \times 4096$. Why?
 
-- [x] The second has low arithmetic intensity, so the GPU waits on memory rather than computing
-  > With one row, the weights still have to be read in full but there is almost no arithmetic to do with them. The FLOP count no longer predicts runtime because FLOPs were never the bottleneck.
+- [x] The second has low arithmetic intensity
+  > The GPU waits on memory rather than computing. With one row, the weights still have to be read in full but there is almost no arithmetic to do with them. The FLOP count no longer predicts runtime because FLOPs were never the bottleneck.
 - [ ] The second does far fewer FLOPs, so it finishes faster
   > It does do fewer FLOPs — but the measure here is FLOPs *per second*, and that rate collapses. Doing less work more slowly is the whole problem.
 - [ ] Non-square matrices cannot use tensor cores

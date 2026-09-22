@@ -93,8 +93,8 @@ torch.allclose(manual, F.cross_entropy(logits, labels))   # True
 ::: check
 `idx` contains duplicate indices. Why does `x[idx] += 1` lose updates?
 
-- [x] Advanced indexing copies, so the increment happens on a temporary and the write-back keeps only the last value per position
-  > Read, increment, write — with duplicates, several increments target the same slot and all but one are discarded. `x.index_add_(0, idx, values)` accumulates properly, which is what sparse gradient accumulation and scatter-based routing need.
+- [x] Advanced indexing copies
+  > The increment happens on a temporary and the write-back keeps only the last value per position. Read, increment, write — with duplicates, several increments target the same slot and all but one are discarded. `x.index_add_(0, idx, values)` accumulates properly, which is what sparse gradient accumulation and scatter-based routing need.
 - [ ] Integer overflow in the index tensor
   > Indices are int64 and nowhere near overflowing. The loss is structural, not numerical.
 - [ ] `+=` is not defined for tensors and silently becomes `=`

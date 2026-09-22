@@ -114,8 +114,8 @@ non-contiguous layer groups, reducing the bubble further at the cost of more com
 ::: check
 Tensor parallelism splits the transformer MLP column-parallel then row-parallel. Why that pairing specifically?
 
-- [x] It gives one all-reduce per MLP block instead of two — the elementwise nonlinearity needs no communication after a column split, and the row split produces partial sums that combine in a single reduce
-  > Splitting both by columns, or both by rows, would need communication between the two matrices as well. The same pattern applies to attention: split by heads, then row-split $W_O$ and all-reduce once.
+- [x] It gives one all-reduce per MLP block instead of two
+  > The elementwise nonlinearity needs no communication after a column split, and the row split produces partial sums that combine in a single reduce. Splitting both by columns, or both by rows, would need communication between the two matrices as well. The same pattern applies to attention: split by heads, then row-split $W_O$ and all-reduce once.
 - [ ] It keeps the activation memory balanced across ranks
   > Memory balance is a consequence; the communication count is the reason.
 - [ ] Row-parallel matrices cannot be first in a chain
@@ -165,8 +165,8 @@ backward pass (lesson 7.05), which is why it tolerates slower links.
 ::: check
 Pipeline parallelism splits the model by layers across devices. What is the bubble?
 
-- [x] The idle time at the start and end of each batch while the pipeline fills and drains — with $p$ stages and $m$ microbatches it is about $(p-1)/(m+p-1)$ of the time
-  > More microbatches shrink it, which is why pipeline parallelism wants large batches, and why interleaved schedules exist to shrink it further.
+- [x] The idle time at the start and end of each batch while the pipeline fills and drains
+  > With $p$ stages and $m$ microbatches it is about $(p-1)/(m+p-1)$ of the time. More microbatches shrink it, which is why pipeline parallelism wants large batches, and why interleaved schedules exist to shrink it further.
 - [ ] The memory overhead of holding activations for in-flight microbatches
   > That overhead is real and is a separate cost from the idle time.
 - [ ] The communication between adjacent stages

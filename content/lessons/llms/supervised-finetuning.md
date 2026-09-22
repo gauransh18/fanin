@@ -152,8 +152,8 @@ unrelated conversations.
 ::: check
 SFT on a thousand carefully written examples routinely beats SFT on a hundred thousand scraped ones. Why?
 
-- [x] The model is learning a *format and a style*, not new knowledge — so a consistent, high-quality demonstration set teaches it cleanly while a noisy one teaches it to be inconsistent
-  > The capability came from pretraining. SFT's job is to select and shape it, and every bad example is a demonstration of bad behaviour the model will imitate.
+- [x] The model is learning a *format and a style*, not new knowledge
+  > So a consistent, high-quality demonstration set teaches it cleanly while a noisy one teaches it to be inconsistent. The capability came from pretraining. SFT's job is to select and shape it, and every bad example is a demonstration of bad behaviour the model will imitate.
 - [ ] Smaller datasets overfit less
   > A smaller dataset overfits *more*, all else equal. Quality, not quantity, is what is doing the work.
 - [ ] Large datasets require more epochs, which degrades the base model

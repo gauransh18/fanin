@@ -149,8 +149,8 @@ The value of this logging compounds: today's production traffic is tomorrow's ev
 ::: check
 A deployed model's service is up, latency is fine, and the outputs are getting worse. What kind of monitoring catches that?
 
-- [x] Output-side signals — mean log-probability, response length distribution, refusal and error rates, and a fixed regression set of prompts scored on every deploy
-  > Infrastructure monitoring cannot see it, because nothing is broken in the way infrastructure understands. Drift in the *input* distribution is the other half, and it usually moves first.
+- [x] Output-side signals
+  > Mean log-probability, response length distribution, refusal and error rates, and a fixed regression set of prompts scored on every deploy. Infrastructure monitoring cannot see it, because nothing is broken in the way infrastructure understands. Drift in the *input* distribution is the other half, and it usually moves first.
 - [ ] CPU and GPU utilisation, which fall when the model degrades
   > Utilisation is unchanged; the model does exactly as much work as before.
 - [ ] Error rate and uptime, which are the standard service metrics

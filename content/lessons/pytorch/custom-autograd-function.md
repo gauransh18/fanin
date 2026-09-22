@@ -97,8 +97,8 @@ it positionally.
 ::: check
 A custom `LogSumExp` saves `softmax(x)` in the forward pass. What does that buy the backward pass?
 
-- [x] Backward needs no exponentials at all, because $\partial\,\text{LSE}/\partial x_i$ *is* softmax
-  > The analytic gradient of the whole composition is better conditioned than the product of its pieces' gradients — which is exactly why log-sum-exp and softmax cross-entropy are the canonical cases for a custom backward.
+- [x] Backward needs no exponentials at all
+  > $\partial\,\text{LSE}/\partial x_i$ *is* softmax. The analytic gradient of the whole composition is better conditioned than the product of its pieces' gradients — which is exactly why log-sum-exp and softmax cross-entropy are the canonical cases for a custom backward.
 - [ ] It avoids saving the input, halving memory
   > The softmax is the same size as the input, so memory is unchanged. Stability is the win here.
 - [ ] It lets the backward run in a lower precision
@@ -148,8 +148,8 @@ badly when they do not. Clipping the pass-through to the quantization range
 ::: check
 Your custom `backward` returns tensors of the wrong shape. What happens?
 
-- [x] Nothing catches it automatically — `backward` must return one gradient per forward input, with that input's shape, and getting it wrong is a bug autograd will not find
-  > This is what `torch.autograd.gradcheck` exists for. Write the function, then check it against finite differences before trusting a single training step.
+- [x] Nothing catches it automatically
+  > `backward` must return one gradient per forward input, with that input's shape, and getting it wrong is a bug autograd will not find. This is what `torch.autograd.gradcheck` exists for. Write the function, then check it against finite differences before trusting a single training step.
 - [ ] Autograd raises a shape error immediately
   > It may, if the shape is incompatible with the accumulation target — but broadcasting frequently absorbs the mismatch and produces plausible wrong numbers instead.
 - [ ] The gradient is silently zeroed for safety

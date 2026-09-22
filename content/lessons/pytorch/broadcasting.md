@@ -70,8 +70,8 @@ One line, and the class of bug disappears.
 ::: check
 `pred` has shape `(32,)` and `target` has shape `(32, 1)`. What does `((pred - target) ** 2).mean()` compute?
 
-- [x] The mean over a 32×32 matrix of every pairwise difference — a real number that is not the loss you wanted
-  > Aligned from the right, the 1 stretches against 32 and the missing leading dimension stretches too. No exception is raised, the number decreases during training, and the model learns the wrong thing.
+- [x] The mean over a 32×32 matrix of every pairwise difference
+  > A real number that is not the loss you wanted. Aligned from the right, the 1 stretches against 32 and the missing leading dimension stretches too. No exception is raised, the number decreases during training, and the model learns the wrong thing.
 - [ ] The correct mean squared error; the trailing dimension is ignored
   > A trailing singleton is never ignored. It is exactly what triggers the broadcast.
 - [ ] A shape error, since the tensors have different ranks

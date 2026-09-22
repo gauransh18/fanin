@@ -95,8 +95,8 @@ matters as much as one at position 4.
 ::: check
 The RLHF objective penalises KL divergence from the SFT model. Why can you not simply tune $\beta$ to zero?
 
-- [x] The reward model was trained on SFT-like outputs and is unreliable away from that distribution — optimising against unreliable predictions *is* reward hacking
-  > It also preserves capabilities and bounds the damage, making RLHF an adjustment rather than a fresh optimisation. Typical $\beta$ is 0.01–0.1: too low and the policy hacks the reward, too high and nothing changes.
+- [x] The reward model was trained on SFT-like outputs and is unreliable away from that distribution
+  > Optimising against unreliable predictions *is* reward hacking. It also preserves capabilities and bounds the damage, making RLHF an adjustment rather than a fresh optimisation. Typical $\beta$ is 0.01–0.1: too low and the policy hacks the reward, too high and nothing changes.
 - [ ] Without it the gradient is undefined
   > The policy gradient is perfectly well defined without a KL term. What is undefined is whether the reward still means anything.
 - [ ] It is required for the value model to converge

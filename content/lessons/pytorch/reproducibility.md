@@ -197,8 +197,8 @@ discrepancy usually disappears.
 ::: check
 What does `torch.use_deterministic_algorithms(True)` do when it meets an operation with no deterministic implementation?
 
-- [x] It raises, naming the operation — which is the point, since it tells you exactly which line is the problem
-  > Silently proceeding would leave you believing the run is deterministic when it is not. Expect to pay 10–30% throughput, so use it for debugging and regression tests rather than production training.
+- [x] It raises, naming the operation
+  > Which is the point, since it tells you exactly which line is the problem. Silently proceeding would leave you believing the run is deterministic when it is not. Expect to pay 10–30% throughput, so use it for debugging and regression tests rather than production training.
 - [ ] It falls back to a slower CPU implementation
   > There is no automatic fallback. You get an error and a decision to make.
 - [ ] It runs the operation anyway and logs a warning

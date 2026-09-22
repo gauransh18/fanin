@@ -135,8 +135,8 @@ fixes it, which is what StreamingLLM does.
 ::: check
 Why does the implementation use one `nn.Linear(d, 3 * d)` instead of three separate projections for Q, K and V?
 
-- [x] A single larger matmul beats three smaller ones — better arithmetic intensity and one kernel launch instead of three
-  > It is lesson 1.03's argument in practice: at these shapes the limit is usually memory movement, and three small matmuls each pay their own round trip to HBM.
+- [x] A single larger matmul beats three smaller ones
+  > Better arithmetic intensity and one kernel launch instead of three. It is lesson 1.03's argument in practice: at these shapes the limit is usually memory movement, and three small matmuls each pay their own round trip to HBM.
 - [ ] It forces Q, K and V to share weights, which regularises the model
   > They do not share weights — the output is chunked into three independent slices.
 - [ ] It is required for `F.scaled_dot_product_attention` to dispatch to FlashAttention

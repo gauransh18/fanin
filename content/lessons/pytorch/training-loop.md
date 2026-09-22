@@ -146,8 +146,8 @@ is disabled, which is what makes it hard to notice.
 ::: check
 With gradient accumulation over `accum` microbatches, the loop calls `(loss / accum).backward()`. Why the division?
 
-- [x] Gradients accumulate by summing, so dividing makes the total the *mean* over microbatches — matching what one large batch would give
-  > Without it, the effective gradient scale grows with `accum`, and the learning rate you tuned at `accum=1` is suddenly `accum` times too large.
+- [x] Gradients accumulate by summing
+  > Dividing makes the total the *mean* over microbatches — matching what one large batch would give. Without it, the effective gradient scale grows with `accum`, and the learning rate you tuned at `accum=1` is suddenly `accum` times too large.
 - [ ] To keep the loss value comparable when logging
   > The logged number does change, but the reason is the gradient, not the display. You would still divide if you logged nothing.
 - [ ] To prevent overflow in bf16

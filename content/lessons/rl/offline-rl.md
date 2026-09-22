@@ -105,8 +105,8 @@ why IQL is often the strongest and simplest choice.
 ::: check
 Q-learning is off-policy, so it should learn from any dataset. Why does running DQN on a fixed dataset usually produce a policy worse than the one that generated it?
 
-- [x] The Bellman max ranges over all actions, including ones never taken — $Q$ extrapolates arbitrarily there, the inflated value enters the target, and nothing corrects it
-  > Online, the agent tries the overestimated action and the estimate falls. Interaction *is* the error-correction mechanism, and removing it is what makes the setting hard. The symptom is unmistakable: $Q$-values growing without bound while performance collapses.
+- [x] The Bellman max ranges over all actions, including ones never taken
+  > $Q$ extrapolates arbitrarily there, the inflated value enters the target, and nothing corrects it. Online, the agent tries the overestimated action and the estimate falls. Interaction *is* the error-correction mechanism, and removing it is what makes the setting hard. The symptom is unmistakable: $Q$-values growing without bound while performance collapses.
 - [ ] The dataset is not large enough to cover the state space
   > More data helps, and the failure happens even with excellent coverage of the *states* if the actions are narrow.
 - [ ] Off-policy correction requires importance weights that are unavailable offline
@@ -134,8 +134,8 @@ RL results do not beat it, and it is a one-line implementation.
 ::: check
 Conservative Q-learning (CQL) adds a term that pushes $Q$ down on out-of-distribution actions and up on dataset actions. Why does that help?
 
-- [x] It makes the learned $Q$ a lower bound on the true value, so the policy cannot be lured towards actions whose value was extrapolated upwards
-  > Policy-constraint methods attack the same problem from the other side, by keeping the policy near the behaviour policy. Both are ways of restoring the correction that interaction would otherwise supply.
+- [x] It makes the learned $Q$ a lower bound on the true value
+  > The policy cannot be lured towards actions whose value was extrapolated upwards. Policy-constraint methods attack the same problem from the other side, by keeping the policy near the behaviour policy. Both are ways of restoring the correction that interaction would otherwise supply.
 - [ ] It regularises the network, reducing overfitting to the dataset
   > Generic regularisation does not target out-of-distribution *actions* specifically, which is where the failure lives.
 - [ ] It removes the need for a behaviour policy estimate

@@ -89,8 +89,8 @@ them from quantization error.
 ::: check
 Quantizing a 70B model from bf16 to 4 bits cuts memory from 140 GB to about 35 GB. Why does it also make decoding *faster*?
 
-- [x] Decode is memory-bandwidth-bound, so reading a quarter as many bytes per token is a direct speedup
-  > One new token against a large cache has almost no arithmetic per byte read. Shrinking the bytes is the whole lever, which is also why KV-cache quantization pays off.
+- [x] Decode is memory-bandwidth-bound
+  > Reading a quarter as many bytes per token is a direct speedup. One new token against a large cache has almost no arithmetic per byte read. Shrinking the bytes is the whole lever, which is also why KV-cache quantization pays off.
 - [ ] Integer arithmetic is faster than bf16 on tensor cores
   > Weights are typically dequantised to a floating format for the matmul, so the arithmetic is not what changes.
 - [ ] Smaller models need fewer layers
@@ -132,8 +132,8 @@ model = AutoModelForCausalLM.from_pretrained('meta-llama/Llama-2-70b-hf',
 ::: check
 Transformer activations contain a few features with magnitudes far above the rest. Why does that break naive quantization?
 
-- [x] A single outlier stretches the scale for the whole tensor, so every ordinary value is crushed into a handful of quantization levels
-  > The responses are all about granularity: per-channel scales, keeping outlier channels in higher precision, or rotating the representation so the outliers are spread out.
+- [x] A single outlier stretches the scale for the whole tensor
+  > Every ordinary value is crushed into a handful of quantization levels. The responses are all about granularity: per-channel scales, keeping outlier channels in higher precision, or rotating the representation so the outliers are spread out.
 - [ ] Outliers overflow the integer range and wrap around
   > Clamping handles the range; the damage is to the resolution of everything else.
 - [ ] Outliers are noise and should simply be clipped

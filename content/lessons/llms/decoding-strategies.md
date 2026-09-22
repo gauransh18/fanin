@@ -104,8 +104,8 @@ Most libraries do this correctly; hand-rolled samplers frequently do not.
 ::: check
 Greedy decoding produces noticeably worse open-ended text than sampling. Why?
 
-- [x] Human text is not the maximum-likelihood sequence — it sits in a region of moderate probability, and always taking the mode leaves that region
-  > It also falls into degenerate repetition: once a repeated pattern is locally most likely, nothing breaks the cycle. Greedy remains correct where there *is* one right answer — classification, extraction, structured output, reproducible evaluation.
+- [x] Human text is not the maximum-likelihood sequence
+  > It sits in a region of moderate probability, and always taking the mode leaves that region. It also falls into degenerate repetition: once a repeated pattern is locally most likely, nothing breaks the cycle. Greedy remains correct where there *is* one right answer — classification, extraction, structured output, reproducible evaluation.
 - [ ] Greedy decoding cannot use the full vocabulary
   > It considers every logit; it simply always takes the largest.
 - [ ] The argmax is undefined when two logits tie
@@ -145,8 +145,8 @@ always scores worse, and unnormalised beam search terminates as early as it can.
 ::: check
 Top-$k$ and top-$p$ both truncate the distribution before sampling. How do they differ?
 
-- [x] Top-$k$ keeps a fixed number of tokens; top-$p$ keeps however many are needed to reach cumulative probability $p$, so it adapts to how confident the model is
-  > Where the model is sure, top-$p$ keeps two or three options; where it is unsure, it keeps hundreds. A fixed $k$ is either too permissive in the first case or too restrictive in the second.
+- [x] Top-$k$ keeps a fixed number of tokens; top-$p$ keeps however many are needed to reach cumulative probability $p$
+  > It adapts to how confident the model is. Where the model is sure, top-$p$ keeps two or three options; where it is unsure, it keeps hundreds. A fixed $k$ is either too permissive in the first case or too restrictive in the second.
 - [ ] Top-$p$ keeps a fixed number and top-$k$ adapts
   > Reversed — $k$ is the count and $p$ the probability mass.
 - [ ] Top-$k$ renormalises and top-$p$ does not

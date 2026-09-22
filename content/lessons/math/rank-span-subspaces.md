@@ -108,8 +108,8 @@ torch.linalg.matrix_rank(B @ A)          # tensor(8)
 ::: check
 Why does LoRA freeze $W$ and learn $\Delta W = BA$ with $r \ll d$, rather than learning $\Delta W$ directly?
 
-- [x] Fine-tuning updates are observed to be close to low rank, so the extra degrees of freedom in a full $\Delta W$ mostly go unused
-  > At $d = 4096$ and $r = 8$, the factored form has 65,536 parameters against 16.7M — 0.4% — and empirically loses little, because the update was never using the rest.
+- [x] Fine-tuning updates are observed to be close to low rank
+  > The extra degrees of freedom in a full $\Delta W$ mostly go unused. At $d = 4096$ and $r = 8$, the factored form has 65,536 parameters against 16.7M — 0.4% — and empirically loses little, because the update was never using the rest.
 - [ ] A low-rank matrix is faster to multiply, which is the main saving
   > Applying the factors in sequence is indeed cheaper, but the headline win is the count of *trainable* parameters and the optimizer state that comes with them.
 - [ ] A full $\Delta W$ would not fit in memory

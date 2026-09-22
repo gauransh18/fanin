@@ -104,8 +104,8 @@ torch.corrcoef(torch.stack([x, y]))[0, 1]   # ~0.00 -- yet y is a function of x
 ::: check
 $X \sim \mathcal{N}(0,1)$ and $Y = X^2$. Their correlation is about zero. What does that tell you?
 
-- [x] Nothing about independence — covariance only detects *linear* relationships, and $Y$ is a deterministic function of $X$
-  > Independence implies zero covariance; the converse is false. This gap is the whole reason mutual information exists as a separate concept in lesson 1.15.
+- [x] Nothing about independence
+  > Covariance only detects *linear* relationships, and $Y$ is a deterministic function of $X$. Independence implies zero covariance; the converse is false. This gap is the whole reason mutual information exists as a separate concept in lesson 1.15.
 - [ ] They are independent, since zero correlation is the definition
   > The definition of independence is $p(x,y) = p(x)p(y)$. Zero correlation is a much weaker consequence.
 - [ ] The sample was too small to detect the relationship

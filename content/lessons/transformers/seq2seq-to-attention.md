@@ -93,8 +93,8 @@ without changing predictions. Treat them as a useful signal, not a causal accoun
 ::: check
 What specific failure did Bahdanau attention fix in 2014?
 
-- [x] Everything about the source sentence had to pass through one fixed-size vector, so translation quality fell off sharply with source length
-  > Keeping every encoder state and letting the decoder choose which to read removes the bottleneck: any source position is reachable in one hop, at any output step.
+- [x] Everything about the source sentence had to pass through one fixed-size vector
+  > Translation quality fell off sharply with source length. Keeping every encoder state and letting the decoder choose which to read removes the bottleneck: any source position is reachable in one hop, at any output step.
 - [ ] Recurrent encoders could not be parallelised across positions
   > A real problem, and one attention did not fix in 2014 — the RNN was still there. Removing it came later.
 - [ ] Softmax saturated over long sequences

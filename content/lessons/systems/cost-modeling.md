@@ -97,8 +97,8 @@ overtraining a smaller model (lesson 5.03) and for quantization (lesson 5.12).
 ::: check
 Where do naive training cost estimates most often go wrong?
 
-- [x] They omit the overhead factor — a frontier run does not spend 100% of its wall clock making forward progress
-  > Failures, restarts from checkpoints, stragglers and debugging time add up, and a multiplier around 1.35 is typical. The FLOP arithmetic itself is the easy part.
+- [x] They omit the overhead factor
+  > A frontier run does not spend 100% of its wall clock making forward progress. Failures, restarts from checkpoints, stragglers and debugging time add up, and a multiplier around 1.35 is typical. The FLOP arithmetic itself is the easy part.
 - [ ] They use $6N$ instead of $2N$ per token
   > $6N$ is right for a training step — one unit forward and two backward. $2N$ is the forward-only inference figure.
 - [ ] They assume 100% MFU
@@ -133,8 +133,8 @@ the reliability first, then take the discount.
 ::: check
 You are deciding between an API and self-hosting. What determines the crossover?
 
-- [x] Sustained throughput — a self-hosted GPU costs the same whether it is busy or idle, so the break-even is about utilisation rather than per-token price
-  > Bursty or low-volume traffic favours an API; steady high volume favours self-hosting. Add the engineering time, which is usually the larger hidden cost.
+- [x] Sustained throughput
+  > A self-hosted GPU costs the same whether it is busy or idle, so the break-even is about utilisation rather than per-token price. Bursty or low-volume traffic favours an API; steady high volume favours self-hosting. Add the engineering time, which is usually the larger hidden cost.
 - [ ] Model quality, since self-hosted models are always weaker
   > Open-weight models are competitive for many tasks, and the question here is economic.
 - [ ] The size of the model, since large models cannot be self-hosted

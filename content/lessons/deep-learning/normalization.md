@@ -154,8 +154,8 @@ class PreNormBlock(nn.Module):
 ::: check
 A model shows excellent training accuracy and terrible validation accuracy, and it uses BatchNorm. What is the first thing to check?
 
-- [x] Whether `model.eval()` was called — at evaluation BatchNorm switches to running averages rather than batch statistics
-  > Train and eval compute genuinely different functions, so a bug in the running statistics shows up only at evaluation. This is the classic version of the `train()`/`eval()` trap from lesson 2.08.
+- [x] Whether `model.eval()` was called
+  > At evaluation BatchNorm switches to running averages rather than batch statistics. Train and eval compute genuinely different functions, so a bug in the running statistics shows up only at evaluation. This is the classic version of the `train()`/`eval()` trap from lesson 2.08.
 - [ ] Whether the learning rate was too high
   > A high learning rate usually damages training accuracy too, which is excellent here.
 - [ ] Whether the validation set is from a different distribution

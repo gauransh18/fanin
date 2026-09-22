@@ -101,8 +101,8 @@ and chop into fixed blocks, eliminating padding entirely.
 ::: check
 You use an `IterableDataset` with `num_workers=8` and do not read `get_worker_info()`. What happens?
 
-- [x] Every worker runs the same `__iter__`, so each epoch contains eight copies of everything
-  > Your effective dataset is eight times smaller than you think, and the model sees each example eight times per "epoch". Map-style datasets avoid this because the sampler owns the ordering; with iterable style, sharding is yours to do.
+- [x] Every worker runs the same `__iter__`
+  > Each epoch contains eight copies of everything. Your effective dataset is eight times smaller than you think, and the model sees each example eight times per "epoch". Map-style datasets avoid this because the sampler owns the ordering; with iterable style, sharding is yours to do.
 - [ ] Workers deadlock waiting for a shared iterator
   > Each worker gets its own copy of the dataset object, so there is no contention — which is exactly why the duplication is silent.
 - [ ] PyTorch raises an error requiring explicit sharding

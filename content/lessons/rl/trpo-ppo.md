@@ -94,8 +94,8 @@ removes the objective's gradient beyond a threshold.
 ::: check
 Why constrain the KL divergence between old and new policies rather than the step size in parameter space?
 
-- [x] A small parameter change can produce a large policy change — especially near-deterministically, where a small logit shift flips the argmax — and KL is invariant to how the policy is parameterised
-  > Constraining the distribution is what makes the guarantee meaningful. In RL a bad step collects worse data and the next step is worse still, so recovery is not automatic the way it is in supervised learning.
+- [x] A small parameter change can produce a large policy change
+  > Especially near-deterministically, where a small logit shift flips the argmax — and KL is invariant to how the policy is parameterised. Constraining the distribution is what makes the guarantee meaningful. In RL a bad step collects worse data and the next step is worse still, so recovery is not automatic the way it is in supervised learning.
 - [ ] KL is cheaper to compute than a parameter norm
   > A parameter norm is trivially cheap; KL needs an extra forward pass. The reason is correctness, not cost.
 - [ ] Parameter-space constraints do not have a closed form
@@ -170,8 +170,8 @@ metrics = {
 ::: check
 PPO replaces TRPO's hard KL constraint with what?
 
-- [x] A clipped surrogate objective — the probability ratio is clipped to $[1-\epsilon, 1+\epsilon]$, so a step beyond that range stops paying
-  > It gets most of TRPO's benefit with first-order optimisation and no conjugate-gradient machinery, which is why it displaced it almost entirely.
+- [x] A clipped surrogate objective
+  > The probability ratio is clipped to $[1-\epsilon, 1+\epsilon]$, so a step beyond that range stops paying. It gets most of TRPO's benefit with first-order optimisation and no conjugate-gradient machinery, which is why it displaced it almost entirely.
 - [ ] A KL penalty added to the loss with a fixed coefficient
   > That is an adaptive-penalty variant PPO also describes, and the clipped objective is the one that is used.
 - [ ] A trust region on the parameters rather than on the policy

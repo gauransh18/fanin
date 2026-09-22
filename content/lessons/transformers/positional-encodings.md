@@ -93,8 +93,8 @@ always penalised, so genuine long-range retrieval is harder.
 ::: check
 A model with learned absolute position embeddings trained at length 2,048 is asked to process 2,049 tokens. What happens?
 
-- [x] There is no row in the table for position 2,049 — not a graceful degradation, simply nothing to look up
-  > Extending context means adding rows and training them. This is a large part of why RoPE displaced learned absolute embeddings, and it is separate from the second objection: absolute position is the wrong invariant anyway.
+- [x] There is no row in the table for position 2,049
+  > Not a graceful degradation, simply nothing to look up. Extending context means adding rows and training them. This is a large part of why RoPE displaced learned absolute embeddings, and it is separate from the second objection: absolute position is the wrong invariant anyway.
 - [ ] Quality degrades smoothly, as it does for sinusoidal encodings
   > Sinusoids at least *evaluate* at any position, however poorly. A table lookup does not.
 - [ ] The position wraps around to zero
@@ -172,8 +172,8 @@ are out of distribution. Three standard extensions:
 ::: check
 Why is absolute position described as the wrong invariant for language?
 
-- [x] What matters is that a verb is three tokens after its subject, not that the subject sits at index 847 — an absolute scheme has to learn the same relationship separately at every offset
-  > Relative schemes and RoPE encode the offset directly, so one learned relationship transfers across the whole sequence.
+- [x] What matters is that a verb is three tokens after its subject, not that the subject sits at index 847
+  > An absolute scheme has to learn the same relationship separately at every offset. Relative schemes and RoPE encode the offset directly, so one learned relationship transfers across the whole sequence.
 - [ ] Because sentences have variable length, so absolute indices are undefined
   > They are perfectly well defined. The complaint is about what they generalise across.
 - [ ] Because attention is permutation invariant, so absolute positions are ignored

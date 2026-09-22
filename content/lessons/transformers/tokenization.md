@@ -78,8 +78,8 @@ Thai, which have no whitespace word boundaries.
 ::: check
 Why not tokenize at the character level, given that it has no out-of-vocabulary problem at all?
 
-- [x] Sequences become 4–5× longer, and attention is $O(T^2)$ in memory — a 16–25× cost — while the model burns capacity learning that `c-a-t` is a unit
-  > Subwords are the compromise: frequent words stay whole, rare ones decompose, and nothing is ever out of vocabulary.
+- [x] Sequences become 4–5× longer, and attention is $O(T^2)$ in memory
+  > A 16–25× cost — while the model burns capacity learning that `c-a-t` is a unit. Subwords are the compromise: frequent words stay whole, rare ones decompose, and nothing is ever out of vocabulary.
 - [ ] Character vocabularies are too large to embed efficiently
   > They are tiny — hundreds of entries against tens of thousands. Size is the one thing characters get right.
 - [ ] Characters cannot represent non-Latin scripts

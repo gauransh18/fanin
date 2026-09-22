@@ -118,8 +118,8 @@ Gaussian's learned standard deviation already controls exploration.
 ::: check
 The critic's errors bias the policy gradient. Why is that acceptable?
 
-- [x] A biased low-variance estimator beats an unbiased one you cannot see through — the bias–variance tradeoff of lesson 1.11 made concrete
-  > Monte Carlo advantages are unbiased and too noisy to learn from; TD(0) is biased and quiet. GAE's $\lambda$ is the dial between them.
+- [x] A biased low-variance estimator beats an unbiased one you cannot see through
+  > The bias–variance tradeoff of lesson 1.11 made concrete. Monte Carlo advantages are unbiased and too noisy to learn from; TD(0) is biased and quiet. GAE's $\lambda$ is the dial between them.
 - [ ] The bias cancels over many updates
   > It does not cancel; it systematically points the gradient slightly wrong. It is tolerated, not eliminated.
 - [ ] The critic converges before the actor, so the bias is transient
@@ -170,8 +170,8 @@ Healthy training shows explained variance rising into 0.8–0.95. If it stays ne
 ::: check
 GAE's $\lambda$ moves along a spectrum. What are the two ends?
 
-- [x] $\lambda = 0$ gives TD(0) — biased and low variance; $\lambda = 1$ gives Monte Carlo — unbiased and high variance
-  > It is an exponentially weighted average of all $n$-step estimators, so one parameter dials the whole bias–variance spectrum of lesson 6.04. Typical values sit around 0.95.
+- [x] $\lambda = 0$ gives TD(0)
+  > Biased and low variance; $\lambda = 1$ gives Monte Carlo — unbiased and high variance. It is an exponentially weighted average of all $n$-step estimators, so one parameter dials the whole bias–variance spectrum of lesson 6.04. Typical values sit around 0.95.
 - [ ] $\lambda = 0$ gives Monte Carlo and $\lambda = 1$ gives TD(0)
   > Reversed: $\lambda = 0$ keeps only the first TD error.
 - [ ] $\lambda$ controls the discount factor, not the estimator

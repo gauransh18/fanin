@@ -156,8 +156,8 @@ before enabling the variance head, or to clamp $\log\sigma$ to a sensible range.
 ::: check
 As the dataset grows, MAP converges to MLE. Why, and what does that predict in practice?
 
-- [x] The likelihood term grows with $n$ while the prior stays fixed, so regularisation matters most when data is scarce
-  > Which is exactly the empirical finding: weight decay helps fine-tuning on small datasets far more than it helps pretraining on trillions of tokens.
+- [x] The likelihood term grows with $n$ while the prior stays fixed
+  > Regularisation matters most when data is scarce. Which is exactly the empirical finding: weight decay helps fine-tuning on small datasets far more than it helps pretraining on trillions of tokens.
 - [ ] The prior shrinks as more data arrives, by construction
   > The prior is fixed; it is simply outvoted. Nothing about it changes.
 - [ ] Because MLE is consistent, and consistency implies the prior is correct

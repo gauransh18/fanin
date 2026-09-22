@@ -137,8 +137,8 @@ and $r \ll d$ *is* a single linear map, but it has far fewer parameters. LoRA, l
 ::: check
 A colleague stacks ten `nn.Linear` layers with no activation between them and reports that the model underfits badly. What is the underlying reason?
 
-- [x] The ten layers compose into a single linear map, so the model has the power of one layer
-  > $W_{10}(\cdots W_1\mathbf{x}) = (W_{10}\cdots W_1)\mathbf{x}$. Depth without a nonlinearity buys nothing at all in representational terms — this is the entire reason activation functions exist.
+- [x] The ten layers compose into a single linear map
+  > The model has the power of one layer. $W_{10}(\cdots W_1\mathbf{x}) = (W_{10}\cdots W_1)\mathbf{x}$. Depth without a nonlinearity buys nothing at all in representational terms — this is the entire reason activation functions exist.
 - [ ] Ten layers is too few to fit anything interesting
   > Depth is not the issue. Ten *nonlinear* layers would be a perfectly capable network.
 - [ ] The gradients vanish through ten multiplications

@@ -66,8 +66,8 @@ large state space is the hard part.
 ::: check
 DQN with $\epsilon$-greedy scored exactly zero on Montezuma's Revenge for years. Why exactly zero rather than merely low?
 
-- [x] The first reward needs roughly 100 specific actions in sequence, and a random walk covers distance $\sqrt{t}$ rather than $t$ — the agent never once saw a reward to learn from
-  > Undirected exploration does not accumulate: each random action is independent, so the agent oscillates around where it already is. With no reward ever observed, there is nothing for any value-based method to fit.
+- [x] The first reward needs roughly 100 specific actions in sequence, and a random walk covers distance $\sqrt{t}$ rather than $t$
+  > The agent never once saw a reward to learn from. Undirected exploration does not accumulate: each random action is independent, so the agent oscillates around where it already is. With no reward ever observed, there is nothing for any value-based method to fit.
 - [ ] The reward was too small to register against the noise
   > A reward of any size would have been transformative. None was ever reached.
 - [ ] The state space was too large for the network to represent
@@ -188,8 +188,8 @@ reward — carefully, per lesson 6.01's warning about degenerate policies.
 ::: check
 UCB adds a bonus $c\sqrt{\ln t / N(a)}$ to each action's estimated value. What is the principle?
 
-- [x] Optimism in the face of uncertainty — prefer actions you are uncertain about, because either they are good (reward) or bad (information)
-  > Both outcomes are useful, which is what makes the bonus principled rather than a heuristic. UCB achieves logarithmic regret on a bandit, which is optimal.
+- [x] Optimism in the face of uncertainty
+  > Prefer actions you are uncertain about, because either they are good (reward) or bad (information). Both outcomes are useful, which is what makes the bonus principled rather than a heuristic. UCB achieves logarithmic regret on a bandit, which is optimal.
 - [ ] Prefer actions that have been tried most, since their estimates are reliable
   > The bonus shrinks as $N(a)$ grows, so it does the opposite.
 - [ ] Add noise proportional to the reward scale, to escape local optima

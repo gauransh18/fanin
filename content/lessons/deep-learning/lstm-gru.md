@@ -103,8 +103,8 @@ hold a value while still accepting new information.
 ::: check
 The LSTM cell state updates as $\mathbf{c}_t = \mathbf{f}_t \odot \mathbf{c}_{t-1} + \mathbf{i}_t \odot \tilde{\mathbf{c}}_t$. Why does this fix vanishing gradients?
 
-- [x] $\partial\mathbf{c}_t/\partial\mathbf{c}_{t-1} = \text{diag}(\mathbf{f}_t)$ — no weight matrix in the path, so a forget gate near 1 carries gradient for arbitrarily many steps
-  > It is the $I + \partial F$ structure of residual connections, eighteen years earlier, with a learned gate in place of the identity.
+- [x] $\partial\mathbf{c}_t/\partial\mathbf{c}_{t-1} = \text{diag}(\mathbf{f}_t)$
+  > No weight matrix in the path, so a forget gate near 1 carries gradient for arbitrarily many steps. It is the $I + \partial F$ structure of residual connections, eighteen years earlier, with a learned gate in place of the identity.
 - [ ] The tanh bounds the state, preventing explosion
   > The tanh applies to the candidate and to the output view, not to the path between successive cell states. Bounding would not stop vanishing anyway.
 - [ ] The gates are trained to keep the spectral radius at exactly 1
@@ -131,8 +131,8 @@ position directly.
 ::: check
 The example initialises the forget-gate bias to 1 rather than 0. Why?
 
-- [x] The gate starts open, so gradient flows from the first step instead of being throttled while the bias learns its way up
-  > $\sigma(0) = 0.5$, so a zero bias halves the cell-state path at every step before training has taught it otherwise — $0.5^{100}$ is not a promising start.
+- [x] The gate starts open
+  > Gradient flows from the first step instead of being throttled while the bias learns its way up. $\sigma(0) = 0.5$, so a zero bias halves the cell-state path at every step before training has taught it otherwise — $0.5^{100}$ is not a promising start.
 - [ ] It makes the forget gate ignore the input initially
   > The gate still reads its input; the bias shifts where it sits, not whether it looks.
 - [ ] It prevents the cell state from saturating the tanh

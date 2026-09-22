@@ -124,8 +124,8 @@ draft from the same family and training data does far better than a generic smal
 ::: check
 Speculative decoding is *exact* — the output distribution matches standard sampling. Where does the speedup come from, then?
 
-- [x] Scoring $k$ already-known tokens costs almost what scoring 1 costs, because decode is memory-bound and the weights are read once either way
-  > If the draft is right a fraction $\alpha$ of the time, you get roughly $1/(1-\alpha)$ tokens per target forward pass. It is the same parallelism that makes training efficient, applied to candidate tokens.
+- [x] Scoring $k$ already-known tokens costs almost what scoring 1 costs
+  > Decode is memory-bound and the weights are read once either way. If the draft is right a fraction $\alpha$ of the time, you get roughly $1/(1-\alpha)$ tokens per target forward pass. It is the same parallelism that makes training efficient, applied to candidate tokens.
 - [ ] The draft model answers most queries, so the target model runs rarely
   > The target model verifies *every* token. Nothing is accepted without it.
 - [ ] It trades a small amount of quality for speed
@@ -161,8 +161,8 @@ Zero cost, zero training, and on copy-heavy tasks it beats a draft model.
 ::: check
 The acceptance rule accepts a drafted token with probability $\min(1, p(x)/q(x))$ and otherwise samples from $p'(x) \propto \max(0, p(x) - q(x))$. Why the residual?
 
-- [x] It is what makes the overall distribution exactly $p$ — the residual supplies precisely the mass the acceptance step under-delivered
-  > Sampling from $p$ directly on rejection would over-represent tokens the draft was already likely to propose. The residual is the correction that keeps the method exact rather than approximate.
+- [x] It is what makes the overall distribution exactly $p$
+  > The residual supplies precisely the mass the acceptance step under-delivered. Sampling from $p$ directly on rejection would over-represent tokens the draft was already likely to propose. The residual is the correction that keeps the method exact rather than approximate.
 - [ ] It biases the correction towards tokens the draft missed, improving speed
   > It is a correctness requirement, not a speed heuristic.
 - [ ] It prevents the same token being drafted again next round

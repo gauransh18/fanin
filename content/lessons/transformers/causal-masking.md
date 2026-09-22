@@ -144,8 +144,8 @@ The padded row then produces a finite garbage value that the loss discards via
 ::: check
 Causal masking makes training parallel over positions. Why does it not make *generation* parallel?
 
-- [x] Generating token $t+1$ genuinely requires token $t$, which does not exist yet — the mask lets you score a known sequence in parallel, not invent an unknown one
-  > Training is parallel, generation is sequential, and that asymmetry drives KV caching in lesson 4.10 and all the serving work in track 7.
+- [x] Generating token $t+1$ genuinely requires token $t$, which does not exist yet
+  > The mask lets you score a known sequence in parallel, not invent an unknown one. Training is parallel, generation is sequential, and that asymmetry drives KV caching in lesson 4.10 and all the serving work in track 7.
 - [ ] The mask has to be rebuilt at each step, which serialises the loop
   > Rebuilding a triangular mask is trivial and is not what serialises anything.
 - [ ] Softmax cannot be computed incrementally

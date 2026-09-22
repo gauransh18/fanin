@@ -176,8 +176,8 @@ spectrum would have needed 760 components for the same fidelity.
 ::: check
 Eckart–Young says the truncated SVD $A_k$ is the best rank-$k$ approximation to $A$. Best in what sense?
 
-- [x] No rank-$k$ matrix is closer to $A$ in either the spectral or the Frobenius norm — it is provably optimal, not a good heuristic
-  > And the error is exactly the tail you dropped: $\lVert A - A_k\rVert_F^2 = \sum_{i>k}\sigma_i^2$. You can price the approximation before making it.
+- [x] No rank-$k$ matrix is closer to $A$ in either the spectral or the Frobenius norm
+  > It is provably optimal, not a good heuristic. And the error is exactly the tail you dropped: $\lVert A - A_k\rVert_F^2 = \sum_{i>k}\sigma_i^2$. You can price the approximation before making it.
 - [ ] It is the fastest rank-$k$ approximation to compute
   > It is one of the more expensive ones — $O(mn\min(m,n))$. Randomised methods are faster and worse.
 - [ ] It preserves the largest entries of $A$

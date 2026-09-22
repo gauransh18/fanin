@@ -45,8 +45,8 @@ The asymmetry exists **only because the loss is scalar**. This is why you can ne
 ::: check
 Reverse mode gets all $N$ gradients in about two forward passes; forward mode needs $N$ passes. What makes the asymmetry possible?
 
-- [x] The loss is a single scalar, so every backward intermediate is a vector rather than a matrix
-  > Bracketing right to left starts from a $1 \times d$ row and stays that shape. Forward mode starts from $d_i \times N$ and stays that shape. This is also why you cannot backprop a vector-valued output without reducing it first.
+- [x] The loss is a single scalar
+  > Every backward intermediate is a vector rather than a matrix. Bracketing right to left starts from a $1 \times d$ row and stays that shape. Forward mode starts from $d_i \times N$ and stays that shape. This is also why you cannot backprop a vector-valued output without reducing it first.
 - [ ] Reverse mode reuses the forward pass's activations
   > It does, and that is what the memory bill is about — but reuse saves recomputation, not the factor of $N$.
 - [ ] Matrix multiplication is faster right to left on a GPU
@@ -195,8 +195,8 @@ accumulating across batches.
 ::: check
 Why must the forward pass keep its activations alive until the backward pass consumes them?
 
-- [x] A weight gradient is the outer product of the incoming gradient with that layer's input, so the input has to still exist
-  > $\nabla_{W_2} = \boldsymbol\delta_2\mathbf{a}_1^\top$ needs $\mathbf{a}_1$. Every layer holds its own input until backward arrives, which is the entire activation memory bill — and what gradient checkpointing trades away.
+- [x] A weight gradient is the outer product of the incoming gradient with that layer's input
+  > The input has to still exist. $\nabla_{W_2} = \boldsymbol\delta_2\mathbf{a}_1^\top$ needs $\mathbf{a}_1$. Every layer holds its own input until backward arrives, which is the entire activation memory bill — and what gradient checkpointing trades away.
 - [ ] Autograd replays the forward pass and needs the values to compare against
   > Nothing is replayed in a standard backward pass. The values are needed as operands, not as a reference.
 - [ ] The optimizer needs the activations to compute its moments

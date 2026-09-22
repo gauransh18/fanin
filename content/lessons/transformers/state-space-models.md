@@ -63,8 +63,8 @@ work is.
 ::: check
 A state space model keeps its recurrence **linear**. What does that restriction buy?
 
-- [x] A closed form that is a convolution, so training parallelises over the sequence in $O(T\log T)$ with an FFT — while inference can switch back to the recurrent form with $O(1)$ work per token
-  > A nonlinear recurrence has to be evaluated step by step. Parallel training and recurrent inference is exactly the combination transformers do not have.
+- [x] A closed form that is a convolution
+  > Training parallelises over the sequence in $O(T\log T)$ with an FFT — while inference can switch back to the recurrent form with $O(1)$ work per token. A nonlinear recurrence has to be evaluated step by step. Parallel training and recurrent inference is exactly the combination transformers do not have.
 - [ ] Guaranteed stability, since linear systems cannot diverge
   > They diverge readily when the spectral radius exceeds 1, which is why $\bar A$ needs careful parameterisation.
 - [ ] Lower parameter count than a gated RNN
@@ -143,8 +143,8 @@ a different operation.
 ::: check
 What does a fixed-size recurrent state give up relative to attention's KV cache?
 
-- [x] Exact recall of arbitrary earlier tokens — the state is a lossy summary, where a KV cache keeps every key and value
-  > This is why hybrids exist: a few attention layers among many SSM layers recover the exact-recall behaviour while keeping most of the cost advantage.
+- [x] Exact recall of arbitrary earlier tokens
+  > The state is a lossy summary, where a KV cache keeps every key and value. This is why hybrids exist: a few attention layers among many SSM layers recover the exact-recall behaviour while keeping most of the cost advantage.
 - [ ] Nothing; a sufficiently large state is equivalent to a cache
   > A state of fixed size cannot hold a sequence of unbounded length without loss, whatever the constant.
 - [ ] The ability to process variable-length sequences

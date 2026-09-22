@@ -65,8 +65,8 @@ improvement in return.
 ::: check
 DDPG replaces DQN's $\arg\max_a Q(s,a)$ with what, and why does that force a deterministic policy?
 
-- [x] Gradient ascent on a differentiable $Q$ — the chain rule runs through the critic to a *specific* action, which a sampling operation would break
-  > Continuous actions make $Q$ differentiable with respect to $a$, so you can ask which direction in action space raises $Q$. Enumeration is replaced by a gradient, and the gradient needs a concrete action to flow through.
+- [x] Gradient ascent on a differentiable $Q$
+  > The chain rule runs through the critic to a *specific* action, which a sampling operation would break. Continuous actions make $Q$ differentiable with respect to $a$, so you can ask which direction in action space raises $Q$. Enumeration is replaced by a gradient, and the gradient needs a concrete action to flow through.
 - [ ] A softmax over a discretised action grid
   > Discretising defeats the purpose and scales exponentially in action dimensions.
 - [ ] Sampling many actions and taking the best

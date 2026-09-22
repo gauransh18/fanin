@@ -45,8 +45,8 @@ matrix to HBM".
 ::: check
 Why does GPU code avoid data-dependent branching?
 
-- [x] A warp of 32 threads executes one instruction in lockstep — if they take different branches, the warp runs both paths with the inactive threads masked, doubling the cost of that region
-  > It is not that branches are forbidden. It is that a warp cannot take two paths at once, so divergence is paid in serialised execution.
+- [x] A warp of 32 threads executes one instruction in lockstep
+  > If they take different branches, the warp runs both paths with the inactive threads masked, doubling the cost of that region. It is not that branches are forbidden. It is that a warp cannot take two paths at once, so divergence is paid in serialised execution.
 - [ ] Branches are not supported in CUDA C
   > They are ordinary C control flow and compile fine.
 - [ ] Branch prediction is absent, so every branch stalls the pipeline

@@ -67,10 +67,10 @@ Naive deep Q-learning diverges. Which problems does replacing the table with a n
 
 - [x] Consecutive transitions are correlated, violating the i.i.d. assumption SGD's convergence rests on
   > Experience replay is the answer: store transitions and sample random batches.
-- [x] The target depends on $Q_\theta$, which moves with every update — and with function approximation, updating $Q(s,a)$ also moves $Q(s',a')$ for similar states
-  > A target network, updated slowly, is what stops the feedback loop.
-- [x] Maximisation bias gets worse, because approximation makes the noise correlated across actions
-  > Double DQN decouples selection from evaluation to address it.
+- [x] The target depends on $Q_\theta$, which moves with every update
+  > With function approximation, updating $Q(s,a)$ also moves $Q(s',a')$ for similar states. A target network, updated slowly, is what stops the feedback loop.
+- [x] Maximisation bias gets worse
+  > Approximation makes the noise correlated across actions. Double DQN decouples selection from evaluation to address it.
 - [ ] The reward signal becomes non-stationary
   > The environment's reward function is unchanged. What moves is the agent's own estimate.
 :::
@@ -162,8 +162,8 @@ gives most of Double Q-learning's benefit with no extra network.
 ::: check
 What is a target network, and why does it help?
 
-- [x] A slowly updated copy of $Q$ used to compute the Bellman target, so the target stops moving every time the network does
-  > Without it, updating $Q(s,a)$ also moves $Q(s',a')$ for similar states under function approximation, creating a feedback loop that amplifies rather than settles.
+- [x] A slowly updated copy of $Q$ used to compute the Bellman target
+  > The target stops moving every time the network does. Without it, updating $Q(s,a)$ also moves $Q(s',a')$ for similar states under function approximation, creating a feedback loop that amplifies rather than settles.
 - [ ] A second network trained on a different batch, whose predictions are averaged in
   > Averaging two independently trained networks is ensembling, a different technique.
 - [ ] A frozen network that is never updated at all

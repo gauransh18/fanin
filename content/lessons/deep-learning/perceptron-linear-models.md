@@ -122,8 +122,8 @@ layer *learns* which lifted features to build instead of requiring you to name t
 ::: check
 A linear model's decision boundary is the set where $\mathbf{w}^\top\mathbf{x} + b = 0$. What is the geometric limit that follows?
 
-- [x] It can only ever split space with a single flat cut — a line in 2-D, a hyperplane in $\mathbb{R}^n$
-  > $\mathbf{w}$ is the normal to that flat. Everything the model can express is "which side", which is exactly why XOR defeats it and why the rest of the track exists.
+- [x] It can only ever split space with a single flat cut
+  > A line in 2-D, a hyperplane in $\mathbb{R}^n$. $\mathbf{w}$ is the normal to that flat. Everything the model can express is "which side", which is exactly why XOR defeats it and why the rest of the track exists.
 - [ ] It can produce any boundary, but only after enough training
   > Training moves the hyperplane. It cannot bend it.
 - [ ] It can produce curved boundaries when the activation is nonlinear
@@ -167,8 +167,8 @@ the same phenomenon as the confidence blow-up that label smoothing addresses in 
 ::: check
 The perceptron convergence theorem bounds mistakes at $(R/\gamma)^2$ for data separable with margin $\gamma$ and inputs bounded by $R$. What happens when the data is *not* separable?
 
-- [x] The bound says nothing and the algorithm never settles — it keeps updating forever
-  > Which is the practical reason logistic regression is the better ancestor: it has a well-defined optimum whether or not the data separates, and it produces calibrated probabilities rather than a hard sign.
+- [x] The bound says nothing and the algorithm never settles
+  > It keeps updating forever. Which is the practical reason logistic regression is the better ancestor: it has a well-defined optimum whether or not the data separates, and it produces calibrated probabilities rather than a hard sign.
 - [ ] It converges to the minimum-error separator instead
   > Nothing in the update rule optimises error count. It reacts to individual mistakes.
 - [ ] It converges more slowly, proportional to the overlap

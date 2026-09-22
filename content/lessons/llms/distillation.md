@@ -67,8 +67,8 @@ from the original corpus.
 ::: check
 The distillation loss multiplies the soft term by $T^2$. What is that factor for?
 
-- [x] Softening by $T$ shrinks the soft term's gradients by roughly $1/T^2$, so without the correction the balance between the soft and hard terms would shift every time you changed the temperature
-  > It makes $\alpha$ mean the same thing at every temperature, which is the only way the two hyperparameters can be tuned independently.
+- [x] Softening by $T$ shrinks the soft term's gradients by roughly $1/T^2$
+  > Without the correction the balance between the soft and hard terms would shift every time you changed the temperature. It makes $\alpha$ mean the same thing at every temperature, which is the only way the two hyperparameters can be tuned independently.
 - [ ] It compensates for the KL being computed in log space
   > `log_target=True` handles the log-space detail and has nothing to do with scaling.
 - [ ] It matches the teacher's output magnitude
@@ -119,8 +119,8 @@ smaller, where output matching alone leaves the intermediate representations unc
 ::: check
 What does a teacher's soft distribution carry that a one-hot label does not?
 
-- [x] Relative similarity between wrong answers — that a cat image is much more like a dog than like a truck
-  > That structure is the extra supervision, and it is why distillation often beats training the same small model from scratch on the original labels.
+- [x] Relative similarity between wrong answers
+  > That a cat image is much more like a dog than like a truck. That structure is the extra supervision, and it is why distillation often beats training the same small model from scratch on the original labels.
 - [ ] A confidence estimate that can be used to weight examples
   > Teacher confidence can be used that way and is not what the soft targets are primarily providing.
 - [ ] The teacher's gradients, which guide the student's optimisation

@@ -118,8 +118,8 @@ except RuntimeError as e:
 ::: check
 Why must you call `optimizer.zero_grad()` every step?
 
-- [x] `backward()` accumulates into `.grad` rather than assigning, so last step's gradient would be added to this one's
-  > Accumulation is deliberate: it is what makes gradient accumulation over microbatches and weight tying work at all. Clearing is the caller's job precisely because the framework cannot know which you meant.
+- [x] `backward()` accumulates into `.grad` rather than assigning
+  > Last step's gradient would be added to this one's. Accumulation is deliberate: it is what makes gradient accumulation over microbatches and weight tying work at all. Clearing is the caller's job precisely because the framework cannot know which you meant.
 - [ ] Because `.grad` holds stale memory that must be freed each step
   > The buffer is reused, not leaked. Zeroing writes over it rather than releasing it.
 - [ ] Because the graph is freed after backward and `.grad` becomes invalid

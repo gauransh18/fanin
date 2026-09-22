@@ -163,8 +163,8 @@ decide to stop. It also lets you branch multiple final models from one stable ch
 ::: check
 In plain Adam, an L2 penalty added to the gradient gets scaled by $1/\sqrt{\hat v}$. What does AdamW change and why does it matter?
 
-- [x] It applies decay directly to the parameters, so parameters with large gradients no longer receive *less* decay than intended
-  > Passing the penalty through the adaptive scaling inverts the intent: the weights you most wanted to rein in get shrunk least. Decoupling restores the behaviour you thought you were configuring.
+- [x] It applies decay directly to the parameters
+  > Parameters with large gradients no longer receive *less* decay than intended. Passing the penalty through the adaptive scaling inverts the intent: the weights you most wanted to rein in get shrunk least. Decoupling restores the behaviour you thought you were configuring.
 - [ ] It removes weight decay from Adam entirely, relying on the adaptive step instead
   > The decay is still there — it is applied at a different point in the update.
 - [ ] It changes the decay from L2 to L1, producing sparsity

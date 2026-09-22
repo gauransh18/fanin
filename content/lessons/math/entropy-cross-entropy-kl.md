@@ -74,8 +74,8 @@ reduction in effective branching. Small-looking loss deltas at low loss are larg
 ::: check
 A language model's loss falls from 2.5 nats to 2.4. What happened to perplexity?
 
-- [x] It fell from about 12.2 to about 11.0 — roughly a 10% cut in effective branching
-  > Perplexity is $e^{\mathcal{L}}$, so a difference in loss is a *ratio* in perplexity. Small-looking deltas at low loss are large, which is why late-training curves look flat and are not.
+- [x] It fell from about 12.2 to about 11.0
+  > Roughly a 10% cut in effective branching. Perplexity is $e^{\mathcal{L}}$, so a difference in loss is a *ratio* in perplexity. Small-looking deltas at low loss are large, which is why late-training curves look flat and are not.
 - [ ] It fell by 0.1, since perplexity tracks loss linearly
   > The relationship is exponential. Near a loss of 2.5 a 0.1 change moves perplexity by more than a full point.
 - [ ] It fell by about 4%, in proportion to the loss
@@ -182,8 +182,8 @@ covers the rest of the eval traps.
 ::: check
 Cross-entropy loss with a one-hot label collapses to $-\log q(y_{\text{true}})$. What is that the same thing as?
 
-- [x] The negative log-likelihood of lesson 1.14 — the same objective in a different vocabulary
-  > $p$ being one-hot kills every term but the true class. Cross-entropy and maximum likelihood are not merely related; for this setup they are identical.
+- [x] The negative log-likelihood of lesson 1.14
+  > The same objective in a different vocabulary. $p$ being one-hot kills every term but the true class. Cross-entropy and maximum likelihood are not merely related; for this setup they are identical.
 - [ ] The KL divergence between the label and the model
   > Close: $D_{\text{KL}}(p\parallel q) = H(p,q) - H(p)$, and $H(p) = 0$ for a one-hot label, so they happen to coincide *here*. They are not the same object in general.
 - [ ] The entropy of the model's output distribution

@@ -100,8 +100,8 @@ the best of both.
 ::: check
 Policy iteration solves for $V^\pi$ exactly at each step; value iteration does one backup and improves immediately. Which converges in fewer iterations?
 
-- [x] Policy iteration, in far fewer — but each of its iterations is much more expensive because it solves a linear system
-  > Generalised policy iteration is the observation that you need neither extreme: partial evaluation interleaved with partial improvement converges too, and most practical algorithms live somewhere in between.
+- [x] Policy iteration, in far fewer
+  > Each of its iterations is much more expensive because it solves a linear system. Generalised policy iteration is the observation that you need neither extreme: partial evaluation interleaved with partial improvement converges too, and most practical algorithms live somewhere in between.
 - [ ] Value iteration, because each sweep improves the policy
   > Each sweep is cheap and makes less progress. It usually needs many more of them.
 - [ ] They take the same number, differing only in cost per iteration

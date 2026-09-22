@@ -82,8 +82,8 @@ single-stream inference.
 ::: check
 An MoE layer with 8 experts and top-$k$ of 2 replaces one MLP. What does it change about parameters and compute per token?
 
-- [x] Parameters grow roughly eightfold while per-token compute stays near the top-2 cost — capacity is decoupled from compute
-  > Every token passes through all of a dense MLP. Routing means each token pays for two experts while the model as a whole holds eight, which is the entire reason MoE exists.
+- [x] Parameters grow roughly eightfold while per-token compute stays near the top-2 cost
+  > Capacity is decoupled from compute. Every token passes through all of a dense MLP. Routing means each token pays for two experts while the model as a whole holds eight, which is the entire reason MoE exists.
 - [ ] Both grow eightfold, which is why MoE models are so expensive to serve
   > Serving is expensive because the *weights* must all be resident, not because each token does eightfold arithmetic.
 - [ ] Parameters stay the same and compute falls by a factor of four
@@ -135,8 +135,8 @@ rate — a run with 30% of tokens bypassing every MoE layer trains, and trains b
 ::: check
 Why does an MoE layer need an explicit load-balancing loss?
 
-- [x] Routing is self-reinforcing — an expert that gets more tokens trains faster and becomes more attractive, so without pressure the router collapses onto a few experts
-  > The unused experts are then dead parameters, and the model has the capacity of a much smaller one. An auxiliary loss penalising imbalance is standard.
+- [x] Routing is self-reinforcing
+  > An expert that gets more tokens trains faster and becomes more attractive, so without pressure the router collapses onto a few experts. The unused experts are then dead parameters, and the model has the capacity of a much smaller one. An auxiliary loss penalising imbalance is standard.
 - [ ] Without it the top-$k$ selection is not differentiable
   > Top-$k$ is not differentiable in its selection either way; the gradient flows through the softmax weights on the chosen experts.
 - [ ] Because experts must see equal token counts for the matmuls to be the same shape

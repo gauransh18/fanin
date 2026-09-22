@@ -118,8 +118,8 @@ the setting exists because peak memory, not average, is what makes a run fail.
 ::: check
 ZeRO-1 and ZeRO-2 move the same number of bytes as plain data parallelism. Why?
 
-- [x] A reduce-scatter plus an all-gather is exactly an all-reduce — so the memory savings are free in communication terms
-  > ZeRO-3 is different: it adds an all-gather of parameters per layer in the forward pass and again in the backward, which is real extra traffic for a much larger saving.
+- [x] A reduce-scatter plus an all-gather is exactly an all-reduce
+  > So the memory savings are free in communication terms. ZeRO-3 is different: it adds an all-gather of parameters per layer in the forward pass and again in the backward, which is real extra traffic for a much larger saving.
 - [ ] They compress gradients before sending them
   > No compression is involved. The decomposition of the collective is what makes it free.
 - [ ] They communicate less often, in larger messages
@@ -168,8 +168,8 @@ topology. Consolidate once at the end for release.
 ::: check
 Why does FSDP prefetch the next layer's parameters while the current layer computes?
 
-- [x] ZeRO-3 all-gathers each layer's parameters just before using them, so without prefetch every layer would stall waiting for its own weights to arrive
-  > Prefetching is what makes ZeRO-3's extra communication hideable. It is also why the wrapping granularity matters: wrap too finely and there is not enough compute to hide behind.
+- [x] ZeRO-3 all-gathers each layer's parameters just before using them
+  > Without prefetch every layer would stall waiting for its own weights to arrive. Prefetching is what makes ZeRO-3's extra communication hideable. It is also why the wrapping granularity matters: wrap too finely and there is not enough compute to hide behind.
 - [ ] It avoids re-sharding parameters between the forward and backward passes
   > Parameters are re-gathered in the backward too, which is part of ZeRO-3's extra traffic.
 - [ ] It reduces the total volume of communication

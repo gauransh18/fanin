@@ -134,8 +134,8 @@ cannot tell which without measuring continuously.
 ::: check
 Scaling-law exponents are around 0.05 to 0.1. What does that mean in practice?
 
-- [x] A 10× compute increase buys perhaps a 15% loss reduction — progress is slow, expensive, and above all *predictable*
-  > Predictability is what makes a frontier run plannable rather than a gamble. The smallness of the exponents is why the bills are what they are.
+- [x] A 10× compute increase buys perhaps a 15% loss reduction
+  > Progress is slow, expensive, and above all *predictable*. Predictability is what makes a frontier run plannable rather than a gamble. The smallness of the exponents is why the bills are what they are.
 - [ ] A 10× compute increase roughly halves the loss
   > That would be an exponent near 0.3. The measured values are far smaller.
 - [ ] The exponents are too small to be useful for planning

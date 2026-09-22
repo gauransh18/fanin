@@ -120,8 +120,8 @@ SARSA *is* Q-learning.
 ::: check
 SARSA and Q-learning differ in one term. What is the consequence for what each learns?
 
-- [x] SARSA's target uses the action actually taken, so it learns the value of the $\epsilon$-greedy policy including the cost of exploring; Q-learning's uses $\max_{a'}$, so it learns $Q^*$ while behaving however it likes
-  > Being off-policy is what lets Q-learning train from a replay buffer, a human demonstration, or any other data source — which is why it scales to deep RL.
+- [x] SARSA's target uses the action actually taken
+  > It learns the value of the $\epsilon$-greedy policy including the cost of exploring; Q-learning's uses $\max_{a'}$, so it learns $Q^*$ while behaving however it likes. Being off-policy is what lets Q-learning train from a replay buffer, a human demonstration, or any other data source — which is why it scales to deep RL.
 - [ ] SARSA converges faster because it bootstraps from a single action
   > Both bootstrap from one step. Convergence speed is not the distinction.
 - [ ] Q-learning is on-policy and SARSA off-policy
@@ -167,8 +167,8 @@ applied to neural networks.
 ::: check
 Why does $\max_{a'}Q(s',a')$ over noisy estimates produce a systematic overestimate?
 
-- [x] The maximum of noisy estimates is biased upwards — $\mathbb{E}[\max_a \hat Q] \ge \max_a \mathbb{E}[\hat Q]$, by Jensen's inequality
-  > The same action is used to both *select* and *evaluate*, so whichever action's noise happened to be positive gets picked. Double Q-learning decouples selection from evaluation, which removes most of it.
+- [x] The maximum of noisy estimates is biased upwards
+  > $\mathbb{E}[\max_a \hat Q] \ge \max_a \mathbb{E}[\hat Q]$, by Jensen's inequality. The same action is used to both *select* and *evaluate*, so whichever action's noise happened to be positive gets picked. Double Q-learning decouples selection from evaluation, which removes most of it.
 - [ ] The learning rate is too high, so estimates overshoot
   > The bias survives at any learning rate and even with unbiased estimates of each individual $Q$.
 - [ ] Rewards are usually positive, so values drift upward

@@ -112,8 +112,8 @@ one forward pass.
 ::: check
 Where do most tool-calling failures actually originate?
 
-- [x] In the tool and parameter descriptions — they are the only thing the model has to decide when to call and what to pass
-  > Write them as if for a competent new colleague with no context: what it does, when to use it, when *not* to, what each argument means. It is also the cheapest thing in the pipeline to fix.
+- [x] In the tool and parameter descriptions
+  > They are the only thing the model has to decide when to call and what to pass. Write them as if for a competent new colleague with no context: what it does, when to use it, when *not* to, what each argument means. It is also the cheapest thing in the pipeline to fix.
 - [ ] In the model's inability to produce valid JSON
   > Constrained decoding makes valid JSON close to a solved problem. Valid and *correct* are different.
 - [ ] In the sandbox rejecting legitimate calls
@@ -160,8 +160,8 @@ results alongside the answer, so a caller can tell a real success from a claimed
 ::: check
 An agent produces the right tool calls in the right order but the wrong final answer. What does that point at?
 
-- [x] A reasoning problem rather than a tool problem — the trajectory was correct, so the failure is in how the results were used
-  > Categorising failures this way is what makes them fixable: wrong tool points at descriptions, right tool with wrong arguments points at parameter documentation or context, and a repeated identical call points at a loop the agent cannot escape.
+- [x] A reasoning problem rather than a tool problem
+  > The trajectory was correct, so the failure is in how the results were used. Categorising failures this way is what makes them fixable: wrong tool points at descriptions, right tool with wrong arguments points at parameter documentation or context, and a repeated identical call points at a loop the agent cannot escape.
 - [ ] The tool descriptions are vague
   > Vague descriptions show up as the *wrong tool* being called, which is not what happened here.
 - [ ] The sandbox returned stale results

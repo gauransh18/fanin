@@ -110,8 +110,8 @@ state space models are an attempt to have both — parallel training, recurrent 
 ::: check
 Beyond vanishing gradients, what is the structural problem with recurrence that transformers do not have?
 
-- [x] The recurrence is inherently sequential — step $t$ needs $\mathbf{h}_{t-1}$, so a sequence of length $T$ takes $T$ dependent steps and cannot be parallelised over positions
-  > Attention computes all positions at once, which is what makes it trainable at scale. Gradient flow was fixable with gates; the serialisation was not, and that is what decided the outcome.
+- [x] The recurrence is inherently sequential
+  > Step $t$ needs $\mathbf{h}_{t-1}$, so a sequence of length $T$ takes $T$ dependent steps and cannot be parallelised over positions. Attention computes all positions at once, which is what makes it trainable at scale. Gradient flow was fixable with gates; the serialisation was not, and that is what decided the outcome.
 - [ ] Recurrent networks cannot share parameters across positions
   > They share them completely — the same $W_{hh}$ at every step, exactly analogous to a convolution sharing across space.
 - [ ] Recurrent networks have quadratic cost in sequence length
@@ -142,8 +142,8 @@ never learning dependencies longer than $k$.
 ::: check
 Truncated BPTT backpropagates only $k$ steps rather than the whole sequence. What does that cost?
 
-- [x] Dependencies longer than $k$ steps receive no gradient at all, so the model cannot learn them however long the sequence is
-  > It is a memory-for-capability trade: full BPTT over a 10,000-step sequence would need every activation alive at once. Where the true dependency exceeds $k$, truncation is not an approximation but a hard cut-off.
+- [x] Dependencies longer than $k$ steps receive no gradient at all
+  > The model cannot learn them however long the sequence is. It is a memory-for-capability trade: full BPTT over a 10,000-step sequence would need every activation alive at once. Where the true dependency exceeds $k$, truncation is not an approximation but a hard cut-off.
 - [ ] The forward pass becomes approximate
   > The forward pass is unchanged; only the backward is truncated.
 - [ ] Gradients explode more readily over the shorter window

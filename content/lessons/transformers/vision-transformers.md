@@ -121,8 +121,8 @@ The data requirement was largely eliminated by training recipe rather than archi
 ::: check
 A ViT discards locality, translation equivariance and parameter sharing across positions. Why does it win anyway, past a data threshold?
 
-- [x] Those priors are a constraint as well as a help — with enough data the model learns the structure that actually holds rather than the structure a convolution assumes
-  > Below that threshold the convolutional prior is worth more than the data, which is why ViTs underperform CNNs on small datasets and overtake them on very large ones.
+- [x] Those priors are a constraint as well as a help
+  > With enough data the model learns the structure that actually holds rather than the structure a convolution assumes. Below that threshold the convolutional prior is worth more than the data, which is why ViTs underperform CNNs on small datasets and overtake them on very large ones.
 - [ ] Attention has a larger receptive field, so it needs fewer layers
   > A global receptive field from layer one is real and is not the reason it needs so much data to pay off.
 - [ ] Patch embedding is cheaper than convolution

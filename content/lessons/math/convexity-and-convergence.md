@@ -77,8 +77,8 @@ empirically they mostly are.
 ::: check
 A two-layer network's loss is non-convex. What does permutation symmetry contribute to that?
 
-- [x] Swapping two hidden units with their weights gives an identical function, so every minimum has at least $h!$ copies — and a function with separated global minima cannot be convex
-  > At width 70 that is past $10^{100}$ equivalent optima. Non-convexity from this source is a sign of redundant parameterisation rather than a hard problem, which is why the useful question is whether reachable minima are good, not whether the loss is convex.
+- [x] Swapping two hidden units with their weights gives an identical function
+  > Every minimum has at least $h!$ copies — and a function with separated global minima cannot be convex. At width 70 that is past $10^{100}$ equivalent optima. Non-convexity from this source is a sign of redundant parameterisation rather than a hard problem, which is why the useful question is whether reachable minima are good, not whether the loss is convex.
 - [ ] It makes the Hessian indefinite at every point
   > The Hessian is indefinite in many places, but permutation symmetry is an argument about *multiple global minima*, which rules out convexity on its own.
 - [ ] It creates spurious local minima that trap gradient descent
@@ -129,8 +129,8 @@ for k in range(1, 201):
 ::: check
 With a constant step size and stochastic gradients, SGD converges to a noise ball of radius proportional to $\eta\sigma$ rather than to a point. What follows?
 
-- [x] The learning rate has to decay, since shrinking $\eta$ is what shrinks the ball
-  > This is the reason every schedule in lesson 2.09 exists. A constant step size leaves you orbiting the optimum at a radius you chose without meaning to.
+- [x] The learning rate has to decay
+  > Shrinking $\eta$ is what shrinks the ball. This is the reason every schedule in lesson 2.09 exists. A constant step size leaves you orbiting the optimum at a radius you chose without meaning to.
 - [ ] Training should stop as soon as the loss plateaus
   > A plateau at constant $\eta$ often *is* the noise floor. Decaying the rate typically drops the loss again, which is exactly what a plateau-then-decay curve shows.
 - [ ] The batch size must grow without bound

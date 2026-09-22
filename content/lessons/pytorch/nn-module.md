@@ -90,8 +90,8 @@ container. It is a five-second check that catches an expensive class of bug.
 ::: check
 A model stores its layers in a plain Python list instead of an `nn.ModuleList`. The forward pass is correct and the loss goes down. What is wrong?
 
-- [x] Those layers appear in no `.parameters()` call, so the optimizer never updates them and `.to('cuda')` never moves them
-  > The remaining trained layers compensate, which is why the loss still falls and nothing raises. The model is quietly much worse than it should be — the worst kind of bug, because every signal says it is fine.
+- [x] Those layers appear in no `.parameters()` call
+  > The optimizer never updates them and `.to('cuda')` never moves them. The remaining trained layers compensate, which is why the loss still falls and nothing raises. The model is quietly much worse than it should be — the worst kind of bug, because every signal says it is fine.
 - [ ] The forward pass will fail once the model is moved to a GPU
   > It often does fail on device mismatch, but not always, and by then the parameters have already been silently frozen for however long you trained on CPU.
 - [ ] Python lists are not picklable, so checkpointing breaks

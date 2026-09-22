@@ -56,8 +56,8 @@ badly when the verifier is exploitable (lesson 5.07).
 ::: check
 Why does "think step by step" help on multi-step problems and do essentially nothing for lookup questions?
 
-- [x] Chain of thought converts depth into length — a problem needing $k$ sequential steps cannot fit in $L$ layers when $k > L$, but can be done in $k$ forward passes with intermediates in context
-  > It is a claim about computational capability, not about prompting style. A lookup needs no sequential depth, so there is nothing for the extra passes to do.
+- [x] Chain of thought converts depth into length
+  > A problem needing $k$ sequential steps cannot fit in $L$ layers when $k > L$, but can be done in $k$ forward passes with intermediates in context. It is a claim about computational capability, not about prompting style. A lookup needs no sequential depth, so there is nothing for the extra passes to do.
 - [ ] It gives the model more chances to sample the right answer
   > That is self-consistency, which is a different method — sample $n$ chains and take the mode.
 - [ ] It shifts the output distribution towards training data that contains reasoning
@@ -125,8 +125,8 @@ until evidence says otherwise.
 ::: check
 Self-consistency samples $n$ chains at temperature and takes the majority answer. Why does that work?
 
-- [x] Different reasoning paths make different errors, so wrong answers scatter while the correct one is the mode
-  > It needs an answer that can be compared for equality, which is why it applies cleanly to maths and code and awkwardly to open-ended generation.
+- [x] Different reasoning paths make different errors
+  > Wrong answers scatter while the correct one is the mode. It needs an answer that can be compared for equality, which is why it applies cleanly to maths and code and awkwardly to open-ended generation.
 - [ ] Higher temperature produces better reasoning
   > Temperature is there to produce *diverse* chains. Each individual chain is typically worse than a greedy one.
 - [ ] The majority answer has the highest likelihood under the model

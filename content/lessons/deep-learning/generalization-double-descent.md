@@ -70,8 +70,8 @@ Three contributing factors, in rough order of confidence:
 ::: check
 Test error peaks at the interpolation threshold and falls again beyond it. What is the explanation?
 
-- [x] It is about choice among interpolating solutions — past the threshold there are infinitely many, and gradient descent's implicit bias picks low-norm ones
-  > At the threshold there is essentially one interpolating solution, whatever the data forces, typically with enormous weights and wild behaviour between data points. Capacity is not the variable that matters; the freedom to choose is.
+- [x] It is about choice among interpolating solutions
+  > Past the threshold there are infinitely many, and gradient descent's implicit bias picks low-norm ones. At the threshold there is essentially one interpolating solution, whatever the data forces, typically with enormous weights and wild behaviour between data points. Capacity is not the variable that matters; the freedom to choose is.
 - [ ] Larger models have lower variance, so the bias–variance curve turns over
   > The classical decomposition predicts the first U-shape and does not predict the second descent at all.
 - [ ] The extra parameters act as explicit regularisation

@@ -46,8 +46,8 @@ policy — which is exactly what a language model does.
 ::: check
 An RL agent trained on single video frames cannot learn to catch a ball. What is the most likely diagnosis?
 
-- [x] The state is not Markov — velocity is not recoverable from one image, so stacking several frames is the fix
-  > The Markov property is a property of your state representation, not of the world. When an algorithm fails, "is my state actually Markov?" is one of the first things to check, and the usual fix adds the missing information to the state rather than changing the algorithm.
+- [x] The state is not Markov
+  > Velocity is not recoverable from one image, so stacking several frames is the fix. The Markov property is a property of your state representation, not of the world. When an algorithm fails, "is my state actually Markov?" is one of the first things to check, and the usual fix adds the missing information to the state rather than changing the algorithm.
 - [ ] The discount factor is too low
   > A low $\gamma$ shortens the horizon, which would not stop the agent seeing where the ball is going *now*.
 - [ ] The reward is too sparse

@@ -86,8 +86,8 @@ Which priors does a convolution impose that make it right for images and wrong f
 
 - [x] Locality — an output depends only on a $k\times k$ neighbourhood
   > True for pixels, false when the relevant dependency is a thousand tokens away.
-- [x] Translation equivariance — shift the input and the output shifts identically
-  > A cat detector should work anywhere in the frame. Language dependencies are not translation-equivariant in any useful sense.
+- [x] Translation equivariance
+  > Shift the input and the output shifts identically. A cat detector should work anywhere in the frame. Language dependencies are not translation-equivariant in any useful sense.
 - [ ] Permutation invariance over positions
   > Convolutions are emphatically not permutation invariant; order is what they read. That prior belongs to set-based architectures.
 - [ ] Scale invariance across resolutions
@@ -126,8 +126,8 @@ position-wise. Identical in function to a transformer's position-wise MLP.
 ::: check
 A 3×3 convolution with stride 1, dilation 1 and padding 1 has a property worth memorising. What is it?
 
-- [x] The output resolution equals the input resolution, so such layers compose without changing spatial size
-  > From $H_{\text{out}} = \lfloor (H_{\text{in}} + 2p - d(k-1) - 1)/s \rfloor + 1$ with $p = (k-1)/2$. It is why 3×3-pad-1 is everywhere.
+- [x] The output resolution equals the input resolution
+  > Such layers compose without changing spatial size. From $H_{\text{out}} = \lfloor (H_{\text{in}} + 2p - d(k-1) - 1)/s \rfloor + 1$ with $p = (k-1)/2$. It is why 3×3-pad-1 is everywhere.
 - [ ] Its parameter count is independent of kernel size
   > Parameter count is $c_{\text{out}} c_{\text{in}} k^2$ — very much dependent on $k$. What is independent of input size is a different and also important fact.
 - [ ] Its receptive field covers the whole image after one layer

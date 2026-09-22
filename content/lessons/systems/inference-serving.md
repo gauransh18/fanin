@@ -64,8 +64,8 @@ biggest improvement available.
 ::: check
 At batch 1, decoding a 7B bf16 model reads 14 GB per token. On 3.35 TB/s of bandwidth, what is the floor?
 
-- [x] About 4.2 ms per token — roughly 239 tokens/second, however fast the arithmetic is
-  > Batching is the fix and it is nearly free: $B$ sequences read the same 14 GB once and do $B$ times the arithmetic, so throughput rises linearly with $B$ until you cross the roofline ridge. Everything else in serving is about making large batches possible.
+- [x] About 4.2 ms per token
+  > Roughly 239 tokens/second, however fast the arithmetic is. Batching is the fix and it is nearly free: $B$ sequences read the same 14 GB once and do $B$ times the arithmetic, so throughput rises linearly with $B$ until you cross the roofline ridge. Everything else in serving is about making large batches possible.
 - [ ] About 4.2 μs per token, which is negligible
   > Three orders of magnitude out — 14 GB at 3.35 TB/s is milliseconds, not microseconds.
 - [ ] It depends on the model's FLOP count, not its size
@@ -160,8 +160,8 @@ interleaving decode steps between them keeps latency smooth at a small throughpu
 ::: check
 Paged attention stores the KV cache in fixed-size blocks rather than one contiguous per-sequence buffer. What does that fix?
 
-- [x] Fragmentation and over-allocation — a contiguous buffer must be sized for the maximum possible length, so most of it sits reserved and unused
-  > Blocks are allocated on demand and shared between sequences with a common prefix, which raises the batch size you can fit and therefore throughput.
+- [x] Fragmentation and over-allocation
+  > A contiguous buffer must be sized for the maximum possible length, so most of it sits reserved and unused. Blocks are allocated on demand and shared between sequences with a common prefix, which raises the batch size you can fit and therefore throughput.
 - [ ] The $O(T^2)$ cost of attention over long sequences
   > Paging is a memory-layout change and does not alter the attention computation.
 - [ ] Numerical drift between cached and recomputed keys

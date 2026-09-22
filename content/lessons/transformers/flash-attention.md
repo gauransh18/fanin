@@ -173,8 +173,8 @@ Use `sdpa_kernel` to turn the silent fallback into an error while developing.
 ::: check
 Tiling attention runs into one obstacle. What is it, and what solves it?
 
-- [x] Softmax normalises over a whole row, but only one tile of that row is on chip at a time — an online softmax with a running maximum and running sum fixes it
-  > Each new block rescales the accumulated output by $e^{m - m^{\text{new}}}$, so the result is exact rather than approximate.
+- [x] Softmax normalises over a whole row, but only one tile of that row is on chip at a time
+  > An online softmax with a running maximum and running sum fixes it. Each new block rescales the accumulated output by $e^{m - m^{\text{new}}}$, so the result is exact rather than approximate.
 - [ ] The causal mask cannot be applied tile by tile
   > It applies cleanly per tile, and whole tiles above the diagonal can be skipped entirely.
 - [ ] Query blocks and key blocks must be the same size

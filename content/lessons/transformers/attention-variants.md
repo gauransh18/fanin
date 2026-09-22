@@ -91,8 +91,8 @@ essentially every model since use it.
 ::: check
 Multi-query attention shrinks the KV cache by a factor of $h$, typically 32×. What does it give up?
 
-- [x] Every query head now retrieves from one shared key space, so heads can differ in what they look for but not in what is findable
-  > Grouped-query attention is the compromise that won: $g$ groups of query heads, each with its own KV head, with $g = h$ recovering full MHA and $g = 1$ recovering MQA.
+- [x] Every query head now retrieves from one shared key space
+  > Heads can differ in what they look for but not in what is findable. Grouped-query attention is the compromise that won: $g$ groups of query heads, each with its own KV head, with $g = h$ recovering full MHA and $g = 1$ recovering MQA.
 - [ ] It reduces the number of query heads, cutting the model's capacity to attend
   > Query heads are untouched. Only the key and value heads are shared.
 - [ ] It requires retraining from scratch and cannot be retrofitted

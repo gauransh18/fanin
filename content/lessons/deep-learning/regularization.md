@@ -75,8 +75,8 @@ seen many times — and there $p = 0.1$ is typical.
 ::: check
 Why is 0.1 a normal weight decay for transformer pretraining when classical L2 coefficients are around $10^{-4}$?
 
-- [x] AdamW's decay is applied directly to the parameters, not scaled by $1/\sqrt{v}$, so the two numbers are not on the same scale
-  > Coupling decay to the adaptive step, as plain `Adam(weight_decay=...)` does, changes both its magnitude and its direction of effect. The values are not comparable across the two formulations.
+- [x] AdamW's decay is applied directly to the parameters, not scaled by $1/\sqrt{v}$
+  > The two numbers are not on the same scale. Coupling decay to the adaptive step, as plain `Adam(weight_decay=...)` does, changes both its magnitude and its direction of effect. The values are not comparable across the two formulations.
 - [ ] Transformers overfit far more, so they need stronger regularisation
   > Pretraining on trillions of tokens is close to the opposite regime — regularisation matters most when data is scarce, as lesson 1.14 argued.
 - [ ] Larger models tolerate larger decay because they have more parameters

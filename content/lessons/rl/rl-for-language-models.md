@@ -124,10 +124,10 @@ Hold out test cases, and read samples. "Unhackable" means harder to hack, not im
 ::: check
 Which properties make a language model an unusual MDP?
 
-- [x] Transitions are deterministic — appending a token is not stochastic, so all randomness comes from the policy
-  > Which makes return variance entirely the policy's own, and variance reduction more tractable than in control.
-- [x] Reward is terminal only, so one scalar must be attributed across hundreds of token decisions
-  > Credit assignment becomes the central difficulty, and is what process supervision and per-token value estimates attack.
+- [x] Transitions are deterministic
+  > Appending a token is not stochastic, so all randomness comes from the policy. Which makes return variance entirely the policy's own, and variance reduction more tractable than in control.
+- [x] Reward is terminal only
+  > One scalar must be attributed across hundreds of token decisions. Credit assignment becomes the central difficulty, and is what process supervision and per-token value estimates attack.
 - [x] The policy starts from a capable pretrained model rather than from scratch
   > The goal is to adjust a model that already works, which is exactly what the KL penalty encodes.
 - [ ] The action space is continuous

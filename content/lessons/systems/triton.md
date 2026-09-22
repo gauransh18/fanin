@@ -174,8 +174,8 @@ competitive. The accumulator stays fp32 throughout and is cast only on the store
 ::: check
 Triton's `@triton.autotune` tries several block sizes and caches the best. Why is that more than a convenience?
 
-- [x] The optimal block size depends on the shapes, the dtype and the specific GPU, so a hand-picked constant is right for one configuration and wrong for the rest
-  > It is the main reason a Triton kernel can reach 80–95% of hand-tuned CUDA without hand-tuning: the search is done once per shape, at runtime, on the actual hardware.
+- [x] The optimal block size depends on the shapes, the dtype and the specific GPU
+  > A hand-picked constant is right for one configuration and wrong for the rest. It is the main reason a Triton kernel can reach 80–95% of hand-tuned CUDA without hand-tuning: the search is done once per shape, at runtime, on the actual hardware.
 - [ ] It compiles the kernel ahead of time, removing JIT overhead
   > Autotuning adds compile passes; it does not remove them.
 - [ ] It selects between Triton and cuBLAS implementations

@@ -55,8 +55,8 @@ is behaving like PCA, the nonlinearities are not doing anything.
 ::: check
 Your autoencoder's reconstructions look exactly like PCA's. What does that tell you?
 
-- [x] The nonlinearities are not doing anything — a linear autoencoder with MSE learns the top-$k$ principal subspace and nothing more
-  > By Eckart–Young it recovers the same subspace the SVD gives in closed form, at far greater cost. A vanilla autoencoder is only interesting when it is genuinely nonlinear.
+- [x] The nonlinearities are not doing anything
+  > A linear autoencoder with MSE learns the top-$k$ principal subspace and nothing more. By Eckart–Young it recovers the same subspace the SVD gives in closed form, at far greater cost. A vanilla autoencoder is only interesting when it is genuinely nonlinear.
 - [ ] It has converged to the global optimum, which is the best possible result
   > It may well be at the optimum *of the linear problem*. That is the complaint, not the reassurance.
 - [ ] The latent dimension is too large
@@ -80,8 +80,8 @@ The fixes all amount to adding a second pressure that competes with reconstructi
 ::: check
 A bottleneck of width $r$ caps the end-to-end map at rank $r$. What decides which input directions survive?
 
-- [x] The training objective — the bottleneck forces a choice, and reconstruction loss is what makes it
-  > At least $d - r$ input directions are destroyed and cannot be recovered. Changing what the model is asked to reconstruct changes which directions it decides to keep, which is the entire idea behind denoising and masked objectives.
+- [x] The training objective
+  > The bottleneck forces a choice, and reconstruction loss is what makes it. At least $d - r$ input directions are destroyed and cannot be recovered. Changing what the model is asked to reconstruct changes which directions it decides to keep, which is the entire idea behind denoising and masked objectives.
 - [ ] The initialisation, which fixes the subspace before training
   > Initialisation sets a starting point that training moves away from.
 - [ ] The activation function, which determines the rank

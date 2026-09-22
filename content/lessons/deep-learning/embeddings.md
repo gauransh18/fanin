@@ -76,8 +76,8 @@ individual coordinates.
 ::: check
 Why do rare-token embeddings stay close to their initialisation for most of training?
 
-- [x] The backward pass is a `scatter_add_`, so a row is only updated when its token occurs — frequent tokens get orders of magnitude more updates
-  > Which is why embedding quality is so uneven across the vocabulary, and part of why subword tokenization matters: it converts rare words into frequent pieces.
+- [x] The backward pass is a `scatter_add_`
+  > A row is only updated when its token occurs — frequent tokens get orders of magnitude more updates. Which is why embedding quality is so uneven across the vocabulary, and part of why subword tokenization matters: it converts rare words into frequent pieces.
 - [ ] Weight decay pulls unused rows back toward zero each step
   > Decay applied to the whole table would pull them *away* from their initialisation, not hold them at it. Most setups exempt embeddings or accept the effect.
 - [ ] Their gradients are clipped more aggressively
@@ -127,8 +127,8 @@ receives gradients from both the lookup and the output projection, summed.
 ::: check
 A one-hot vector times a weight matrix gives the same numbers as an embedding lookup. What is the most important reason to prefer the lookup?
 
-- [x] It gives a dense, low-dimensional representation in which similarity is meaningful — one-hot vectors are all equidistant and encode no relationships
-  > Every pair of one-hot vectors has dot product zero. The efficiency arguments are real and secondary; the geometry is the point.
+- [x] It gives a dense, low-dimensional representation in which similarity is meaningful
+  > One-hot vectors are all equidistant and encode no relationships. Every pair of one-hot vectors has dot product zero. The efficiency arguments are real and secondary; the geometry is the point.
 - [ ] It avoids a $V \times d$ matrix product per token
   > True, and the least important of the three reasons given.
 - [ ] It avoids materialising a 50,000-element mostly-zero vector

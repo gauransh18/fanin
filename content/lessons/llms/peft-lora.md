@@ -82,8 +82,8 @@ gradient and no optimizer state. That is where the 1.1 TB becomes 20 GB.
 ::: check
 `LoRALinear` initialises `lora_B` to zeros and `lora_A` with Kaiming uniform. Why not both randomly?
 
-- [x] With $B = 0$ the product $BA$ is zero, so the model at step 0 is exactly the pretrained one
-  > Starting from a random perturbation of a carefully pretrained model would throw away quality before training has learnt anything. Zeroing one factor makes the adapter a no-op at initialisation without freezing it.
+- [x] With $B = 0$ the product $BA$ is zero
+  > The model at step 0 is exactly the pretrained one. Starting from a random perturbation of a carefully pretrained model would throw away quality before training has learnt anything. Zeroing one factor makes the adapter a no-op at initialisation without freezing it.
 - [ ] Zero initialisation halves the parameter count
   > Both matrices are trained and both are stored. Nothing is saved.
 - [ ] It prevents the two factors from collapsing to the same subspace
@@ -150,8 +150,8 @@ updating the base. Quality loss is small — typically within a point of 16-bit 
 ::: check
 QLoRA keeps the frozen base model in 4-bit while training LoRA adapters in 16-bit. Why does quantizing the base not wreck the fine-tune?
 
-- [x] The base is never updated, so its quantization error is a fixed offset the adapter learns around — only the adapter needs full precision to accumulate small updates
-  > Which is what lets a 70B model be fine-tuned on a single GPU. Quantizing weights you *are* training would lose the small gradients entirely.
+- [x] The base is never updated
+  > Its quantization error is a fixed offset the adapter learns around — only the adapter needs full precision to accumulate small updates. Which is what lets a 70B model be fine-tuned on a single GPU. Quantizing weights you *are* training would lose the small gradients entirely.
 - [ ] 4-bit quantization is lossless for transformer weights
   > It is measurably lossy. The point is where the loss falls.
 - [ ] The adapter is initialised from the quantization error

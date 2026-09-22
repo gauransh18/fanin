@@ -69,8 +69,8 @@ ignoring its input entirely, which would pass the first trivially.
 ::: check
 Why can't ML code be tested the way ordinary code is?
 
-- [x] A bug rarely crashes — it produces a model that trains to a slightly worse loss, and there is usually no independently computable correct output to assert against
-  > So tests target *properties* that must hold whatever the weights are: shapes and dtypes, claimed invariances, gradient finiteness, information flow, and agreement with a slow obviously-correct reference.
+- [x] A bug rarely crashes
+  > It produces a model that trains to a slightly worse loss, and there is usually no independently computable correct output to assert against. So tests target *properties* that must hold whatever the weights are: shapes and dtypes, claimed invariances, gradient finiteness, information flow, and agreement with a slow obviously-correct reference.
 - [ ] Because training is non-deterministic, so no assertion can be stable
   > Non-determinism complicates numerical regression tests and does not stop shape, causality or gradient tests being exact.
 - [ ] Because models are too large to run in CI

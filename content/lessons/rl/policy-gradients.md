@@ -54,8 +54,8 @@ this lesson.
 ::: check
 The policy gradient theorem drops the transition terms $P(s_{t+1}\mid s_t, a_t)$. Why may it?
 
-- [x] They do not depend on $\theta$, so they vanish under differentiation — which is why the method is model-free
-  > Taking the log of the trajectory probability turns a product into a sum, and every term that is not the policy differentiates to zero. You never need to know the dynamics.
+- [x] They do not depend on $\theta$
+  > They vanish under differentiation — which is why the method is model-free. Taking the log of the trajectory probability turns a product into a sum, and every term that is not the policy differentiates to zero. You never need to know the dynamics.
 - [ ] They are assumed deterministic
   > Nothing assumes that. Stochastic transitions drop out for the same reason.
 - [ ] They are absorbed into the baseline
@@ -153,8 +153,8 @@ differentiating something with no meaning.
 ::: check
 REINFORCE's update is $\nabla_\theta\log\pi_\theta(a_t\mid s_t)\,R(\tau)$. Why does subtracting a state-dependent baseline $b(s_t)$ leave it unbiased?
 
-- [x] $\mathbb{E}_{a\sim\pi}[\nabla_\theta\log\pi_\theta(a\mid s)] = 0$ for any fixed $s$, so anything depending only on $s$ contributes nothing in expectation
-  > The score function has zero mean under its own distribution. That is what makes any state-dependent baseline free, and $V(s)$ the best simple choice — it is the one that cancels most of the variance.
+- [x] $\mathbb{E}_{a\sim\pi}[\nabla_\theta\log\pi_\theta(a\mid s)] = 0$ for any fixed $s$
+  > Anything depending only on $s$ contributes nothing in expectation. The score function has zero mean under its own distribution. That is what makes any state-dependent baseline free, and $V(s)$ the best simple choice — it is the one that cancels most of the variance.
 - [ ] The baseline is small enough that its bias is negligible
   > It is exactly zero, not merely small, and $V(s)$ is not small.
 - [ ] The baseline is subtracted from both the numerator and denominator
