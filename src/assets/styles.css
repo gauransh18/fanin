@@ -1923,14 +1923,12 @@ h2:hover > .anchor, h3:hover > .anchor, h4:hover > .anchor, .anchor:focus-visibl
 .stat-row {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 1px;
-  background: var(--line);
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  overflow: hidden;
+  gap: .5rem;
   margin-bottom: 2rem;
 }
-@media (min-width: 720px) { .stat-row { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+@media (min-width: 720px) { .stat-row { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+/* Five tiles: three then two below 1040px leaves no orphan, five across above. */
+@media (min-width: 1040px) { .stat-row { grid-template-columns: repeat(5, minmax(0, 1fr)); } }
 .stat-tile {
   display: grid;
   gap: .1875rem;
@@ -3481,3 +3479,223 @@ h2:hover > .anchor, h3:hover > .anchor, h4:hover > .anchor, .anchor:focus-visibl
 .track-nav .n { font-family: var(--mono); }
 .spine-title { font-family: var(--mono); letter-spacing: .16em; }
 .toc-rail .spine-title { letter-spacing: .16em; }
+
+/* --------------------------------------------------------- the record --- */
+/* Every panel on the progress page becomes an instrument: notched, sheened,
+   with monospace numerals and light that comes on when earned. */
+
+.level-card,
+.panel > .cal,
+.quests-panel,
+.trial-stat,
+.stat-tile {
+  --notch: 8px;
+  background:
+    linear-gradient(180deg, var(--panel-top), var(--panel-bot)),
+    var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 0;
+  box-shadow: inset 0 1px 0 var(--edge);
+  clip-path: polygon(
+    var(--notch) 0, 100% 0, 100% calc(100% - var(--notch)),
+    calc(100% - var(--notch)) 100%, 0 100%, 0 var(--notch));
+}
+
+.level-card {
+  --notch: 12px;
+  position: relative;
+  overflow: hidden;
+  border-color: color-mix(in srgb, var(--accent) 26%, var(--line));
+  background:
+    radial-gradient(90% 140% at 0% 0%, color-mix(in srgb, var(--accent) 12%, transparent), transparent 62%),
+    linear-gradient(180deg, var(--panel-top), var(--panel-bot)),
+    var(--surface);
+}
+.level-eyebrow {
+  font-family: var(--mono) !important;
+  letter-spacing: .2em !important;
+  color: var(--accent) !important;
+}
+.level-name { letter-spacing: -.02em; }
+.level-xp b { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+.level-next { font-family: var(--mono); font-size: var(--fs-xs); letter-spacing: .04em; }
+.level-bar > i { box-shadow: 0 0 12px -2px var(--glow); }
+
+.stat-num {
+  font-family: var(--mono) !important;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -.02em;
+}
+.stat-cap {
+  font-family: var(--mono);
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+
+.panel-head h2 {
+  font: 600 var(--fs-sm)/1 var(--mono) !important;
+  letter-spacing: .2em !important;
+  text-transform: uppercase;
+  color: var(--muted) !important;
+}
+.panel-sub { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+
+.ring-card {
+  --notch: 7px;
+  border-radius: 0;
+  clip-path: polygon(
+    var(--notch) 0, 100% 0, 100% calc(100% - var(--notch)),
+    calc(100% - var(--notch)) 100%, 0 100%, 0 var(--notch));
+}
+.ring-track { font-family: var(--mono); letter-spacing: .05em; text-transform: uppercase; }
+.ring-count, .ring-pct { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+.ring-card[data-complete="1"] { box-shadow: 0 0 22px -10px color-mix(in srgb, var(--track, var(--accent)) 80%, transparent); }
+
+/* Badges read as medals: dark until earned, then lit. */
+.badge {
+  --notch: 6px;
+  border-radius: 0;
+  clip-path: polygon(
+    var(--notch) 0, 100% 0, 100% calc(100% - var(--notch)),
+    calc(100% - var(--notch)) 100%, 0 100%, 0 var(--notch));
+  transition: box-shadow .25s, border-color .25s;
+}
+.badge[data-earned="1"] {
+  box-shadow: inset 0 1px 0 var(--edge), 0 0 22px -10px var(--glow);
+}
+.badge-name { font-family: var(--mono); letter-spacing: .02em; }
+.badge-hint { font-size: var(--fs-xs); }
+
+.quest-name { font-family: var(--mono); letter-spacing: .01em; }
+.quest { --notch: 5px; border-radius: 0;
+  clip-path: polygon(
+    var(--notch) 0, 100% 0, 100% calc(100% - var(--notch)),
+    calc(100% - var(--notch)) 100%, 0 100%, 0 var(--notch)); }
+.quest[data-done="1"] { box-shadow: 0 0 18px -9px color-mix(in srgb, var(--good) 80%, transparent); }
+
+/* --------------------------------------------- channel cards on home --- */
+
+.track-card {
+  --notch: 9px;
+  position: relative;
+  border-radius: 0;
+  border-left: 3px solid var(--track, var(--accent));
+  background:
+    linear-gradient(90deg, color-mix(in srgb, var(--track, var(--accent)) 9%, transparent), transparent 45%),
+    linear-gradient(180deg, var(--panel-top), var(--panel-bot)),
+    var(--surface);
+  box-shadow: inset 0 1px 0 var(--edge);
+  clip-path: polygon(
+    0 0, 100% 0, 100% calc(100% - var(--notch)),
+    calc(100% - var(--notch)) 100%, 0 100%);
+  transition: box-shadow .18s, transform .12s;
+}
+.track-card:hover {
+  background:
+    linear-gradient(90deg, color-mix(in srgb, var(--track, var(--accent)) 16%, transparent), transparent 50%),
+    linear-gradient(180deg, var(--panel-top), var(--panel-bot)),
+    var(--surface);
+  box-shadow: inset 0 1px 0 var(--edge), 0 0 30px -14px color-mix(in srgb, var(--track, var(--accent)) 90%, transparent);
+  transform: translateY(-1px);
+}
+.track-card-num {
+  font-family: var(--mono);
+  letter-spacing: .14em;
+}
+.track-card .track-dot { display: none; }
+.track-card-foot { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+
+.section-head h2 { letter-spacing: -.02em; }
+.stat-value { font-family: var(--mono); font-variant-numeric: tabular-nums; letter-spacing: -.02em; }
+.stat-label { font-family: var(--mono); font-size: var(--fs-xs); letter-spacing: .08em; text-transform: uppercase; }
+.path-num, .path-what { font-family: var(--mono); }
+.eyebrow { font-family: var(--mono); letter-spacing: .16em; }
+
+/* --------------------------------------------------------- lesson rows -- */
+/* The list view of a channel: a state marker, a mono index, and light when
+   the row is cleared. */
+
+.lesson-row {
+  position: relative;
+  padding-left: 2.6rem;
+  border-radius: 0;
+  transition: background .14s, box-shadow .14s;
+}
+.lesson-row::before {
+  content: "";
+  position: absolute;
+  left: 1.05rem;
+  top: 50%;
+  width: .5rem;
+  height: .5rem;
+  margin-top: -.25rem;
+  border-radius: 50%;
+  border: 1.5px solid var(--line-strong);
+  transition: background .2s, border-color .2s, box-shadow .2s;
+}
+.lesson-row[data-done="1"]::before {
+  background: var(--track-ink, var(--track, var(--accent)));
+  border-color: var(--track-ink, var(--track, var(--accent)));
+  box-shadow: 0 0 9px -1px color-mix(in srgb, var(--track, var(--accent)) 85%, transparent);
+}
+:root[data-theme="dark"] .lesson-row[data-done="1"]::before,
+:root:not([data-theme="light"]) .lesson-row[data-done="1"]::before {
+  background: var(--track-ink-dark, var(--track, var(--accent)));
+  border-color: var(--track-ink-dark, var(--track, var(--accent)));
+}
+.lesson-row:hover {
+  background: linear-gradient(90deg,
+    color-mix(in srgb, var(--track, var(--accent)) 10%, transparent), transparent 40%);
+}
+.lesson-row .n { font-family: var(--mono); letter-spacing: .04em; }
+.lesson-row .m { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+
+/* ---------------------------------------------------- channel headers --- */
+
+.ct-title { letter-spacing: -.02em; }
+.ct-meta-row { font-family: var(--mono); letter-spacing: .06em; text-transform: uppercase; }
+.ct-meta-row span:last-child { font-variant-numeric: tabular-nums; }
+.overall-count, .overall-pct { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+.crumbs { font-family: var(--mono); font-size: var(--fs-xs); letter-spacing: .06em; }
+.track-outcome .label,
+.lesson-prereq .label,
+.page-head .eyebrow { font-family: var(--mono); letter-spacing: .16em; }
+
+.curriculum-track {
+  padding-left: 1rem;
+  border-left: 3px solid var(--track, var(--accent));
+}
+@media (max-width: 720px) { .curriculum-track { padding-left: .7rem; } }
+
+.page-head {
+  position: relative;
+  padding-left: 1rem;
+  border-left: 3px solid var(--track, var(--accent));
+}
+.page-head:not([style*="--track"]) { border-left-color: var(--accent); }
+
+/* The trial card is the boss door. */
+.trial-card {
+  --notch: 9px;
+  border-radius: 0;
+  background:
+    linear-gradient(90deg, color-mix(in srgb, var(--track, var(--accent)) 12%, transparent), transparent 50%),
+    linear-gradient(180deg, var(--panel-top), var(--panel-bot)),
+    var(--surface);
+  box-shadow: inset 0 1px 0 var(--edge);
+  clip-path: polygon(
+    0 0, 100% 0, 100% calc(100% - var(--notch)),
+    calc(100% - var(--notch)) 100%, 0 100%);
+}
+.trial-card:hover {
+  box-shadow: inset 0 1px 0 var(--edge),
+    0 0 34px -14px color-mix(in srgb, var(--track, var(--accent)) 90%, transparent);
+}
+.tc-tag, .tc-state { font-family: var(--mono); letter-spacing: .14em; }
+.tc-state[data-passed="1"] { text-shadow: 0 0 12px color-mix(in srgb, var(--good) 60%, transparent); }
+
+.trial-stat b { font-family: var(--mono); }
+.trial-stat span, .trial-count, .trial-tally span { font-family: var(--mono); letter-spacing: .1em; }
+.trial-tally b { font-family: var(--mono); }
+.trial-verdict { font-family: var(--mono); letter-spacing: .01em; }
+.trial-bar > i { box-shadow: 0 0 10px -2px var(--glow); }
