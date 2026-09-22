@@ -3667,12 +3667,17 @@ h2:hover > .anchor, h3:hover > .anchor, h4:hover > .anchor, .anchor:focus-visibl
 }
 @media (max-width: 720px) { .curriculum-track { padding-left: .7rem; } }
 
+/* The channel rail. --track comes from the page wrapper where there is one,
+   and falls back to the accent on pages that belong to no single track. */
 .page-head {
   position: relative;
   padding-left: 1rem;
-  border-left: 3px solid var(--track, var(--accent));
+  border-left: 3px solid var(--track-ink, var(--track, var(--accent)));
 }
-.page-head:not([style*="--track"]) { border-left-color: var(--accent); }
+:root[data-theme="dark"] .page-head,
+:root:not([data-theme="light"]) .page-head {
+  border-left-color: var(--track-ink-dark, var(--track, var(--accent)));
+}
 
 /* The trial card is the boss door. */
 .trial-card {

@@ -384,7 +384,8 @@ function curriculumPage(present, trialTracks) {
     .map((track, i) => {
       const ids = track.lessons.map(([slug]) => `${track.id}/${slug}`).join(' ');
       const mins = track.lessons.reduce((s, [, , m]) => s + m, 0);
-      return `<section class="curriculum-track" id="${track.id}" style="--track:${track.fill}">
+      return `<section class="curriculum-track" id="${track.id}"
+      style="--track:${track.fill};--track-ink:${track.inkLight};--track-ink-dark:${track.inkDark}">
       <div class="ct-head">
         <div>
           <h2 class="ct-title">${trackDot(track)}<a href="${u(`/learn/${track.id}/`)}">${esc(
@@ -455,8 +456,8 @@ function trackPage(track, present, hasTrial) {
   const next = tracks[i + 1];
 
   const body = `
-<div class="wrap">
-  <section class="page-head" style="--track:${track.fill}">
+<div class="wrap" style="--track:${track.fill};--track-ink:${track.inkLight};--track-ink-dark:${track.inkDark}">
+  <section class="page-head">
     <div class="crumbs">
       <a href="${u('/curriculum/')}">Curriculum</a><span class="sep">/</span>
       <span>Track ${String(i + 1).padStart(2, '0')}</span>
@@ -475,7 +476,7 @@ function trackPage(track, present, hasTrial) {
       <a class="btn btn-primary" href="${u(`/learn/${track.id}/${first[0]}/`)}">Start ${String(
     i + 1
   )}.01 ${ICON.arrow}</a>
-      ${hasTrial ? `<a class="btn" href="${u(`/learn/${track.id}/trial/`)}">Take the trial</a>` : ''}
+      ${hasTrial ? `<a class="btn btn-ghost" href="${u(`/learn/${track.id}/trial/`)}">Take the trial</a>` : ''}
     </div>
   </section>
 
@@ -753,7 +754,7 @@ function trialPage(track, pool) {
 
   const body = `
 <div class="wrap">
-  <section class="page-head" style="--track:${track.fill}">
+  <section class="page-head" style="--track:${track.fill};--track-ink:${track.inkLight};--track-ink-dark:${track.inkDark}">
     <div class="crumbs">
       <a href="${u('/curriculum/')}">Curriculum</a><span class="sep">/</span>
       <a href="${u(`/learn/${track.id}/`)}">${esc(track.short)}</a><span class="sep">/</span>
@@ -804,7 +805,7 @@ function trialPage(track, pool) {
       <div class="trial-review" data-review></div>
       <div class="trial-again">
         <button class="btn btn-primary" type="button" data-retry>Take it again</button>
-        <a class="btn" href="${u(`/learn/${track.id}/`)}">Back to ${esc(track.short)}</a>
+        <a class="btn btn-ghost" href="${u(`/learn/${track.id}/`)}">Back to ${esc(track.short)}</a>
       </div>
     </div>
 
