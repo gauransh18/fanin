@@ -109,6 +109,19 @@ The explicit Thought step matters for the reason chain of thought does (lesson 5
 gives the model sequential computation between actions rather than requiring the decision in
 one forward pass.
 
+::: check
+Where do most tool-calling failures actually originate?
+
+- [x] In the tool and parameter descriptions — they are the only thing the model has to decide when to call and what to pass
+  > Write them as if for a competent new colleague with no context: what it does, when to use it, when *not* to, what each argument means. It is also the cheapest thing in the pipeline to fix.
+- [ ] In the model's inability to produce valid JSON
+  > Constrained decoding makes valid JSON close to a solved problem. Valid and *correct* are different.
+- [ ] In the sandbox rejecting legitimate calls
+  > Sandboxing is a safety requirement and rarely the source of the model's mistakes.
+- [ ] In the context window filling with tool results
+  > Context pressure is real on long trajectories and is downstream of calling the right tools in the first place.
+:::
+
 ## Where agents fail
 
 ::: warning
@@ -143,6 +156,19 @@ that the model reads and writes rather than relying on the raw transcript.
 
 **Make failure visible.** Return the step limit, the errors encountered, and the verification
 results alongside the answer, so a caller can tell a real success from a claimed one.
+
+::: check
+An agent produces the right tool calls in the right order but the wrong final answer. What does that point at?
+
+- [x] A reasoning problem rather than a tool problem — the trajectory was correct, so the failure is in how the results were used
+  > Categorising failures this way is what makes them fixable: wrong tool points at descriptions, right tool with wrong arguments points at parameter documentation or context, and a repeated identical call points at a loop the agent cannot escape.
+- [ ] The tool descriptions are vague
+  > Vague descriptions show up as the *wrong tool* being called, which is not what happened here.
+- [ ] The sandbox returned stale results
+  > Possible, and it would be a tool problem, which the correct trajectory has already largely ruled out.
+- [ ] The horizon is too long
+  > Long horizons compound errors, and the trajectory here was right the whole way.
+:::
 
 ## Sandboxing
 

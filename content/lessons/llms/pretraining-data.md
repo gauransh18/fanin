@@ -103,6 +103,19 @@ def jaccard_estimate(sig_a, sig_b):
 The fraction of matching signature positions estimates Jaccard similarity — that is the
 MinHash guarantee. Threshold around 0.8 for near-duplicate removal.
 
+::: check
+A typical pretraining pipeline keeps what share of raw Common Crawl?
+
+- [x] Under 10%
+  > Boilerplate, navigation, spam, machine translation and adult content make up most of it. The filtering pipeline is where most of a corpus's quality is decided.
+- [ ] Around half
+  > Far too generous. Even lenient pipelines discard the large majority.
+- [ ] Around 90%, since deduplication is the main loss
+  > Deduplication is the highest-leverage single step, and quality filtering removes more.
+- [ ] Essentially all of it, after language identification
+  > Language ID alone removes a slice. It is the first filter of several.
+:::
+
 ## Decontamination
 
 Benchmark test sets leak into web crawls constantly. A model that has seen the test set
@@ -118,6 +131,19 @@ def is_contaminated(doc, benchmark_ngrams, n=13):
 13-gram overlap is the common threshold. Run it against every benchmark you intend to
 report, and **report the contamination rate you found** — a paper that does not mention
 decontamination has almost certainly not done it.
+
+::: check
+Raising the confidence threshold on language identification improves corpus quality. What does it also do?
+
+- [x] Disproportionately removes code-switched and dialectal text, which is a real fairness cost rather than a neutral filter
+  > Every filter encodes a judgement about what counts as good text. Naming that explicitly is the difference between a considered pipeline and an accidental one.
+- [ ] Nothing else; language ID is orthogonal to content
+  > It is not orthogonal to *whose* content survives.
+- [ ] Removes code, which is often misclassified
+  > Code is usually routed through its own pipeline rather than relying on natural-language ID.
+- [ ] Increases the share of machine-translated text
+  > Confident monolingual text is exactly what machine translation produces, so a higher threshold does not filter it out — but that is a separate detector's job.
+:::
 
 ## Mixing
 

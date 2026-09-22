@@ -53,6 +53,19 @@ open-ended generation.
 take the best. Better than majority voting when a good verifier exists, and it degrades
 badly when the verifier is exploitable (lesson 5.07).
 
+::: check
+Why does "think step by step" help on multi-step problems and do essentially nothing for lookup questions?
+
+- [x] Chain of thought converts depth into length — a problem needing $k$ sequential steps cannot fit in $L$ layers when $k > L$, but can be done in $k$ forward passes with intermediates in context
+  > It is a claim about computational capability, not about prompting style. A lookup needs no sequential depth, so there is nothing for the extra passes to do.
+- [ ] It gives the model more chances to sample the right answer
+  > That is self-consistency, which is a different method — sample $n$ chains and take the mode.
+- [ ] It shifts the output distribution towards training data that contains reasoning
+  > That is part of why the prompt works at all, and it does not explain why the gain is specific to multi-step problems.
+- [ ] It increases the effective context, letting the model attend to more of the question
+  > The question is the same length either way.
+:::
+
 ## Process supervision
 
 An outcome reward says only whether the final answer was right. A **process reward model**

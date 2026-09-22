@@ -72,6 +72,19 @@ def build_example(tokenizer, system, user, assistant):
     return torch.tensor(ids), torch.tensor(labels)
 ```
 
+::: check
+During SFT you forget to set prompt tokens to `-100`. What does the model learn to do?
+
+- [x] Generate user messages — it continues the conversation by inventing the user's next turn
+  > It also dilutes the gradient: with a 500-token prompt and a 50-token answer, 90% of the signal is spent on tokens you do not care about.
+- [ ] Nothing different; the prompt is part of the conversation either way
+  > It is part of the *context* either way. Whether it contributes to the loss is a separate choice, and it changes what the model is trained to produce.
+- [ ] Overfit to the prompts and ignore the responses
+  > Both contribute; the responses are not ignored. The problem is that the prompts should not contribute at all.
+- [ ] Produce shorter responses, since the loss is dominated by prompt tokens
+  > Length is not directly affected. The learned behaviour is role confusion.
+:::
+
 ## Quality beats quantity, decisively
 
 The LIMA result is the one to know: **1,000 carefully curated examples** produced a model

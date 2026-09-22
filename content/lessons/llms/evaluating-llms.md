@@ -53,6 +53,19 @@ nearly indifferent to phrasing, and a model that memorised the string is not.
 The only real defence is **held-out evaluation you construct yourself**, after the model's
 training cutoff, and never publish.
 
+::: check
+Model A scores 71.2% and model B 69.8% on a 500-example benchmark. What has been shown?
+
+- [x] Nothing — the 95% interval at $n = 500$ is about ±4 points, so the difference is well under one standard error
+  > Most benchmark suites have 200–1,000 examples per task, and most reported differences are noise. Report intervals, and use paired comparisons on identical examples, which can make an underpowered comparison decisive at no extra cost.
+- [ ] That A is better, since it scored higher
+  > A higher number on a noisy measurement is not evidence of a difference.
+- [ ] That A is better by 1.4 points, with the uncertainty applying to the absolute scores only
+  > Uncertainty on each score propagates into the difference; it does not cancel because the scores are independent draws.
+- [ ] That the benchmark is saturated
+  > Saturation would show as both models near the ceiling. At 70% there is plenty of headroom.
+:::
+
 ## Selection effects
 
 Even with clean data, reported numbers are optimistically biased by how they were produced:
@@ -112,6 +125,19 @@ The inconsistency rate is itself informative: if the judge disagrees with itself
 pairs, its resolution is about 30% and differences below that are not measurable.
 
 Always calibrate the judge against human labels on a sample before trusting it at scale.
+
+::: check
+Why is benchmark contamination structurally hard to avoid?
+
+- [x] Benchmarks are published on the public web and training corpora are scraped from the public web
+  > A model that memorised the test set scores well and has learned nothing. Decontamination at the data stage and held-out private sets are the responses; detecting it after the fact is hard.
+- [ ] Because benchmark licences forbid filtering them out
+  > Licences are not the obstacle; finding every paraphrase and mirror is.
+- [ ] Because models memorise everything they see at least once
+  > They memorise some things and not others, which is what makes detection statistical rather than certain.
+- [ ] Because test sets are too small to remove from a corpus
+  > Size makes them easy to *store* and hard to *find*, since they appear in many reformatted copies.
+:::
 
 ## What to measure instead
 

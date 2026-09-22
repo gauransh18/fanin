@@ -79,6 +79,19 @@ $$
 Any comparison of two models' losses without this correction is measuring tokenizers.
 :::
 
+::: check
+Next-token prediction produces translation, arithmetic and in-context learning without any being asked for. What does the same argument say about truthfulness?
+
+- [x] It will not emerge from scaling, because predicting confident falsehood accurately is rewarded by the objective
+  > Any capability that reduces next-token loss will be learned if it is learnable and there is capacity. A capability that does not reduce loss on the training distribution will not appear however much you scale — which is exactly the gap that post-training exists to close.
+- [ ] It emerges once the model is large enough to represent the truth
+  > Representing the truth and being rewarded for stating it are different things. The corpus contains plenty of confident falsehood.
+- [ ] It emerges if the data is filtered to remove falsehoods
+  > Better data helps, and that is a change to the *distribution*, not to what scaling alone does.
+- [ ] It is already guaranteed, since the factorisation is exact
+  > Exactness of the factorisation says the objective can in principle capture the full joint distribution of the *corpus* — falsehoods included.
+:::
+
 ## The shape of the curve
 
 Every pretraining run shows the same structure:

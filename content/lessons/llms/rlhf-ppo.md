@@ -92,6 +92,19 @@ assignment hard — the model must work out which of 500 tokens caused a good sc
 **$\gamma = 1$.** No discounting. A response is a finite episode and a token at position 400
 matters as much as one at position 4.
 
+::: check
+The RLHF objective penalises KL divergence from the SFT model. Why can you not simply tune $\beta$ to zero?
+
+- [x] The reward model was trained on SFT-like outputs and is unreliable away from that distribution — optimising against unreliable predictions *is* reward hacking
+  > It also preserves capabilities and bounds the damage, making RLHF an adjustment rather than a fresh optimisation. Typical $\beta$ is 0.01–0.1: too low and the policy hacks the reward, too high and nothing changes.
+- [ ] Without it the gradient is undefined
+  > The policy gradient is perfectly well defined without a KL term. What is undefined is whether the reward still means anything.
+- [ ] It is required for the value model to converge
+  > The value model estimates returns under whatever policy exists. It does not need the KL term.
+- [ ] It prevents the policy from diverging numerically
+  > Numerical divergence is not the failure mode. Collapse onto a single high-scoring response pattern is.
+:::
+
 ## Estimating the KL
 
 The exact KL requires summing over the whole vocabulary. Two estimators are used in
@@ -108,6 +121,19 @@ kl_k3 = torch.exp(-logratio) - 1 + logratio
 The k3 estimator is standard. It is unbiased for the same quantity and has far lower
 variance, which matters because this term is inside a gradient estimate that is already
 noisy.
+
+::: check
+How many model copies does PPO-based RLHF keep in memory, and which of them train?
+
+- [x] Four — policy, frozen reference, frozen reward, and a value model — of which the policy and the value model train
+  > Four copies of a 7B model is roughly 56 GB in bf16 before optimizer state. That memory, plus keeping four models synchronised across a cluster, is the practical reason RLHF is hard and why DPO's removal of two of them mattered.
+- [ ] Two — policy and reward — both training
+  > The reference is needed for the KL term and the value model for the advantage. Neither the reference nor the reward trains.
+- [ ] Three — policy, reference and reward — with only the policy training
+  > That is close to what DPO-style methods need. PPO additionally needs a value model.
+- [ ] One, with the reward computed analytically
+  > The reward is a learned model, which is the whole subject of lesson 5.07.
+:::
 
 ## The failure modes
 

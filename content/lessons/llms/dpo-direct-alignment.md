@@ -91,6 +91,19 @@ No rollouts is the biggest practical difference. PPO's loop generates, scores, a
 generation is slow and hard to parallelise efficiently. DPO is an ordinary supervised loop
 over a fixed dataset.
 
+::: check
+DPO's derivation depends on one cancellation. What cancels, and why?
+
+- [x] The partition function $Z(x)$, because it depends only on the prompt and so appears identically in both terms of the Bradley–Terry difference
+  > That intractable term disappearing is what makes DPO computable: two forward passes per response, one through the policy and one through the frozen reference. The language model becomes its own reward model, defined by its log-ratio.
+- [ ] The reference policy, which is the same in both terms
+  > The reference appears in both terms but with *different* responses, so it does not cancel — it is exactly what the log-ratio is measured against.
+- [ ] The KL penalty, which is absorbed into $\beta$
+  > $\beta$ carries the KL strength through into the DPO loss rather than removing it.
+- [ ] The value function, which is not needed for preference data
+  > There is no value function in this derivation to cancel; DPO not needing one is a consequence, not the mechanism.
+:::
+
 ## What it gives up
 
 ::: warning
@@ -116,6 +129,19 @@ sampling, for filtering synthetic data, for evaluation. DPO produces none.
 observation is that $\log\pi_\theta(y_w)$ decreases during DPO training while
 $\log\pi_\theta(y_l)$ decreases faster. The objective is satisfied and the model has become
 less likely to produce the preferred response. Log both — this is not visible in the loss.
+
+::: check
+DPO removes the reward model and the value model. What does it give up relative to PPO?
+
+- [x] Online exploration — it learns from a fixed preference dataset rather than from responses the current policy generates
+  > PPO samples fresh completions and scores them, so it can discover behaviours absent from the dataset. DPO is limited to the preferences it was given, which is why iterative and online DPO variants exist.
+- [ ] The KL constraint, which is absent from DPO
+  > The constraint is built into the objective through $\beta$ and the reference model.
+- [ ] The ability to use preference data at all
+  > Preference data is exactly what it consumes.
+- [ ] Stability — DPO is the less stable of the two in practice
+  > It is generally the more stable, which is much of its appeal.
+:::
 
 ## The family
 

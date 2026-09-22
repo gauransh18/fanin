@@ -101,6 +101,19 @@ intended.
 Most libraries do this correctly; hand-rolled samplers frequently do not.
 :::
 
+::: check
+Greedy decoding produces noticeably worse open-ended text than sampling. Why?
+
+- [x] Human text is not the maximum-likelihood sequence — it sits in a region of moderate probability, and always taking the mode leaves that region
+  > It also falls into degenerate repetition: once a repeated pattern is locally most likely, nothing breaks the cycle. Greedy remains correct where there *is* one right answer — classification, extraction, structured output, reproducible evaluation.
+- [ ] Greedy decoding cannot use the full vocabulary
+  > It considers every logit; it simply always takes the largest.
+- [ ] The argmax is undefined when two logits tie
+  > Ties are broken arbitrarily and are vanishingly rare in float arithmetic.
+- [ ] Sampling produces higher-likelihood sequences on average
+  > Sampling produces *lower*-likelihood sequences on average. That is the point.
+:::
+
 ## Beam search
 
 Maintain $b$ partial sequences and expand each, keeping the $b$ highest-scoring:

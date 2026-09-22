@@ -72,6 +72,19 @@ For more than a few hundred thousand chunks, exact search is too slow and you wa
 approximate index — HNSW (a navigable small-world graph) or IVF-PQ (clustering plus product
 quantization). FAISS, Qdrant and pgvector all implement these.
 
+::: check
+A RAG system returns a wrong answer. Why is that hard to diagnose without extra instrumentation?
+
+- [x] Every stage — chunking, embedding, search, reranking, prompt assembly, generation — fails the same way from the outside, so the stages have to be measured separately
+  > Retrieval recall at $k$, reranker precision and answer faithfulness are different numbers. A single end-to-end accuracy figure tells you that something is wrong and nothing about what.
+- [ ] Because embedding models are not interpretable
+  > Interpretability of the embedding is not required to measure whether the right chunk was retrieved.
+- [ ] Because the generator's output is stochastic
+  > Sampling adds variance, which is controllable and not the structural problem here.
+- [ ] Because chunk boundaries are not recorded
+  > Recording them is easy, and doing so is part of the instrumentation the answer calls for.
+:::
+
 ## Hybrid search
 
 ::: key
@@ -168,6 +181,19 @@ LLM was never the bottleneck.
 - **Fine-tune the embedding model** on your domain with contrastive learning (lesson 3.04's
   InfoNCE). Reliably the largest single improvement, and it needs only query–document pairs
   you can mine from logs.
+
+::: check
+Chunk size trades two things off. Which way does each run?
+
+- [x] Small chunks retrieve precisely but often lack the surrounding context needed to answer
+  > 128 tokens frequently retrieves the right sentence without the paragraph that makes it usable.
+- [x] Large chunks are complete but dilute the embedding, hurting retrieval precision
+  > A single vector summarising 2,048 tokens is an average of too many things to match a specific query well.
+- [ ] Small chunks are cheaper to embed per document
+  > More chunks per document, not fewer — the total token count is the same and the per-chunk overhead is higher.
+- [ ] Large chunks improve reranking accuracy
+  > A cross-encoder reranker reads the query and chunk together and generally does better on focused passages.
+:::
 
 ## RAG or long context
 

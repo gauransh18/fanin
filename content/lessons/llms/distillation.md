@@ -64,6 +64,19 @@ distribution it actually produces, not the teacher's. Generalised knowledge dist
 model on them. This is how small models acquire reasoning behaviour they could not learn
 from the original corpus.
 
+::: check
+The distillation loss multiplies the soft term by $T^2$. What is that factor for?
+
+- [x] Softening by $T$ shrinks the soft term's gradients by roughly $1/T^2$, so without the correction the balance between the soft and hard terms would shift every time you changed the temperature
+  > It makes $\alpha$ mean the same thing at every temperature, which is the only way the two hyperparameters can be tuned independently.
+- [ ] It compensates for the KL being computed in log space
+  > `log_target=True` handles the log-space detail and has nothing to do with scaling.
+- [ ] It matches the teacher's output magnitude
+  > Both distributions are softened by the same $T$, so their magnitudes already correspond.
+- [ ] It converts nats to bits
+  > That would be a factor of $\log_2 e$, and would not depend on $T$.
+:::
+
 ## Which divergence
 
 Lesson 1.15's asymmetry matters here:

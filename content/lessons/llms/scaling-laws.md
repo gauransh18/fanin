@@ -54,6 +54,19 @@ Every model before 2022 was substantially undertrained, and correcting that was 
 than several years of architectural work.
 :::
 
+::: check
+Chinchilla found that the 2020 Kaplan analysis had over-weighted model size. What was the methodological error?
+
+- [x] The learning-rate schedule was held fixed across model sizes, which handicapped the larger-data runs
+  > Redoing it properly gave $N_{\text{opt}} \propto C^{0.5}$ and $D_{\text{opt}} \propto C^{0.5}$ — scale both equally, roughly 20 tokens per parameter.
+- [ ] The compute budget was measured in GPU-hours rather than FLOPs
+  > Both analyses worked in FLOPs via the $6ND$ rule.
+- [ ] The models were evaluated on a contaminated test set
+  > Contamination is a real hazard elsewhere; it is not what the Chinchilla correction was about.
+- [ ] Loss was measured in bits rather than nats
+  > A unit change rescales the axis and cannot change which allocation is optimal.
+:::
+
 ## Inference-optimal is a different question
 
 Chinchilla minimises training loss for a training budget. It ignores inference entirely.
@@ -117,6 +130,19 @@ Not all emergence dissolves this way. Induction-head formation (lesson 4.03) is 
 phase transition in the model's internal structure, visible as a bump in the loss curve
 itself. The honest position: most reported emergence is metric choice; some is real; you
 cannot tell which without measuring continuously.
+
+::: check
+Scaling-law exponents are around 0.05 to 0.1. What does that mean in practice?
+
+- [x] A 10× compute increase buys perhaps a 15% loss reduction — progress is slow, expensive, and above all *predictable*
+  > Predictability is what makes a frontier run plannable rather than a gamble. The smallness of the exponents is why the bills are what they are.
+- [ ] A 10× compute increase roughly halves the loss
+  > That would be an exponent near 0.3. The measured values are far smaller.
+- [ ] The exponents are too small to be useful for planning
+  > They are small and remarkably stable over seven orders of magnitude, which is precisely what makes them useful.
+- [ ] Loss falls linearly with compute
+  > It falls as a power law — a straight line on a log-log plot, not a linear one.
+:::
 
 ## Using them
 

@@ -86,6 +86,19 @@ $$
 that are salient (by activation magnitude, not weight magnitude) and scale them to protect
 them from quantization error.
 
+::: check
+Quantizing a 70B model from bf16 to 4 bits cuts memory from 140 GB to about 35 GB. Why does it also make decoding *faster*?
+
+- [x] Decode is memory-bandwidth-bound, so reading a quarter as many bytes per token is a direct speedup
+  > One new token against a large cache has almost no arithmetic per byte read. Shrinking the bytes is the whole lever, which is also why KV-cache quantization pays off.
+- [ ] Integer arithmetic is faster than bf16 on tensor cores
+  > Weights are typically dequantised to a floating format for the matmul, so the arithmetic is not what changes.
+- [ ] Smaller models need fewer layers
+  > Quantization changes the representation, not the architecture. Every layer is still there.
+- [ ] It enables larger batches, which is where the speedup comes from
+  > Larger batches are a real second-order benefit, and the per-token saving happens at any batch size.
+:::
+
 ## The methods
 
 **GPTQ** quantizes weights column by column, using second-order information to adjust the

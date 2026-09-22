@@ -79,6 +79,19 @@ For $d = k = 4096$ and $r = 8$:
 The frozen base weights still need to be resident — 14 GB in bf16 — but they need no
 gradient and no optimizer state. That is where the 1.1 TB becomes 20 GB.
 
+::: check
+`LoRALinear` initialises `lora_B` to zeros and `lora_A` with Kaiming uniform. Why not both randomly?
+
+- [x] With $B = 0$ the product $BA$ is zero, so the model at step 0 is exactly the pretrained one
+  > Starting from a random perturbation of a carefully pretrained model would throw away quality before training has learnt anything. Zeroing one factor makes the adapter a no-op at initialisation without freezing it.
+- [ ] Zero initialisation halves the parameter count
+  > Both matrices are trained and both are stored. Nothing is saved.
+- [ ] It prevents the two factors from collapsing to the same subspace
+  > Symmetry breaking is why $A$ is random rather than zero. If *both* were zero the gradients would be zero too and nothing would ever train.
+- [ ] It makes the adapter mergeable into $W$ at deployment
+  > Merging works from any values of $A$ and $B$.
+:::
+
 ## Which modules
 
 ```python

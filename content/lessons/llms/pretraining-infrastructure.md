@@ -66,6 +66,19 @@ config = {
 }
 ```
 
+::: check
+A run reports 20% MFU. What does that tell you?
+
+- [x] It costs twice what a 40% run costs for identical results — profile before spending more
+  > MFU is the single number saying whether the cluster is earning its keep. 35–45% is typical for a well-tuned large run; under 25% means something is badly wrong.
+- [ ] It is normal for large distributed runs
+  > 35–45% is normal. 20% is a problem worth a day of investigation before a multi-week commitment.
+- [ ] It means 20% of GPUs are idle
+  > It means the GPUs that are running are achieving a fifth of their peak arithmetic rate, which can happen with every device busy.
+- [ ] It is a measure of model quality, not utilisation
+  > It measures achieved FLOPs against theoretical peak, and says nothing about quality.
+:::
+
 ## Batch size
 
 Large batches reduce gradient noise as $1/\sqrt{B}$ (lesson 1.11) and improve hardware

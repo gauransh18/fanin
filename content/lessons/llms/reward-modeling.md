@@ -69,6 +69,19 @@ This is a genuine and common bug, and its symptom is a policy that learns to wri
 opening sentences followed by nonsense.
 :::
 
+::: check
+Why do reward models train on pairwise comparisons rather than 1–10 ratings?
+
+- [x] Ratings have no shared anchor — annotators differ, drift within a session, and cannot articulate what separates a 7 from an 8
+  > "Which of these two is better" needs no absolute scale, and inter-annotator agreement is substantially higher. Bradley–Terry then turns those comparisons into a latent score.
+- [ ] Comparisons are cheaper to collect per item
+  > A comparison requires reading two responses rather than one, so it is not obviously cheaper. It is more *reliable*.
+- [ ] Ratings cannot be used with a sigmoid loss
+  > They can be fitted with a regression head perfectly well. The problem is what the numbers mean.
+- [ ] Comparisons avoid the need for a reference model
+  > Neither approach needs one; the reference belongs to the RL stage.
+:::
+
 ## Only differences are identified
 
 The loss depends on $r(x,y_w) - r(x,y_l)$. Adding a constant $c$ to every reward for a
@@ -136,6 +149,19 @@ A correlation above about 0.3 means length is doing significant work. Mitigation
 
 Other shortcuts that show up: formatting (bullet points score higher), hedging language,
 and sycophancy — agreeing with the user's stated position regardless of correctness.
+
+::: check
+Bradley–Terry models preference as $\sigma(r(x,y_w) - r(x,y_l))$. What does that imply about the learned reward?
+
+- [x] Only *differences* are identified — adding a constant to every score leaves the loss unchanged, so absolute reward values are meaningless
+  > Which is why reward magnitudes cannot be compared across training runs, and why a reward of 4.2 tells you nothing on its own.
+- [ ] The reward is bounded in $(0,1)$ like the sigmoid
+  > The sigmoid is applied to the *difference*. The scores themselves are unbounded reals.
+- [ ] The reward is calibrated as a probability of being preferred
+  > The difference passed through a sigmoid is such a probability. The score is not.
+- [ ] Rewards are comparable across prompts
+  > They are not even comparable across runs, and within a run different prompts have their own offsets.
+:::
 
 ## Ensembles and uncertainty
 
