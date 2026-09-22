@@ -75,6 +75,19 @@ Three differences from a language model:
   problem of lesson 4.04 is less pressing — though changing input resolution requires
   interpolating the position embeddings.
 
+::: check
+`PatchEmbed` implements patch extraction as a stride-16, kernel-16 `Conv2d`. Is that a trick?
+
+- [x] No — a stride-$P$, kernel-$P$ convolution *is* "cut into non-overlapping patches and apply the same linear map to each", which is the definition
+  > It is the same operation written in the vocabulary the framework already has, and it is why the implementation is three lines.
+- [ ] Yes — it reintroduces the convolutional prior the ViT was meant to discard
+  > With stride equal to kernel size there is no overlap, so neither locality across patches nor translation equivariance survives. The prior is genuinely gone.
+- [ ] Yes — it makes the model equivariant to patch-sized translations
+  > Equivariance would need overlapping windows. Shifting the image by 8 pixels changes every patch.
+- [ ] No, but it is slower than an explicit reshape and matmul
+  > It dispatches to the same kind of matmul and is typically as fast or faster.
+:::
+
 ## Why it needs so much data
 
 ::: key

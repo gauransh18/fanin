@@ -90,6 +90,19 @@ ALiBi adds no parameters and extrapolates well past the training length, because
 penalty is defined for any distance. Its cost is a hard recency bias: distant tokens are
 always penalised, so genuine long-range retrieval is harder.
 
+::: check
+A model with learned absolute position embeddings trained at length 2,048 is asked to process 2,049 tokens. What happens?
+
+- [x] There is no row in the table for position 2,049 — not a graceful degradation, simply nothing to look up
+  > Extending context means adding rows and training them. This is a large part of why RoPE displaced learned absolute embeddings, and it is separate from the second objection: absolute position is the wrong invariant anyway.
+- [ ] Quality degrades smoothly, as it does for sinusoidal encodings
+  > Sinusoids at least *evaluate* at any position, however poorly. A table lookup does not.
+- [ ] The position wraps around to zero
+  > Nothing wraps it; the index is simply out of range.
+- [ ] The model falls back to relative positions
+  > There is no fallback. A model has whichever scheme it was built with.
+:::
+
 ## RoPE, and why it won
 
 Rotary position embedding rotates queries and keys by an angle proportional to position,
@@ -155,6 +168,19 @@ are out of distribution. Three standard extensions:
   range.
 - **YaRN.** Combines interpolation with a temperature correction and per-frequency
   treatment. Currently the strongest of the three.
+
+::: check
+Why is absolute position described as the wrong invariant for language?
+
+- [x] What matters is that a verb is three tokens after its subject, not that the subject sits at index 847 — an absolute scheme has to learn the same relationship separately at every offset
+  > Relative schemes and RoPE encode the offset directly, so one learned relationship transfers across the whole sequence.
+- [ ] Because sentences have variable length, so absolute indices are undefined
+  > They are perfectly well defined. The complaint is about what they generalise across.
+- [ ] Because attention is permutation invariant, so absolute positions are ignored
+  > Attention is permutation *equivariant*, which is exactly why position has to be supplied. Once added, it is certainly not ignored.
+- [ ] Because absolute encodings interfere with the residual stream
+  > Adding a position vector to the embedding does consume residual capacity, which is a minor and separate consideration.
+:::
 
 ## The comparison
 

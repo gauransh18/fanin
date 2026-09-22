@@ -107,6 +107,19 @@ ref = torch.nn.functional.scaled_dot_product_attention(q, k, v, is_causal=True)
 print((flash_attention_reference(q, k, v) - ref).abs().max())   # ~1e-6
 ```
 
+::: check
+FlashAttention is 2–4× faster than standard attention. Where does the speedup come from?
+
+- [x] Moving less data — the $T\times T$ score matrix never reaches HBM, so arithmetic intensity rises
+  > It computes exactly the same function with exactly the same FLOPs. Standard attention has intensity $O(d)$, a constant independent of $T$, so it never gets better at using the hardware as sequences grow.
+- [ ] Doing fewer FLOPs by skipping low-weight score entries
+  > Nothing is skipped; the result is numerically the same, not an approximation.
+- [ ] Running the softmax in lower precision
+  > The online softmax is carefully kept accurate. Precision is not the lever.
+- [ ] Parallelising across heads, which standard attention does not
+  > Standard attention already parallelises across heads.
+:::
+
 ## Recomputation in the backward pass
 
 The backward pass needs the attention weights, which were never stored. FlashAttention
@@ -155,6 +168,19 @@ you have left the fast path. This is a large part of why RoPE won: it modifies $
 before the kernel rather than adding to the scores inside it.
 
 Use `sdpa_kernel` to turn the silent fallback into an error while developing.
+:::
+
+::: check
+Tiling attention runs into one obstacle. What is it, and what solves it?
+
+- [x] Softmax normalises over a whole row, but only one tile of that row is on chip at a time — an online softmax with a running maximum and running sum fixes it
+  > Each new block rescales the accumulated output by $e^{m - m^{\text{new}}}$, so the result is exact rather than approximate.
+- [ ] The causal mask cannot be applied tile by tile
+  > It applies cleanly per tile, and whole tiles above the diagonal can be skipped entirely.
+- [ ] Query blocks and key blocks must be the same size
+  > They need not be; the block sizes are tuned independently against SRAM capacity.
+- [ ] Tiles cannot be written back to HBM in parallel
+  > The output is accumulated per query block and written once. Parallel writes are not the difficulty.
 :::
 
 ## Versions

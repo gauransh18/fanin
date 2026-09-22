@@ -95,6 +95,19 @@ reason: structured sparsity in the weight matrix is cheaper than a dense one and
 better.
 :::
 
+::: check
+With $d = 512$ and $h = 8$, each head works in 64 dimensions rather than 512. What does that mean for total compute?
+
+- [x] It is unchanged — you are partitioning the representation across heads, not multiplying the work
+  > Eight heads of width 64 do the same arithmetic as one head of width 512. What you buy is several distributions over positions per token instead of one.
+- [ ] It is eight times higher, which is the cost of multiple heads
+  > That would be the cost of eight *full-width* heads, which is not what multi-head attention does.
+- [ ] It is eight times lower, since each head is narrower
+  > Each head is narrower and there are eight of them. The product is the same.
+- [ ] It depends on sequence length, which decides whether heads help
+  > Sequence length scales the whole attention cost equally regardless of how it is partitioned.
+:::
+
 ## What heads learn
 
 Studies of trained transformers find recurring, nameable head types:
@@ -117,6 +130,19 @@ oldest tokens (lesson 4.10) removes the sink, and model quality collapses — no
 those tokens carried information, but because heads lost their null option and were forced
 to attend somewhere meaningful. Keeping the first few tokens permanently in the cache
 fixes it, which is what StreamingLLM does.
+:::
+
+::: check
+Why does the implementation use one `nn.Linear(d, 3 * d)` instead of three separate projections for Q, K and V?
+
+- [x] A single larger matmul beats three smaller ones — better arithmetic intensity and one kernel launch instead of three
+  > It is lesson 1.03's argument in practice: at these shapes the limit is usually memory movement, and three small matmuls each pay their own round trip to HBM.
+- [ ] It forces Q, K and V to share weights, which regularises the model
+  > They do not share weights — the output is chunked into three independent slices.
+- [ ] It is required for `F.scaled_dot_product_attention` to dispatch to FlashAttention
+  > That dispatch depends on shapes, dtypes and contiguity, not on how the projections were computed.
+- [ ] It avoids the need to split heads afterwards
+  > The split still happens, with `view` and `transpose`, immediately after.
 :::
 
 ## Head count and dimension

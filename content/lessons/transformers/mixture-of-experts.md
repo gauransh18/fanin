@@ -79,6 +79,19 @@ for any given token, so serving an MoE costs the memory of the full parameter co
 trades memory for compute, which is a good trade during training and often a bad one for
 single-stream inference.
 
+::: check
+An MoE layer with 8 experts and top-$k$ of 2 replaces one MLP. What does it change about parameters and compute per token?
+
+- [x] Parameters grow roughly eightfold while per-token compute stays near the top-2 cost — capacity is decoupled from compute
+  > Every token passes through all of a dense MLP. Routing means each token pays for two experts while the model as a whole holds eight, which is the entire reason MoE exists.
+- [ ] Both grow eightfold, which is why MoE models are so expensive to serve
+  > Serving is expensive because the *weights* must all be resident, not because each token does eightfold arithmetic.
+- [ ] Parameters stay the same and compute falls by a factor of four
+  > The experts are additional parameters; nothing is removed.
+- [ ] Parameters grow eightfold and compute falls, since only two experts run
+  > Compute per token does not fall below the original dense MLP — top-2 of eight experts of the same width costs about twice one MLP, not a quarter.
+:::
+
 ## Load balancing
 
 Nothing in the objective prevents the router from sending every token to one expert. This
@@ -117,6 +130,19 @@ entirely, passing through on the residual path alone.
 At capacity factor 1.0 with imperfect balance, drop rates of 10–20% are common. Typical
 production settings are 1.25 during training and higher at inference. Always log the drop
 rate — a run with 30% of tokens bypassing every MoE layer trains, and trains badly.
+:::
+
+::: check
+Why does an MoE layer need an explicit load-balancing loss?
+
+- [x] Routing is self-reinforcing — an expert that gets more tokens trains faster and becomes more attractive, so without pressure the router collapses onto a few experts
+  > The unused experts are then dead parameters, and the model has the capacity of a much smaller one. An auxiliary loss penalising imbalance is standard.
+- [ ] Without it the top-$k$ selection is not differentiable
+  > Top-$k$ is not differentiable in its selection either way; the gradient flows through the softmax weights on the chosen experts.
+- [ ] Because experts must see equal token counts for the matmuls to be the same shape
+  > Capacity factors and padding handle the shape question. Balance is wanted for learning reasons first.
+- [ ] To prevent the router from overfitting to the training distribution
+  > Router overfitting is a real concern and a different one; collapse happens even on the training distribution.
 :::
 
 ## Routing strategies

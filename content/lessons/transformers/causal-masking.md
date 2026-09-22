@@ -49,6 +49,19 @@ not exist yet. Training is parallel, generation is sequential, and that asymmetr
 all of lesson 4.10 and the serving work in track 7.
 :::
 
+::: check
+Why must the causal mask include the diagonal?
+
+- [x] Without it position 0 would have nothing to attend to, its softmax row would be all $-\infty$, and the output would be `nan`
+  > A position sees itself. Excluding the diagonal is a real and subtle bug — and one that surfaces as a `nan` rather than as a wrong-looking mask.
+- [ ] Including the diagonal is optional; it only changes how much a token weights itself
+  > For every position but the first it is a modelling difference. For position 0 it is the difference between a distribution and a division by zero.
+- [ ] It is needed so the mask is symmetric
+  > A causal mask is deliberately not symmetric. That asymmetry is the entire point.
+- [ ] It lets the model attend to future tokens at inference
+  > It never permits attending forwards, at training or inference.
+:::
+
 ## Teacher forcing
 
 During training, position $i$ conditions on the **true** prefix, not on what the model
@@ -126,6 +139,19 @@ scores = scores.masked_fill(~mask, torch.finfo(scores.dtype).min)
 
 The padded row then produces a finite garbage value that the loss discards via
 `ignore_index`, rather than poisoning everything.
+:::
+
+::: check
+Causal masking makes training parallel over positions. Why does it not make *generation* parallel?
+
+- [x] Generating token $t+1$ genuinely requires token $t$, which does not exist yet — the mask lets you score a known sequence in parallel, not invent an unknown one
+  > Training is parallel, generation is sequential, and that asymmetry drives KV caching in lesson 4.10 and all the serving work in track 7.
+- [ ] The mask has to be rebuilt at each step, which serialises the loop
+  > Rebuilding a triangular mask is trivial and is not what serialises anything.
+- [ ] Softmax cannot be computed incrementally
+  > It can, and FlashAttention's online softmax does exactly that.
+- [ ] Generation uses a different attention pattern from training
+  > It uses the same pattern. What differs is that the tokens arrive one at a time.
 :::
 
 ## Document packing

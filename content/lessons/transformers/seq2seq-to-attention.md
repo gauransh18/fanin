@@ -90,6 +90,19 @@ There is a substantial literature showing attention weights can be perturbed sig
 without changing predictions. Treat them as a useful signal, not a causal account.
 :::
 
+::: check
+What specific failure did Bahdanau attention fix in 2014?
+
+- [x] Everything about the source sentence had to pass through one fixed-size vector, so translation quality fell off sharply with source length
+  > Keeping every encoder state and letting the decoder choose which to read removes the bottleneck: any source position is reachable in one hop, at any output step.
+- [ ] Recurrent encoders could not be parallelised across positions
+  > A real problem, and one attention did not fix in 2014 — the RNN was still there. Removing it came later.
+- [ ] Softmax saturated over long sequences
+  > Saturation is a scaling concern that arrives with dot-product scores, not the bottleneck this fixed.
+- [ ] Encoder and decoder vocabularies could not be shared
+  > Vocabulary sharing is a tokenization choice, unrelated to the fixed-state limit.
+:::
+
 ## Then remove the RNN
 
 The 2017 observation was that if attention already lets any position reach any other in
@@ -158,6 +171,19 @@ parallelism, and positional encoding is the price. Lesson 4.04 covers the option
 sinusoidal, learned, and RoPE — and the fact that they are a *choice* rather than a
 built-in is why transformers can be adapted to non-sequential data (images, graphs, sets)
 just by changing what "position" means.
+:::
+
+::: check
+Every attention mechanism since 2014 is the same three steps. What are they, in order?
+
+- [x] Score each position, normalise the scores with softmax, then average the values by those weights
+  > Bahdanau scored with a small MLP and scaled dot-product attention scores with a dot product, but the shape of the computation has not changed since.
+- [ ] Project, normalise, then concatenate across heads
+  > That describes the multi-head wrapper around attention, not attention itself.
+- [ ] Mask, score, then sample
+  > Masking is an optional modification to step one, and sampling happens at the output of the whole model, not inside attention.
+- [ ] Embed, position-encode, then attend
+  > Those are the steps before attention begins.
 :::
 
 ## What to carry forward

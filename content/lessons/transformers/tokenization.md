@@ -75,6 +75,19 @@ treating the input as a raw byte stream with no pre-tokenization, encoding space
 visible marker (`▁`). That makes it language-agnostic — critical for Chinese, Japanese and
 Thai, which have no whitespace word boundaries.
 
+::: check
+Why not tokenize at the character level, given that it has no out-of-vocabulary problem at all?
+
+- [x] Sequences become 4–5× longer, and attention is $O(T^2)$ in memory — a 16–25× cost — while the model burns capacity learning that `c-a-t` is a unit
+  > Subwords are the compromise: frequent words stay whole, rare ones decompose, and nothing is ever out of vocabulary.
+- [ ] Character vocabularies are too large to embed efficiently
+  > They are tiny — hundreds of entries against tens of thousands. Size is the one thing characters get right.
+- [ ] Characters cannot represent non-Latin scripts
+  > Byte-level schemes represent anything at all, which is part of why BPE starts from bytes.
+- [ ] The model could not learn word boundaries
+  > It can and does; the objection is what that learning costs in capacity and sequence length.
+:::
+
 ## The failure modes
 
 ::: key
@@ -120,6 +133,19 @@ Three rules that follow:
 - **Count tokens, not characters**, when budgeting context or cost.
 - **Pin the tokenizer with the model.** A tokenizer mismatch does not error; it produces
   fluent nonsense.
+
+::: check
+BPE encoding applies its learned merges in the order they were learned. Why does that ordering matter?
+
+- [x] It makes the tokenizer deterministic and exactly reproducible, which matters because a train/inference mismatch silently corrupts every input
+  > A tokenizer is part of the model's contract. Applying merges in a different order is a different tokenizer, and nothing will raise an error when you use the wrong one.
+- [ ] It guarantees the shortest possible encoding of any string
+  > Greedy merge application is not optimal in that sense; schemes like Unigram search over segmentations precisely because BPE does not.
+- [ ] It ensures every token has a unique byte representation
+  > Uniqueness comes from the vocabulary, not from the merge ordering.
+- [ ] It allows the vocabulary to be extended without retraining
+  > Adding merges after the fact changes how existing text tokenizes, which is exactly the mismatch to avoid.
+:::
 
 ## Vocabulary size
 

@@ -76,6 +76,19 @@ This is why every inference optimisation in lesson 7.09 is really about raising 
 arithmetic intensity: batching many requests together turns the matrix–vector product back
 into a matrix–matrix product.
 
+::: check
+Generating 2,000 tokens without a KV cache costs roughly how much more compute than with one?
+
+- [x] About 2,000× — $O((p+n)^3)$ against $O((p+n)^2)$
+  > Each step re-computes keys and values for the whole prefix, and causal attention means those are identical every time. Nobody generates without a cache; the only question is how to manage its memory.
+- [ ] About 2× — the cache saves the backward pass equivalent
+  > There is no backward pass in generation. The saving is the entire re-computation of the prefix at every step.
+- [ ] About 4× — attention is quadratic, so caching halves the exponent
+  > It does reduce the exponent, from 3 to 2, and the resulting factor is $(p+n)$, not a constant.
+- [ ] Nothing, if the batch is large enough
+  > A large batch improves arithmetic intensity. It does not remove the redundant work.
+:::
+
 ## The memory cost
 
 $$
@@ -106,6 +119,19 @@ size, and batch size is what determines throughput.
 This single table is the reason grouped-query attention exists (lesson 4.11), the reason
 paged attention exists (lesson 7.09), and the reason long context is expensive to serve
 rather than merely expensive to train.
+:::
+
+::: check
+What does the KV cache become the bottleneck for, once you are using one?
+
+- [x] Serving batch size — the cache, not the weights, is what runs out of memory first
+  > Weights are a fixed cost paid once; the cache grows with batch size *and* with sequence length. Every attention variant in lesson 4.11 exists to shrink this number.
+- [ ] Arithmetic throughput, since cached attention is compute-bound
+  > Decode is strongly memory-bound: one new token against a large cache has almost no arithmetic per byte read.
+- [ ] Model quality, since cached keys drift from recomputed ones
+  > They are bitwise identical in exact arithmetic and near-identical in practice. Caching is a pure optimisation.
+- [ ] Prefill latency, which grows with cache size
+  > Prefill builds the cache rather than reading a large one, and is compute-bound.
 :::
 
 ## The bugs

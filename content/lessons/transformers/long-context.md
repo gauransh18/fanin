@@ -42,6 +42,19 @@ optimised for has changed. Always evaluate both regimes after extending, not jus
 one.
 :::
 
+::: check
+Of attention memory, attention compute and KV cache memory, which is the binding constraint on long context today?
+
+- [x] KV cache memory — $O(T)$ per sequence, and unavoidable while you want exact attention
+  > FlashAttention removed the $O(T^2)$ score storage, and attention FLOPs only overtake the dense projections past about $T \approx 6d$. A single 32k-token sequence on Llama-2 7B needs 17 GB of cache, which is why GQA and cache quantization matter so much.
+- [ ] Attention memory, which grows as $T^2$
+  > That was the binding limit until FlashAttention stopped materialising the score matrix.
+- [ ] Attention compute, which dominates at every length
+  > It dominates only past roughly $6d$ tokens — around 24k for a 4096-dimensional model. Below that, long context is nearly free.
+- [ ] Positional encoding, which cannot represent long distances
+  > Extrapolation is a real problem with real fixes (interpolation, NTK scaling, YaRN). It is a quality constraint, not a memory one.
+:::
+
 ## Lost in the middle
 
 The effect that matters most in practice: retrieval accuracy is **not uniform** across the
@@ -106,6 +119,19 @@ rather than memory.
 **Prompt caching** is the standard mitigation: if a long prefix is shared across requests —
 a system prompt, a document being asked about repeatedly — cache its KV once and reuse it.
 This turns repeated long-context queries from $O(T)$ prefill into $O(1)$.
+
+::: check
+A model reliably uses information at the start and end of a long context and misses it in the middle. What follows for a RAG system?
+
+- [x] Put the most important retrieved passages at the beginning and end rather than trusting uniform retrieval across the window
+  > Two causes contribute: training data treats document beginnings as important, and attention sinks concentrate weight on early positions while recency favours the end.
+- [ ] Retrieve fewer passages, since the middle is wasted
+  > Fewer passages helps, but ordering is the cheaper and more direct response to this specific effect.
+- [ ] Increase the context window so the middle is proportionally smaller
+  > A larger window makes the middle larger, not smaller.
+- [ ] Nothing — the effect disappears once the model is fine-tuned for long context
+  > Long-context fine-tuning helps with positional extrapolation, and the middle-of-context weakness persists.
+:::
 
 ## When not to use long context
 

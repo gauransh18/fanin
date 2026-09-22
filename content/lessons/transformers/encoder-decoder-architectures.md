@@ -67,6 +67,19 @@ into one sequence and the model predicts the next token at every position.
 
 GPT, Llama, Mistral, Qwen — everything at the frontier.
 
+::: check
+Masked language modelling corrupts 15% of tokens and predicts them. What does that cost relative to autoregressive training?
+
+- [x] Only the masked 15% of positions produce a training signal, so 85% of the compute per sequence yields no gradient
+  > An autoregressive model gets a signal at every position. That efficiency gap is one of the reasons decoder-only models scaled better, quite apart from what each architecture can do.
+- [ ] Nothing — every position still contributes through the bidirectional context
+  > Positions contribute as *context*, which is not the same as producing a loss term.
+- [ ] It requires twice the memory, because attention is bidirectional
+  > Bidirectional attention over $T$ positions costs the same as causal attention over $T$ positions, up to the masked-out half.
+- [ ] It cannot use the same tokenizer as a generative model
+  > Tokenization is shared freely between the two.
+:::
+
 ## Why decoder-only won
 
 It is not the obvious choice. Encoder-decoder separates the "read" and "write" roles
@@ -122,6 +135,19 @@ large.
 | Generation | No | Yes | Yes |
 | In-context learning | No | Weak | Strong |
 | Examples | BERT, embedding models | T5, Whisper | GPT, Llama, Claude |
+
+::: check
+In cross-attention, where do the queries, keys and values come from?
+
+- [x] Queries from the decoder, keys and values from the encoder's output
+  > The decoder asks a question from its own state and reads the source. Self-attention takes all three from the same stream; cross-attention is what makes it "cross".
+- [ ] Queries from the encoder, keys and values from the decoder
+  > That would have the source interrogating the partial translation, which is backwards.
+- [ ] All three from the encoder, with the decoder only reading the result
+  > Then the attention would not depend on what the decoder has generated so far, and every output step would read the same thing.
+- [ ] All three from the decoder, with the encoder output added afterwards
+  > That is a residual connection, not attention. Nothing would select *which* source positions to read.
+:::
 
 ## Where encoders survive
 

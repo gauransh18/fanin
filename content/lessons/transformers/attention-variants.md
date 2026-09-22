@@ -88,6 +88,19 @@ GQA with 8 groups is the standard choice: a 4× cache reduction for a quality di
 that does not reliably exceed seed noise (lesson 2.15). Llama-2 70B, Llama-3, Mistral and
 essentially every model since use it.
 
+::: check
+Multi-query attention shrinks the KV cache by a factor of $h$, typically 32×. What does it give up?
+
+- [x] Every query head now retrieves from one shared key space, so heads can differ in what they look for but not in what is findable
+  > Grouped-query attention is the compromise that won: $g$ groups of query heads, each with its own KV head, with $g = h$ recovering full MHA and $g = 1$ recovering MQA.
+- [ ] It reduces the number of query heads, cutting the model's capacity to attend
+  > Query heads are untouched. Only the key and value heads are shared.
+- [ ] It requires retraining from scratch and cannot be retrofitted
+  > Uptraining an existing MHA model into GQA with a small amount of extra training is standard practice.
+- [ ] It makes attention no longer parallelisable across heads
+  > Heads remain fully parallel; they simply read from shared keys and values.
+:::
+
 ## Multi-head latent attention
 
 DeepSeek's approach takes the low-rank idea from lesson 1.04 and applies it to the cache
@@ -193,6 +206,19 @@ cache saving buys less than it appears — at GQA-8's batch sizes the system is 
 approaching compute-bound, so the extra headroom does not convert to throughput — and it
 costs 1–2% quality, which is above seed noise and therefore real. GQA is the better point
 on the curve, which is why essentially every recent model sits there.
+:::
+
+::: check
+In grouped-query attention with $h$ query heads and $g$ KV heads, what do the two extremes correspond to?
+
+- [x] $g = h$ is full multi-head attention, and $g = 1$ is multi-query attention
+  > GQA is the dial between them, and the reason it won is that a handful of KV groups recovers most of MHA's quality at close to MQA's cache size.
+- [ ] $g = h$ is multi-query and $g = 1$ is full multi-head
+  > It is the other way around: one KV head shared by everything is the multi-*query* case.
+- [ ] $g = 0$ disables the cache entirely
+  > There is no $g = 0$; every query head needs keys to attend to.
+- [ ] Both extremes give the same cache size, and only quality differs
+  > The cache size differs by a factor of $h$, which is the whole motivation.
 :::
 
 ## What to carry forward

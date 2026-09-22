@@ -55,6 +55,19 @@ heads move information" and "MLPs process it" as distinct claims.
 The same split appears elsewhere: depthwise-separable convolutions (lesson 3.09) separate
 spatial mixing from channel mixing for exactly the same reason.
 
+::: check
+Which operation in a transformer moves information between token positions?
+
+- [x] Attention, and only attention
+  > The MLP runs position-wise with the same weights and no knowledge that other positions exist. That factorisation is why transformers parallelise, why the two sublayers can be reasoned about separately, and why interpretability work treats "heads move information" and "MLPs process it" as distinct claims.
+- [ ] Both attention and the MLP, since the MLP sees the whole sequence tensor
+  > It sees a tensor with a position axis, but it is applied independently along it. Nothing crosses.
+- [ ] The normalization layer, which computes statistics over the sequence
+  > LayerNorm and RMSNorm normalise across the *feature* dimension, per position. Normalising across the sequence is what BatchNorm-style layers do, and transformers avoid it.
+- [ ] The residual connection, which carries earlier positions forward
+  > The residual carries a position's own value forward through depth, not across positions.
+:::
+
 ## The full model
 
 ```python
@@ -146,6 +159,19 @@ deep transformers trainable. Every model since GPT-2 uses pre-norm.
 features, narrow enough to afford. With SwiGLU (lesson 3.02) the convention shifts to
 about $\tfrac{8}{3}d$ per matrix, since there are three matrices instead of two — keeping
 the parameter count matched.
+
+::: check
+Why does the block apply the MLP with an expansion of $4d$ rather than keeping width $d$ throughout?
+
+- [x] A narrow-to-wide-to-narrow sandwich gives the position-wise transform somewhere to compute before projecting back into the residual stream
+  > Lesson 1.02's shape table read forwards: a $4d\times d$ lift, a nonlinearity, then a $d\times4d$ squash. Contracting instead would impose a rank ceiling on the block.
+- [ ] It matches the number of attention heads
+  > Head count and MLP expansion are independent; models routinely have 32 heads and an expansion of 4.
+- [ ] Wider layers are cheaper per FLOP on tensor cores
+  > Larger matmuls do have better arithmetic intensity, which is a reason the shape is *tolerable*, not the reason it exists.
+- [ ] It makes the block's parameter count match attention's
+  > It does land near a 2:1 ratio in practice, which is a consequence of the choice rather than its motivation.
+:::
 
 ## Scaling the shape
 

@@ -60,6 +60,19 @@ principled memory decay across many timescales rather than one. S4's performance
 largely from this initialisation — the architecture is simple, and the matrix is where the
 work is.
 
+::: check
+A state space model keeps its recurrence **linear**. What does that restriction buy?
+
+- [x] A closed form that is a convolution, so training parallelises over the sequence in $O(T\log T)$ with an FFT — while inference can switch back to the recurrent form with $O(1)$ work per token
+  > A nonlinear recurrence has to be evaluated step by step. Parallel training and recurrent inference is exactly the combination transformers do not have.
+- [ ] Guaranteed stability, since linear systems cannot diverge
+  > They diverge readily when the spectral radius exceeds 1, which is why $\bar A$ needs careful parameterisation.
+- [ ] Lower parameter count than a gated RNN
+  > Parameter counts are comparable. Parallelism is the prize.
+- [ ] The ability to attend to arbitrary positions
+  > It is the opposite: a fixed-size state is what an SSM carries, and selecting arbitrary past positions is what attention does and SSMs approximate.
+:::
+
 ## The limitation: no selectivity
 
 $\bar{A}$, $\bar{B}$ and $C$ are **fixed** — the same for every token. So the model
@@ -126,6 +139,19 @@ position, so the FFT trick is gone. Mamba recovers parallelism with a **parallel
 fused kernel that keeps the state in SRAM rather than writing $\mathbf{h}_t$ to HBM for
 every $t$. That second part is precisely FlashAttention's argument (lesson 4.12) applied to
 a different operation.
+
+::: check
+What does a fixed-size recurrent state give up relative to attention's KV cache?
+
+- [x] Exact recall of arbitrary earlier tokens — the state is a lossy summary, where a KV cache keeps every key and value
+  > This is why hybrids exist: a few attention layers among many SSM layers recover the exact-recall behaviour while keeping most of the cost advantage.
+- [ ] Nothing; a sufficiently large state is equivalent to a cache
+  > A state of fixed size cannot hold a sequence of unbounded length without loss, whatever the constant.
+- [ ] The ability to process variable-length sequences
+  > Recurrence handles variable length particularly naturally.
+- [ ] Parallel training, which only attention has
+  > Linear SSMs parallelise training via the convolutional form. That is the whole point of keeping the recurrence linear.
+:::
 
 ## The comparison
 
