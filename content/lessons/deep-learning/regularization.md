@@ -72,6 +72,19 @@ It remains standard for **fine-tuning** on small datasets, where the same exampl
 seen many times — and there $p = 0.1$ is typical.
 :::
 
+::: check
+Why is 0.1 a normal weight decay for transformer pretraining when classical L2 coefficients are around $10^{-4}$?
+
+- [x] AdamW's decay is applied directly to the parameters, not scaled by $1/\sqrt{v}$, so the two numbers are not on the same scale
+  > Coupling decay to the adaptive step, as plain `Adam(weight_decay=...)` does, changes both its magnitude and its direction of effect. The values are not comparable across the two formulations.
+- [ ] Transformers overfit far more, so they need stronger regularisation
+  > Pretraining on trillions of tokens is close to the opposite regime — regularisation matters most when data is scarce, as lesson 1.14 argued.
+- [ ] Larger models tolerate larger decay because they have more parameters
+  > Parameter count does not rescale the penalty this way.
+- [ ] It is applied per layer rather than globally
+  > It is applied per parameter group, and the grouping is about which tensors get decay at all, not about the scale.
+:::
+
 ## Early stopping
 
 Stop when validation loss stops improving:
@@ -127,6 +140,19 @@ Augmentation encodes an **invariance** you believe holds: a rotated cat is a cat
 power comes from injecting real prior knowledge rather than generic smoothness. For text
 it is much harder — most edits change meaning — which is one reason language models rely
 on scale instead.
+
+::: check
+Why exempt LayerNorm gains and biases from weight decay?
+
+- [x] Pulling a normalization gain toward zero fights the very scaling the layer exists to provide
+  > The conventional split is by rank: decay tensors with `ndim >= 2`, exempt the rest. Biases are similar — shrinking them toward zero constrains the model without buying generalisation.
+- [ ] They have too few parameters for decay to matter
+  > They are few, and the effect on them is large precisely because there is nothing else setting their scale.
+- [ ] Decay is undefined for one-dimensional tensors
+  > It is perfectly well defined. The reason is what it does, not whether it can.
+- [ ] They are not trained, so decay would have no effect
+  > They are trained. That is what makes decaying them harmful.
+:::
 
 ## Which one, when
 

@@ -52,6 +52,19 @@ The lesson: **a vanilla autoencoder is only interesting when it is nonlinear.** 
 is behaving like PCA, the nonlinearities are not doing anything.
 :::
 
+::: check
+Your autoencoder's reconstructions look exactly like PCA's. What does that tell you?
+
+- [x] The nonlinearities are not doing anything — a linear autoencoder with MSE learns the top-$k$ principal subspace and nothing more
+  > By Eckart–Young it recovers the same subspace the SVD gives in closed form, at far greater cost. A vanilla autoencoder is only interesting when it is genuinely nonlinear.
+- [ ] It has converged to the global optimum, which is the best possible result
+  > It may well be at the optimum *of the linear problem*. That is the complaint, not the reassurance.
+- [ ] The latent dimension is too large
+  > A larger latent would reconstruct better, not more linearly.
+- [ ] PCA and autoencoders always agree, so this is expected
+  > They agree only in the linear case, and even there only on the subspace: any invertible $k\times k$ transform of the latent gives identical loss, so the axes are arbitrary and unordered.
+:::
+
 ## What goes wrong
 
 **The latent space has no structure.** Nothing in the objective says nearby latents should

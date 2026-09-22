@@ -100,6 +100,19 @@ production implementation upcasts.
 
 Llama, Mistral, Gemma and most recent models use RMSNorm.
 
+::: check
+Why do transformers use LayerNorm rather than BatchNorm?
+
+- [x] BatchNorm couples examples in a batch, and padding positions in variable-length sequences corrupt the statistics outright
+  > It also degrades below about batch 16, computes different functions in train and eval, and needs `SyncBatchNorm` plus a per-layer synchronisation under distributed training. LayerNorm has none of these.
+- [ ] LayerNorm is cheaper to compute
+  > They cost about the same. RMSNorm is the cheaper one, and it is cheaper than *both*.
+- [ ] BatchNorm cannot be applied to three-dimensional tensors
+  > It can — `BatchNorm1d` handles `(N, C, L)`. The problem is what the statistics mean when some of those positions are padding.
+- [ ] LayerNorm has learnable parameters and BatchNorm does not
+  > Both have $\gamma$ and $\beta$.
+:::
+
 ## Pre-norm versus post-norm
 
 Where the normalization sits relative to the residual connection changes trainability
@@ -137,6 +150,19 @@ class PreNormBlock(nn.Module):
         x = x + self.mlp(self.n2(x))
         return x
 ```
+
+::: check
+A model shows excellent training accuracy and terrible validation accuracy, and it uses BatchNorm. What is the first thing to check?
+
+- [x] Whether `model.eval()` was called — at evaluation BatchNorm switches to running averages rather than batch statistics
+  > Train and eval compute genuinely different functions, so a bug in the running statistics shows up only at evaluation. This is the classic version of the `train()`/`eval()` trap from lesson 2.08.
+- [ ] Whether the learning rate was too high
+  > A high learning rate usually damages training accuracy too, which is excellent here.
+- [ ] Whether the validation set is from a different distribution
+  > Worth ruling out generally, but the BatchNorm detail makes a much more specific and more likely explanation available first.
+- [ ] Whether weight decay was applied to the normalization parameters
+  > Decaying $\gamma$ and $\beta$ is inadvisable and is a small effect, not a train/eval gap of this size.
+:::
 
 ## Why it works
 

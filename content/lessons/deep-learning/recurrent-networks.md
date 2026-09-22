@@ -107,6 +107,19 @@ while an RNN carries a fixed-size state and does $O(1)$ work per token. Lesson 4
 state space models are an attempt to have both — parallel training, recurrent inference.
 :::
 
+::: check
+Beyond vanishing gradients, what is the structural problem with recurrence that transformers do not have?
+
+- [x] The recurrence is inherently sequential — step $t$ needs $\mathbf{h}_{t-1}$, so a sequence of length $T$ takes $T$ dependent steps and cannot be parallelised over positions
+  > Attention computes all positions at once, which is what makes it trainable at scale. Gradient flow was fixable with gates; the serialisation was not, and that is what decided the outcome.
+- [ ] Recurrent networks cannot share parameters across positions
+  > They share them completely — the same $W_{hh}$ at every step, exactly analogous to a convolution sharing across space.
+- [ ] Recurrent networks have quadratic cost in sequence length
+  > Recurrence is *linear* in length. Attention is the quadratic one, and it won anyway.
+- [ ] Recurrent networks cannot handle variable-length sequences
+  > Handling variable length is one of the things they do most naturally.
+:::
+
 ## Truncated BPTT
 
 Full backpropagation through a long sequence needs every hidden state stored, which is

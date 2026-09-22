@@ -119,6 +119,19 @@ print('lifted accuracy', (np.sign(lifted @ w2 + b2) == y).mean())    # 1.0
 That last trick is the whole idea behind kernels — and behind hidden layers. A hidden
 layer *learns* which lifted features to build instead of requiring you to name them.
 
+::: check
+A linear model's decision boundary is the set where $\mathbf{w}^\top\mathbf{x} + b = 0$. What is the geometric limit that follows?
+
+- [x] It can only ever split space with a single flat cut — a line in 2-D, a hyperplane in $\mathbb{R}^n$
+  > $\mathbf{w}$ is the normal to that flat. Everything the model can express is "which side", which is exactly why XOR defeats it and why the rest of the track exists.
+- [ ] It can produce any boundary, but only after enough training
+  > Training moves the hyperplane. It cannot bend it.
+- [ ] It can produce curved boundaries when the activation is nonlinear
+  > A sigmoid changes the *output* into a probability; the level set where it crosses one half is still $\mathbf{w}^\top\mathbf{x} + b = 0$.
+- [ ] It is limited to two classes
+  > Softmax regression handles $K$ classes with $K$ hyperplanes. The flatness is the limit, not the class count.
+:::
+
 ## Logistic regression, and why it is the better ancestor
 
 Replacing the sign with a sigmoid gives probabilities rather than hard labels:

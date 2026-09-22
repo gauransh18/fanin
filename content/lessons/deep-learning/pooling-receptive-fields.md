@@ -71,6 +71,19 @@ The key effect: **each stride-2 layer doubles $j$**, so every subsequent layer c
 twice as much receptive field as the one before. That is what turns lesson 3.09's 112
 layers into about 20.
 
+::: check
+Convolution is translation *equivariant* and max pooling is translation *invariant*. What is the difference, and where does each belong?
+
+- [x] Equivariant means the output shifts with the input; invariant means it does not change. Classification wants equivariance in the middle and invariance at the end
+  > Feature extraction needs to know *where* things are; the final classification does not. That is why global average pooling sits just before the classifier head.
+- [ ] They are the same property under different names
+  > They are opposites in what happens to the output, and conflating them is the usual source of confusion about what pooling buys.
+- [ ] Invariance is stronger and therefore always preferable
+  > Discarding position early would destroy the information later layers need to localise anything.
+- [ ] Only pooling has either property; convolution has neither
+  > Translation equivariance is one of convolution's three defining priors.
+:::
+
 ## The effective receptive field
 
 Theoretical receptive field is an upper bound on which pixels *can* influence an output.
@@ -103,6 +116,19 @@ def effective_receptive_field(model, size=224):
     print(f'effective radius ~{support.sum().sqrt().item()/2:.1f} px')
     return grad
 ```
+
+::: check
+Where does the gradient go in a max-pooling layer?
+
+- [x] Entirely to the argmax position; every other element in the window gets zero
+  > Average pooling distributes it evenly instead. The routing behaviour is why max pooling produces sparser updates and why the choice between them is not purely about the forward pass.
+- [ ] Evenly across the window, like average pooling
+  > That is average pooling's rule. Max pooling routes rather than spreads.
+- [ ] Proportionally to each element's value
+  > Nothing weights by value. The maximum takes all of it.
+- [ ] Nowhere; pooling has no parameters so it does not propagate gradient
+  > Having no parameters does not stop a layer propagating gradient to its input — a residual add has no parameters either.
+:::
 
 ## The resolution–channels trade
 

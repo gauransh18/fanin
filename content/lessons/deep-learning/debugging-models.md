@@ -38,6 +38,19 @@ mistake changes it:
   out and you are averaging over an empty set.
 :::
 
+::: check
+A 120,000-token language model reports an initial loss of 0.4 before any training. What does that indicate?
+
+- [x] Label leakage — a random model should sit near $\ln 120000 \approx 11.7$, so the model can already see the answer
+  > Check the causal mask and the target alignment. A loss far *above* 11.7 points the other way, at initialisation or logit scaling or shifted labels.
+- [ ] Excellent initialisation, which will speed up training
+  > No initialisation scheme can beat $\ln K$ before training, because a random model has no information about the targets.
+- [ ] The loss is being averaged over too few tokens
+  > Averaging over few tokens makes the number noisy, not systematically a factor of thirty too small.
+- [ ] The vocabulary is smaller than configured
+  > Even a two-token vocabulary would start near $\ln 2 = 0.693$, which is still above 0.4.
+:::
+
 ## Check 2: can it overfit one batch?
 
 Take a single batch of 8 examples and train on it for 200 steps with no regularisation.
@@ -154,6 +167,19 @@ for batch in loader:
 # Plot losses against lrs on a log axis. Pick roughly one order of magnitude
 # below where the curve turns upward.
 ```
+
+::: check
+Why is "overfit a single batch of eight examples" such a valuable early check?
+
+- [x] It should reach near-zero loss, and failing to means the bug is in the model, the loss, or the optimizer rather than in the data or the hyperparameters
+  > It removes generalisation from the picture entirely, so anything that goes wrong is structural. Each check in the list eliminates a large class of causes cheaply, which is why the ordering matters more than any individual test.
+- [ ] It proves the model will generalise to the full dataset
+  > It proves nothing about generalisation. Memorising eight examples is the *easiest* thing a network can do.
+- [ ] It measures how fast training will be at scale
+  > Throughput on eight examples tells you almost nothing about a full run.
+- [ ] It verifies the data loader is shuffling correctly
+  > It uses one fixed batch, so shuffling never comes into it.
+:::
 
 ## The symptom table
 

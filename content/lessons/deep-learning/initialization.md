@@ -75,6 +75,19 @@ nn.init.zeros_(layer.bias)                                 # biases: zero
 Biases start at zero. There is nothing to preserve — they add no variance — and a nonzero
 bias only shifts units toward saturation.
 
+::: check
+A 50-layer network initialised so each layer multiplies activation variance by 0.7. What is the scale at the output?
+
+- [x] About $2\times10^{-8}$ — the activations have vanished before training starts
+  > $0.7^{50}$. The effect compounds geometrically with depth, which is the same spectral-radius argument as lesson 1.05 applied forward instead of backward. At $c = 1.5$ it overflows instead.
+- [ ] About 0.7, since normalization keeps each layer in range
+  > There is no normalization layer in this setup. That is exactly what makes initialisation load-bearing.
+- [ ] About 35, since 50 layers times 0.7
+  > The factors multiply, not add.
+- [ ] Unchanged, because the bias terms restore the scale
+  > Biases shift the mean. They do not rescale the variance.
+:::
+
 ## Seeing it fail
 
 ```python
@@ -96,6 +109,19 @@ print(f'too large  {activation_scale((4.0 / n) ** 0.5):.3e}')   # explodes
 
 Run it: the middle line stays near 1 across 40 layers while the others are off by many
 orders of magnitude. That is the whole argument, empirically.
+
+::: check
+He initialisation uses $\sigma_w^2 = 2/n_{\text{in}}$ where Xavier uses about $1/n_{\text{in}}$. What is the factor of 2 for?
+
+- [x] ReLU zeroes half its inputs, halving the variance, so the weights have to compensate
+  > Xavier assumes the activation is roughly linear near zero, which holds for tanh and not for ReLU. At 50 layers the missing factor is $0.5^{50} \approx 10^{-15}$ — the difference between a trainable network and a dead one.
+- [ ] It accounts for the backward pass as well as the forward
+  > That is Xavier's compromise, $2/(n_{\text{in}} + n_{\text{out}})$, and a different concern.
+- [ ] It compensates for the bias term, which adds variance
+  > Biases are usually initialised to zero and add no variance.
+- [ ] It doubles the effective learning rate at initialisation
+  > Initialisation scale and learning rate interact, but the factor is derived from ReLU's effect on variance, not from step size.
+:::
 
 ## What transformers do
 

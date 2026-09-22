@@ -67,6 +67,19 @@ Three contributing factors, in rough order of confidence:
 - **Early stopping**, even implicitly, limits how far from the initialisation the weights
   travel.
 
+::: check
+Test error peaks at the interpolation threshold and falls again beyond it. What is the explanation?
+
+- [x] It is about choice among interpolating solutions — past the threshold there are infinitely many, and gradient descent's implicit bias picks low-norm ones
+  > At the threshold there is essentially one interpolating solution, whatever the data forces, typically with enormous weights and wild behaviour between data points. Capacity is not the variable that matters; the freedom to choose is.
+- [ ] Larger models have lower variance, so the bias–variance curve turns over
+  > The classical decomposition predicts the first U-shape and does not predict the second descent at all.
+- [ ] The extra parameters act as explicit regularisation
+  > Nothing explicit is added. The regularisation is implicit, and it comes from the optimizer rather than the objective.
+- [ ] It is an artefact of early stopping in the experiments
+  > Epoch-wise double descent shows the same shape *along* training time, which is the opposite of an early-stopping artefact.
+:::
+
 ## Grokking
 
 A related phenomenon worth knowing because it breaks the usual stopping heuristics: on

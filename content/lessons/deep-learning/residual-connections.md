@@ -69,6 +69,19 @@ With residuals the same network has an $I$ term that never decays. This is why
 residual networks scale to hundreds of layers and plain ones do not reach fifty.
 :::
 
+::: check
+Expanding the backward pass through $L$ residual blocks gives $I + \sum_i \partial F_i + \cdots$. Why does that matter?
+
+- [x] The leading term is the identity, so the gradient reaches layer 1 undamped no matter what the blocks do
+  > A plain network's backward pass is $\prod_i \partial F_i$; at spectral radius 0.8 and $L=50$ that is $10^{-5}$ and the early layers learn nothing. The residual path is what removes the dependence on depth.
+- [ ] The cross terms dominate, spreading gradient across all depths
+  > The cross terms are the *smallest* contributions when the Jacobians are small. The identity is what carries the signal.
+- [ ] It makes the Jacobian orthogonal, preserving norms exactly
+  > $I + \partial F$ is not orthogonal in general. Its eigenvalues merely cluster near 1, which is enough.
+- [ ] It allows the network to skip layers at inference
+  > Blocks are still all executed. The ensemble reading is about which paths carry signal, not about skipping computation.
+:::
+
 ## The ensemble reading
 
 Expanding the product above has another interpretation: a residual network of depth $L$
@@ -122,6 +135,19 @@ nothing rescales it. Two consequences:
 - Initialising residual output projections at $1/\sqrt{2L}$ (lesson 3.05) keeps the growth
   bounded. Without it, a 48-layer model starts with a stream several times larger than
   intended and needs a smaller learning rate.
+:::
+
+::: check
+A 56-layer plain CNN had *higher training error* than a 20-layer one. Why does that rule out overfitting as the explanation?
+
+- [x] Overfitting means fitting the training set too well — here the deeper model fits it worse, so the problem is optimisation, not generalisation
+  > The deeper network can represent everything the shallower one can by setting 36 layers to the identity. It simply could not find that solution, because learning an exact identity through linear-plus-nonlinear layers is hard and nothing pressures gradient descent towards it.
+- [ ] Overfitting only appears above a certain depth
+  > Overfitting is about the gap between training and test error at any depth, and the observation here is entirely on the training side.
+- [ ] The deeper model had fewer parameters
+  > It had more. That is what makes the result strange.
+- [ ] Training error is not a reliable measure of overfitting
+  > It is exactly the measure that distinguishes the two: overfitting drives it down, not up.
 :::
 
 ## Variants

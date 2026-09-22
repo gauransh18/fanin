@@ -46,6 +46,19 @@ objection that they are fundamentally too limited — an objection nobody seriou
 raised since 1989. Treat it as a floor, not an explanation.
 :::
 
+::: check
+The universal approximation theorem says a one-hidden-layer network can approximate any continuous function on a compact set. What does it therefore explain about why neural networks work?
+
+- [x] Nothing — it establishes existence, not how many units you need, whether gradient descent finds it, or whether it generalises
+  > The bound can be exponential in the input dimension, and existence is not reachability. Treat the theorem as a floor that rules out an objection nobody serious has raised since 1989, not as an explanation.
+- [ ] That depth is unnecessary, since width suffices
+  > In principle width suffices; in practice there are functions a depth-$k$ network computes with $O(n)$ units that need $\Omega(2^n)$ at depth $k-1$.
+- [ ] That networks will generalise if they are wide enough
+  > The theorem is about fitting a *given* function on a compact set. Generalisation is not in its statement at all.
+- [ ] That gradient descent will find the approximating network
+  > Existence says nothing about reachability by any particular algorithm.
+:::
+
 ## Why depth wins
 
 If one hidden layer suffices in principle, why is every useful model deep?
@@ -65,6 +78,19 @@ prior. This is the same "inductive bias" argument that lesson 3.09 makes for con
 A concrete instance: a 4-layer network of width 256 and a 2-layer network of width 2048
 have similar parameter counts, and the deep one performs substantially better on
 structured data.
+
+::: check
+Why is there no activation on the final `nn.Linear` in the example MLP?
+
+- [x] It produces logits, and `F.cross_entropy` applies log-softmax internally — adding softmax yourself applies it twice
+  > The double-softmax bug is insidious: the model still trains, just badly, because the gradients are flattened rather than wrong in an obvious way.
+- [ ] Activations are never applied to the last layer of any network
+  > A regression head with a bounded target may well end in a sigmoid or tanh. It depends on the output's meaning.
+- [ ] It would break backpropagation through the loss
+  > Backprop would work fine. The objective would simply be the wrong one.
+- [ ] Softmax is too expensive to apply twice
+  > Cost is not the issue; correctness is.
+:::
 
 ## Counting parameters and FLOPs
 

@@ -66,6 +66,19 @@ Leaky ReLU, $\max(\alpha z, z)$ with $\alpha = 0.01$, fixes the death by leaving
 negative slope. It works, and it is rarely used in transformers because the smooth
 activations below work better.
 
+::: check
+$\sigma'(z) \le 0.25$ everywhere. What does that imply for a ten-layer sigmoid network?
+
+- [x] Gradients are multiplied by at most $0.25^{10} \approx 10^{-6}$ through the stack, and typically far less
+  > Backprop multiplies by $g'(z)$ at every layer. This is why deep networks were considered untrainable before 2010, and why ReLU's derivative of exactly 1 on the positive side was such a change.
+- [ ] Gradients grow by $4^{10}$, since the derivative is a fraction in the denominator
+  > The derivative multiplies; it does not divide. A factor below 1 shrinks.
+- [ ] Nothing — the bias terms compensate for the shrinkage
+  > Biases shift the pre-activation and can move a unit out of saturation, but they do not scale the gradient that flows through.
+- [ ] It only matters if the network is wider than it is deep
+  > The shrinkage compounds with *depth*. Width does not enter.
+:::
+
 ## GELU: the transformer default
 
 $$
@@ -129,6 +142,19 @@ The empirical ordering for transformer feed-forward blocks, best first:
 **SwiGLU > GELU > ReLU ≫ tanh > sigmoid.** The gaps are small between the first three —
 typically under 0.5% on downstream tasks — and enormous below them. Do not spend time
 tuning the activation; spend it on data.
+:::
+
+::: check
+A layer reports 94% zero activations and is not learning. What has happened, and how did it get there?
+
+- [x] Dying ReLU — those units are negative for every input, so their gradient is zero for every input, and they cannot recover
+  > Large learning rates and large negative biases cause it. A network can lose 40% of its units this way with no error raised; you simply get a smaller network than you paid for. Log the zero fraction per layer to catch it.
+- [ ] Normal ReLU sparsity, which is typically around half
+  > Around half is normal and useful. Above about 90% is the signal that something is dead rather than sparse.
+- [ ] The activations underflowed in fp16
+  > Underflow would produce zeros too, but ReLU clamps at exactly zero by design and the pattern here is per-unit and permanent.
+- [ ] Weight decay drove the weights to zero
+  > Decay shrinks weights smoothly across the layer; it does not produce a stuck subset with a live remainder.
 :::
 
 ## Softmax is not an activation

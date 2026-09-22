@@ -81,6 +81,19 @@ This is also how convolutions are implemented on GPUs — `im2col` unfolds the i
 matrix so the convolution becomes a single dense matrix product, which tensor cores handle
 far better than a direct sliding-window loop.
 
+::: check
+Which priors does a convolution impose that make it right for images and wrong for language?
+
+- [x] Locality — an output depends only on a $k\times k$ neighbourhood
+  > True for pixels, false when the relevant dependency is a thousand tokens away.
+- [x] Translation equivariance — shift the input and the output shifts identically
+  > A cat detector should work anywhere in the frame. Language dependencies are not translation-equivariant in any useful sense.
+- [ ] Permutation invariance over positions
+  > Convolutions are emphatically not permutation invariant; order is what they read. That prior belongs to set-based architectures.
+- [ ] Scale invariance across resolutions
+  > A fixed kernel is not scale invariant at all, which is why architectures add pyramids and multi-scale features to get it.
+:::
+
 ## Efficient variants
 
 **Depthwise separable.** Split into a per-channel spatial convolution and a $1\times1$
@@ -109,6 +122,19 @@ is how WaveNet modelled raw audio.
 
 **1×1.** No spatial extent at all — purely a linear map across channels, applied
 position-wise. Identical in function to a transformer's position-wise MLP.
+
+::: check
+A 3×3 convolution with stride 1, dilation 1 and padding 1 has a property worth memorising. What is it?
+
+- [x] The output resolution equals the input resolution, so such layers compose without changing spatial size
+  > From $H_{\text{out}} = \lfloor (H_{\text{in}} + 2p - d(k-1) - 1)/s \rfloor + 1$ with $p = (k-1)/2$. It is why 3×3-pad-1 is everywhere.
+- [ ] Its parameter count is independent of kernel size
+  > Parameter count is $c_{\text{out}} c_{\text{in}} k^2$ — very much dependent on $k$. What is independent of input size is a different and also important fact.
+- [ ] Its receptive field covers the whole image after one layer
+  > One 3×3 layer sees 3×3. Coverage grows with depth, which is what receptive-field arithmetic is about.
+- [ ] It is equivalent to a fully connected layer
+  > It is a linear map with shared, local weights — a fully connected layer over a $224^2\times3$ image would need about $4.8\times10^{11}$ parameters against this layer's 1,728.
+:::
 
 ## Where transformers won
 

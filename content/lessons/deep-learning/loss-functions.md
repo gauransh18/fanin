@@ -53,6 +53,19 @@ sigmoid and computes the loss in a numerically stable form. The unfused version 
 for logits beyond about ±80 and produces `inf`.
 :::
 
+::: check
+You train a price predictor with MSE. Prices are right-skewed with a long tail. What have you asked the model to fit?
+
+- [x] The conditional **mean**, which the tail pulls well above the typical price
+  > MSE fits the mean and MAE the median — that follows from setting the derivative of the expected loss to zero, not from folklore. On skewed data the two can be far apart, and you should know which you asked for.
+- [ ] The conditional median, which is robust to the tail
+  > That is MAE, whose Laplace noise model makes outliers pull linearly rather than quadratically.
+- [ ] The mode of the price distribution
+  > No common regression loss fits the mode. It would take something like a kernel density objective.
+- [ ] Whichever statistic minimises validation error, since the loss only sets the gradient
+  > The loss is exactly what decides the target statistic. Validation measures how well it got there.
+:::
+
 ## Class imbalance
 
 At 99:1 imbalance, predicting the majority class always gives 99% accuracy and learns
@@ -121,6 +134,19 @@ The temperature $\tau$ controls how sharply the loss discriminates. Small $\tau$
 hard negatives mining implicitly; too small and gradients concentrate on a handful of
 pairs. This is the CLIP objective, and it is also the shape of the reward model loss in
 lesson 5.07.
+
+::: check
+Why should you use `BCEWithLogitsLoss` rather than a sigmoid followed by `BCELoss`?
+
+- [x] The fused version computes the loss in a numerically stable form; the unfused one overflows past roughly ±80 logits and returns `inf`
+  > The fusion uses the log-sum-exp trick internally — the same stability argument as the custom autograd function in lesson 2.07.
+- [ ] It is faster, saving one kernel launch
+  > It does save a launch, which is not why the advice exists.
+- [ ] `BCELoss` is deprecated and will be removed
+  > It is still there, and correct for inputs already in $(0,1)$ from some other source.
+- [ ] It applies class weights automatically
+  > Both take a `weight` argument, and neither infers one.
+:::
 
 ## Combining losses
 
