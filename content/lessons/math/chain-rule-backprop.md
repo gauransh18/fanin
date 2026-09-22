@@ -42,6 +42,19 @@ The asymmetry exists **only because the loss is scalar**. This is why you can ne
 "backprop" a vector-valued output without first reducing it.
 :::
 
+::: check
+Reverse mode gets all $N$ gradients in about two forward passes; forward mode needs $N$ passes. What makes the asymmetry possible?
+
+- [x] The loss is a single scalar, so every backward intermediate is a vector rather than a matrix
+  > Bracketing right to left starts from a $1 \times d$ row and stays that shape. Forward mode starts from $d_i \times N$ and stays that shape. This is also why you cannot backprop a vector-valued output without reducing it first.
+- [ ] Reverse mode reuses the forward pass's activations
+  > It does, and that is what the memory bill is about — but reuse saves recomputation, not the factor of $N$.
+- [ ] Matrix multiplication is faster right to left on a GPU
+  > It is not inherently. What differs is the *shapes* in the chain, which associativity lets you choose.
+- [ ] Forward mode cannot handle nonlinearities
+  > It handles them fine. It is simply the wrong bracketing when there are many inputs and one output — and the right one when there are few inputs and many outputs.
+:::
+
 ## Deriving it by hand
 
 Take a two-layer network with an MSE loss:
@@ -126,6 +139,19 @@ torch.allclose(gW1, W1.grad, atol=1e-6)   # True
 torch.allclose(d1_, b1.grad, atol=1e-6)   # True
 ```
 
+::: check
+In the hand-derivation, $\boldsymbol\delta_1 = (W_2^\top\boldsymbol\delta_2) \odot \sigma'(\mathbf{z}_1)$. Which two of the three backprop rules are being applied here?
+
+- [x] Push through a linear layer by multiplying by $W^\top$
+  > The transpose identity from lesson 1.02 moves the matrix to the other side of the dot product.
+- [x] Push through an elementwise function by multiplying by its derivative, elementwise
+  > An elementwise map has a diagonal Jacobian, and multiplying by a diagonal matrix is a Hadamard product.
+- [ ] Accumulate the sum of gradients at a branch point
+  > That rule applies when one value feeds two consumers. Here $\mathbf{z}_1$ has a single path forward.
+- [ ] Take the outer product of the incoming gradient with the layer's input
+  > That is how you get the *weight* gradient $\nabla_{W_1}\mathcal{L} = \boldsymbol\delta_1\mathbf{x}^\top$, which is the next step, not this one.
+:::
+
 ## The memory bill
 
 Notice that $\nabla_{W_2}$ needs $\mathbf{a}_1$, and $\nabla_{W_1}$ needs $\mathbf{x}$.
@@ -164,6 +190,19 @@ parameter appears at two points in the graph, so it receives the sum of both gra
 PyTorch handles this automatically by accumulating into `.grad` — which is also
 precisely why you must call `optimizer.zero_grad()` between steps, or you will keep
 accumulating across batches.
+:::
+
+::: check
+Why must the forward pass keep its activations alive until the backward pass consumes them?
+
+- [x] A weight gradient is the outer product of the incoming gradient with that layer's input, so the input has to still exist
+  > $\nabla_{W_2} = \boldsymbol\delta_2\mathbf{a}_1^\top$ needs $\mathbf{a}_1$. Every layer holds its own input until backward arrives, which is the entire activation memory bill — and what gradient checkpointing trades away.
+- [ ] Autograd replays the forward pass and needs the values to compare against
+  > Nothing is replayed in a standard backward pass. The values are needed as operands, not as a reference.
+- [ ] The optimizer needs the activations to compute its moments
+  > Adam's moments are computed from gradients only, and are the size of the parameters, not the activations.
+- [ ] Without them the chain rule would give the wrong sign
+  > Sign is not the issue. Without them the weight gradient simply cannot be formed.
 :::
 
 ## What to carry forward

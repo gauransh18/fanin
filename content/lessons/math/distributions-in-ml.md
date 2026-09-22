@@ -81,6 +81,19 @@ likelihood is a convex problem with a unique optimum. Logistic regression and so
 regression inherit that guarantee; neural networks lose it the moment you add a hidden
 layer.
 
+::: check
+You choose mean squared error for a regression task. What distributional assumption have you made, whether or not you meant to?
+
+- [x] Gaussian residuals with constant variance
+  > $-\log p \propto (x-\mu)^2$ for a Gaussian, so minimising MSE *is* maximum likelihood under that noise model. If outliers are dragging the fit around, the honest diagnosis is that the assumption is wrong, not that the loss needs patching.
+- [ ] Laplace residuals, which is why MSE is robust to outliers
+  > Laplace residuals give mean *absolute* error, and that is the robust one. MSE squares the outlier's influence.
+- [ ] Uniform residuals over a bounded range
+  > A uniform likelihood is flat wherever it is non-zero, so it produces no gradient towards any particular fit.
+- [ ] None; MSE is assumption-free because it only measures distance
+  > Every loss in common use is a negative log-likelihood of something. Squared distance is the Gaussian's.
+:::
+
 ## Heavy tails: the one to watch for
 
 A Gaussian's tail decays like $e^{-x^2}$, so a 5σ event has probability $3\times10^{-7}$.
@@ -152,6 +165,19 @@ wanted for prices anyway.
 sensitive to outliers, or Huber loss, which is quadratic near zero and linear in the
 tails. Huber is the pragmatic default when you want MSE's smooth gradients near the
 optimum and MAE's robustness far from it.
+:::
+
+::: check
+Why do token frequencies make subword tokenization necessary?
+
+- [x] They follow a Zipf law, decaying polynomially, so the tail of rare words never ends
+  > Rank $r$ has frequency about $1/r$. No finite word vocabulary covers it, and the out-of-vocabulary rate stays stubbornly non-zero — lesson 4.08 is the response.
+- [ ] Because a Gaussian tail decays too fast to cover rare words
+  > Word frequencies are not Gaussian at all. The problem is the opposite: a much *heavier* tail than exponential decay would give.
+- [ ] Because vocabularies must be a power of two for GPU efficiency
+  > Alignment is a real minor concern, and unrelated to why the tail needs subwords.
+- [ ] Because rare words carry more information and need more parameters
+  > Rare words do carry more information per occurrence, but that argues for representing them well, not for the specific decomposition into subwords.
 :::
 
 ## What to carry forward

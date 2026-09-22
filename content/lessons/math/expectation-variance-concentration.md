@@ -53,6 +53,13 @@ and fails once you approach the curvature limit $\eta < 2/\lambda_{\max}$ from
 lesson 1.09.
 :::
 
+::: check
+You raise the batch size from 256 to 1024. By what factor does the standard deviation of the gradient estimate fall?
+
+= 2
+> Variance of a mean goes like $\sigma^2/n$, so the standard deviation goes like $\sigma/\sqrt{n}$. Four times the batch is twice the precision — 4× the compute for a 2× noise reduction, which is exactly why large-batch training has diminishing returns.
+:::
+
 ## Bias and variance
 
 An estimator $\hat{\theta}$ has
@@ -93,6 +100,19 @@ x = torch.randn(100_000)
 y = x ** 2
 torch.corrcoef(torch.stack([x, y]))[0, 1]   # ~0.00 -- yet y is a function of x
 ```
+
+::: check
+$X \sim \mathcal{N}(0,1)$ and $Y = X^2$. Their correlation is about zero. What does that tell you?
+
+- [x] Nothing about independence — covariance only detects *linear* relationships, and $Y$ is a deterministic function of $X$
+  > Independence implies zero covariance; the converse is false. This gap is the whole reason mutual information exists as a separate concept in lesson 1.15.
+- [ ] They are independent, since zero correlation is the definition
+  > The definition of independence is $p(x,y) = p(x)p(y)$. Zero correlation is a much weaker consequence.
+- [ ] The sample was too small to detect the relationship
+  > The correlation is zero in the limit too. It is not a sampling artefact — the symmetry of the Gaussian makes $\mathbb{E}[X^3] = 0$ exactly.
+- [ ] $Y$ must have infinite variance
+  > $X^2$ for a standard normal has variance 2. Finite, and beside the point.
+:::
 
 ## Concentration: the actual guarantee
 
@@ -162,6 +182,19 @@ looked like noise.
 
 The practical lesson: always evaluate on identical examples and report paired
 statistics. It can turn an underpowered comparison into a decisive one at no extra cost.
+:::
+
+::: check
+Which of these estimators is unbiased but high variance, the pairing that a larger batch improves?
+
+- [x] A minibatch gradient
+  > Monte Carlo estimation of $\nabla_\theta\mathcal{L}$ is unbiased for any batch size; enlarging the batch cuts variance and leaves bias at zero. That clean split is unusual — most variance reductions cost bias.
+- [ ] A bootstrapped advantage estimate
+  > Bootstrapping deliberately *introduces* bias to cut variance. GAE's $\lambda$ is the dial between them, in lesson 6.08.
+- [ ] An early-stopped model's predictions
+  > Early stopping is the classic trade in the other direction: more bias, less variance.
+- [ ] A sample variance computed as $\mathbb{E}[X^2] - \mathbb{E}[X]^2$
+  > That form is a numerical trap rather than a statistical one — catastrophic cancellation at large means can even return a negative variance.
 :::
 
 ## What to carry forward

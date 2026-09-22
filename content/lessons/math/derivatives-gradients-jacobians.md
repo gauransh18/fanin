@@ -70,6 +70,19 @@ which is why activations are cheap to backprop through.
 | $\mathbb{R}^n \to \mathbb{R}^m$ | Jacobian | $m \times n$ |
 | $\mathbb{R}^n \to \mathbb{R}$, twice | Hessian | $n \times n$ |
 
+::: check
+For $f:\mathbb{R}^n \to \mathbb{R}^m$, what shape is the Jacobian in this curriculum's convention, and what is row $i$?
+
+- [x] $m \times n$, and row $i$ is the gradient of output $i$
+  > It maps input perturbations to output perturbations: $f(\mathbf{x} + \boldsymbol\delta) \approx f(\mathbf{x}) + J\boldsymbol\delta$, which needs $n$ columns to eat and $m$ rows to produce.
+- [ ] $n \times m$, and column $i$ is the gradient of output $i$
+  > That is the transposed convention some texts use. If a formula's shapes do not work out, transposing is worth trying before concluding it is wrong.
+- [ ] $n \times n$, one entry per pair of inputs
+  > That is the shape of a Hessian, the second derivative of a *scalar* function.
+- [ ] $m \times m$, one entry per pair of outputs
+  > Nothing in a first derivative pairs outputs with outputs.
+:::
+
 ## Why nobody materialises a Jacobian
 
 A hidden layer of width 4096 has a $4096 \times 4096$ Jacobian: 16.8M entries, 67 MB in
@@ -103,6 +116,19 @@ v = torch.tensor([1.0, 0.0, -2.0])
 y.backward(v)
 torch.allclose(x.grad, v @ J, atol=1e-5)    # True
 ```
+
+::: check
+A width-4096 layer has a $4096\times4096$ Jacobian — 67 MB in fp32, per layer per example. How does backpropagation avoid ever forming one?
+
+- [x] It only ever needs vector–Jacobian products $\mathbf{v}^\top J$, which have a closed form per layer type
+  > For a linear layer that is $\mathbf{v}^\top W$; for an elementwise activation it is $\mathbf{v} \odot g'(\mathbf{x})$. Each costs about as much as the forward pass, and nothing $4096^2$ is ever allocated.
+- [ ] It computes the Jacobian in chunks and discards each chunk after use
+  > Still quadratic work. The saving is that the product with $\mathbf{v}$ is computable *directly*, skipping the matrix entirely.
+- [ ] It approximates the Jacobian with finite differences
+  > Autograd is exact. Finite differences are what you use to *check* it, in gradcheck.
+- [ ] It stores the Jacobian in fp16 to halve the memory
+  > 33 MB per layer per example is still impossible. Precision is not the lever here.
+:::
 
 ## The gradients you should know by heart
 
@@ -149,6 +175,19 @@ $$
 The outer product of the residual with the input — shape $m \times n$, matching $W$ as
 it must. This is the update rule behind linear regression, and it is also literally
 what a linear layer's backward pass computes: `grad_W = grad_output.T @ input`.
+:::
+
+::: check
+Adding $\tfrac{\lambda}{2}\lVert\mathbf{w}\rVert_2^2$ to the loss adds what to the gradient, and what does a step then do to the weights before anything else?
+
+- [x] It adds $\lambda\mathbf{w}$, so each step multiplies the weights by $(1 - \eta\lambda)$
+  > Straight from $\nabla_\mathbf{x}\lVert\mathbf{x}\rVert_2^2 = 2\mathbf{x}$. That shrinkage is the whole of weight decay — lesson 3.07 picks up what it does and does not do in Adam.
+- [ ] It adds $\lambda\mathbf{w}^2$, so large weights are punished quadratically
+  > The *loss* is quadratic in $\mathbf{w}$; its gradient is linear. The step is proportional to the weight, not to its square.
+- [ ] It adds $\lambda$, a constant pull towards zero
+  > That would be $\ell_1$ decay, whose gradient is a constant $\lambda\,\text{sign}(\mathbf{w})$ — and which is why $\ell_1$ drives weights exactly to zero while $\ell_2$ only shrinks them.
+- [ ] Nothing; weight decay is applied by the optimizer, not the gradient
+  > Decoupled weight decay does move it out of the gradient, but the plain $\ell_2$ penalty described here goes through the gradient exactly as above.
 :::
 
 ## What to carry forward

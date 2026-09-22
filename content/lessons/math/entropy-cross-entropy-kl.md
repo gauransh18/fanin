@@ -71,6 +71,19 @@ between at each step.
 So "the loss went from 2.5 to 2.4" means perplexity fell from 12.2 to 11.0 — a 10%
 reduction in effective branching. Small-looking loss deltas at low loss are large.
 
+::: check
+A language model's loss falls from 2.5 nats to 2.4. What happened to perplexity?
+
+- [x] It fell from about 12.2 to about 11.0 — roughly a 10% cut in effective branching
+  > Perplexity is $e^{\mathcal{L}}$, so a difference in loss is a *ratio* in perplexity. Small-looking deltas at low loss are large, which is why late-training curves look flat and are not.
+- [ ] It fell by 0.1, since perplexity tracks loss linearly
+  > The relationship is exponential. Near a loss of 2.5 a 0.1 change moves perplexity by more than a full point.
+- [ ] It fell by about 4%, in proportion to the loss
+  > $2.4/2.5$ is 4%, but that arithmetic is on the log scale. The quantity readers care about moves by $e^{-0.1} \approx 0.905$.
+- [ ] Nothing measurable; 0.1 nats is within noise
+  > Whether it is within noise depends on the eval, not on the size of the number. In effective-choice terms it is a real move.
+:::
+
 ## KL divergence
 
 The **excess** cost of using $q$ when the truth is $p$:
@@ -110,6 +123,19 @@ def kl(a, b, eps=1e-10):
 print(f'forward  cover {kl(p, q1):.3f}   seek {kl(p, q2):.3f}')   # cover wins
 print(f'reverse  cover {kl(q1, p):.3f}   seek {kl(q2, p):.3f}')   # seek wins
 ```
+
+::: check
+You want a generative model that commits to one mode of the data cleanly rather than blurring across all of them. Which direction of KL should you minimise?
+
+- [x] Reverse KL, $D_{\text{KL}}(q\parallel p)$, which is mode-seeking
+  > Wherever $q$ puts mass, $p$ must too — but $q$ is free to ignore whole regions of $p$. That is exactly "pick one mode and be sharp".
+- [ ] Forward KL, $D_{\text{KL}}(p\parallel q)$, which is mode-seeking
+  > Forward KL is the mass-*covering* one: wherever $p$ has mass, $q$ must too, or $\log(p/q)$ blows up. It produces blurry averages, and it is what maximum likelihood minimises.
+- [ ] Either; KL is symmetric
+  > It is not, and the asymmetry is not a technicality — it changes what the trained model does.
+- [ ] Neither; use the Jensen–Shannon divergence, which is the only symmetric option
+  > JS is symmetric and a reasonable choice, but the question is which *direction* buys mode-seeking, and reverse KL is the answer.
+:::
 
 ## Mutual information
 
@@ -151,6 +177,19 @@ dominate: a model with a larger vocabulary compresses more text per token and wi
 higher per-token loss for the same underlying quality. Comparing loss across tokenizers
 is meaningless; compare **bits per byte** instead, which normalises it away. Lesson 5.16
 covers the rest of the eval traps.
+:::
+
+::: check
+Cross-entropy loss with a one-hot label collapses to $-\log q(y_{\text{true}})$. What is that the same thing as?
+
+- [x] The negative log-likelihood of lesson 1.14 — the same objective in a different vocabulary
+  > $p$ being one-hot kills every term but the true class. Cross-entropy and maximum likelihood are not merely related; for this setup they are identical.
+- [ ] The KL divergence between the label and the model
+  > Close: $D_{\text{KL}}(p\parallel q) = H(p,q) - H(p)$, and $H(p) = 0$ for a one-hot label, so they happen to coincide *here*. They are not the same object in general.
+- [ ] The entropy of the model's output distribution
+  > That would be $-\sum_x q(x)\log q(x)$, which measures the model's own uncertainty and does not involve the label at all.
+- [ ] The perplexity of the model
+  > Perplexity is $e^{\mathcal{L}}$ — a transformation of this number, not the number.
 :::
 
 ## What to carry forward

@@ -50,6 +50,19 @@ will reveal it if your test set is balanced. Lesson 5.16 returns to this: **alwa
 whether your eval distribution matches the deployment base rate.**
 :::
 
+::: check
+A detector is 99% accurate for an event that occurs once in 10,000 cases. It fires. Roughly how likely is the event?
+
+- [x] About 1% — false positives from the huge negative population swamp the true ones
+  > $\frac{0.99 \times 0.0001}{0.99\times0.0001 + 0.01\times0.9999} \approx 0.0098$: roughly 100 false alarms per real one. A balanced test set will never reveal this, which is why eval distribution has to match the deployment base rate.
+- [ ] About 99%, which is what "99% accurate" means
+  > 99% accurate is $p(+\mid\text{event})$. You want $p(\text{event}\mid+)$, and Bayes' rule says those differ enormously when the prior is tiny.
+- [ ] About 50%, since the evidence is one bit
+  > There is no general rule that one bit of evidence lands you at even odds. The prior decides where you start.
+- [ ] Impossible to say without the false-negative rate
+  > "99% accurate" here fixes both error rates, which is enough. A separate false-negative rate would refine the number, not change the conclusion.
+:::
+
 ## Conditional independence
 
 $X$ and $Y$ are conditionally independent given $Z$, written $X \perp Y \mid Z$, if
@@ -86,6 +99,19 @@ replaced RNNs.
 **Sliding-window and sparse attention** (lesson 4.13) reintroduce a Markov-like
 assumption to buy back compute. Understanding that trade as "which conditional
 independences am I willing to assume" is the right way to evaluate a long-context method.
+
+::: check
+A transformer attends over its full context rather than the last $k$ tokens. In the vocabulary of conditional independence, what is it doing?
+
+- [x] Refusing the Markov assumption $x_t \perp x_{<t-k} \mid x_{t-k:t-1}$ that an $n$-gram model makes
+  > That refusal is most of why transformers displaced RNNs, and it is also the trade sliding-window and sparse attention make back: they reintroduce a Markov-like assumption to buy compute. Asking "which conditional independences am I assuming?" is the right way to read a long-context method.
+- [ ] Assuming all tokens are marginally independent
+  > Marginal independence would mean context tells you nothing, which is the opposite of what attention is for.
+- [ ] Assuming tokens are conditionally independent given the position
+  > Nothing in attention conditions on position alone; position is added to content, not substituted for it.
+- [ ] Making no probabilistic assumption at all
+  > Rejecting an independence assumption is itself a modelling choice, and a costly one — it is what makes attention quadratic.
+:::
 
 ## Priors as regularisation
 
@@ -145,6 +171,19 @@ two independent pieces of evidence when they are largely one, so it over-updates
 is the standard failure of the assumption — correlated features are double-counted,
 producing posteriors that are far too confident in whichever direction the correlated
 group points.
+:::
+
+::: check
+Weight decay corresponds to which prior on the parameters?
+
+- [x] A Gaussian centred at zero
+  > $-\log p(\theta)$ for $\mathcal{N}(0,\sigma^2)$ is $\tfrac{1}{2\sigma^2}\lVert\theta\rVert_2^2$, which is exactly the L2 penalty. Weight decay is MAP estimation with a Gaussian prior, not a heuristic.
+- [ ] A Laplace centred at zero
+  > That gives $\tfrac{1}{b}\lVert\theta\rVert_1$ — L1, whose sharp peak at the origin produces sparsity rather than shrinkage.
+- [ ] A uniform prior over a bounded range
+  > A uniform prior contributes a constant, which is to say no regularisation at all.
+- [ ] No prior; weight decay is a purely optimisation-level trick
+  > Decoupled weight decay does move it out of the gradient, but the penalty itself has an exact Bayesian reading.
 :::
 
 ## What to carry forward

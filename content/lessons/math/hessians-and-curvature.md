@@ -52,6 +52,19 @@ eigenvalue direction falls away. Stochastic gradient noise supplies that perturb
 for free, which is one reason SGD works better than its deterministic counterpart.
 :::
 
+::: check
+A loss surface in $10^9$ dimensions has a point where the gradient is exactly zero. What is it most likely to be?
+
+- [x] A saddle — for a true minimum, all $10^9$ eigenvalues would have to be positive at once
+  > Random-matrix arguments say that essentially never happens. This is why the old worry about networks getting stuck in bad local minima was largely misplaced: saddles dominate, and a perturbation along a negative-curvature direction escapes them.
+- [ ] A local minimum, since the loss has been decreasing
+  > A decreasing loss says the path was downhill, not that the destination is a bowl in every one of a billion directions.
+- [ ] A local maximum, if the learning rate overshot
+  > A maximum needs *all* eigenvalues negative, which is exactly as improbable as all positive.
+- [ ] A global minimum, because deep networks are overparameterised
+  > Overparameterisation makes many low-loss regions reachable, but it says nothing about the curvature at a given critical point.
+:::
+
 ## Curvature sets your step size
 
 Take a quadratic $f(\mathbf{x}) = \tfrac12\mathbf{x}^\top H\mathbf{x}$ and run gradient
@@ -75,6 +88,19 @@ This single inequality explains an enormous amount of practice:
 - **Gradient clipping** bounds the damage when a batch lands in a high-curvature region.
 - **Normalization layers** (lesson 3.06) reduce $\kappa$ directly by rescaling
   activations, which is the main reason they let you train at higher learning rates.
+
+::: check
+Gradient descent on a quadratic converges only when $|1 - \eta\lambda_i| < 1$ for every direction $i$. Which eigenvalue therefore caps the learning rate?
+
+- [x] The largest, giving $\eta < 2/\lambda_{\max}$
+  > One over-curved direction is enough to diverge, so the steepest direction sets the global cap — while the flattest sets how slowly you converge. Their ratio is the condition number, and warmup, clipping and normalization layers are all attacks on it.
+- [ ] The smallest, since flat directions need the biggest steps
+  > Flat directions would indeed like a bigger step; they do not get one, and that tension is precisely the problem.
+- [ ] The mean eigenvalue, since the step acts on all directions at once
+  > An average would permit divergence in the directions above it. Stability has to hold everywhere.
+- [ ] None; on a quadratic any positive step size converges
+  > Step past $2/\lambda_{\max}$ and the error in that direction grows every step.
+:::
 
 ## Newton's method, and why you cannot use it
 
@@ -165,6 +191,19 @@ The caveat worth knowing: flatness is not reparameterisation-invariant. Rescalin
 layer's weights up and the next layer's down leaves the function unchanged while
 changing the Hessian's eigenvalues, so "flat" needs a careful definition before the
 claim can be made precise.
+:::
+
+::: check
+Adam approximates $H^{-1}$ with $\text{diag}(1/\sqrt{\mathbb{E}[g^2]})$. Compared with the exact Newton step, what does that buy and what does it give up?
+
+- [x] It costs $O(N)$ memory rather than $O(N^2)$, at the price of ignoring every off-diagonal coupling between parameters
+  > Newton's $H$ has $N^2$ entries — $4.9\times10^{19}$ at 7B parameters — and inverting it is $O(N^3)$. A diagonal proxy is the most curvature you can afford per parameter.
+- [ ] It converges quadratically, like Newton, but with less memory
+  > Quadratic convergence comes from the *exact* inverse Hessian. A diagonal approximation does not deliver it.
+- [ ] It avoids being attracted to saddle points
+  > Newton's genuine defect is that $H^{-1}$ points towards critical points of any type. Adam is not immune by design; gradient noise is what escapes saddles in practice.
+- [ ] It removes the need for a learning rate
+  > Adam still has one. The per-parameter scaling changes the relative step sizes, not the need for a global one.
 :::
 
 ## What to carry forward

@@ -59,6 +59,19 @@ Two corollaries fall out immediately:
   $A$ can stretch any vector. This is the quantity spectral normalization controls, and
   the one that bounds how much a layer can amplify its input.
 
+::: check
+Why does the SVD exist for every matrix, when eigendecomposition can fail even for square ones?
+
+- [x] It is built on $A^\top A$, which is symmetric positive semi-definite for any $A$ whatsoever
+  > A symmetric PSD matrix always diagonalises with real non-negative eigenvalues. Their square roots are the singular values, so however badly behaved $A$ is, $A^\top A$ is not.
+- [ ] Every matrix can be made square by padding, and square matrices always diagonalise
+  > Square matrices do *not* always diagonalise — repeated eigenvalues can leave too few independent eigenvectors — and padding changes the map anyway.
+- [ ] Singular values are defined by an iterative algorithm that always converges
+  > Convergence of an algorithm is not existence of the object. The guarantee is the spectral theorem applied to $A^\top A$.
+- [ ] Because $U$ and $V$ are orthogonal, and orthogonal matrices always exist
+  > Orthogonal matrices existing in general says nothing about a *particular* pair that factors this $A$.
+:::
+
 ## The theorem that matters: optimal truncation
 
 Keep only the largest $k$ singular values and zero the rest:
@@ -100,6 +113,19 @@ for k in (8, 32, 64, 128):
     print(f'k={k:4d}  error {rel:.2e}  predicted {tail:.2e}')
 # At k=64 both hit ~1e-6: the matrix had no rank beyond 64 to lose.
 ```
+
+::: check
+A $4096 \times 4096$ weight is truncated to rank 64. Roughly what fraction of the original parameter count does the factored form store?
+
+- [x] About 3% — around 524,000 numbers instead of 16.8 million
+  > Rank-$k$ truncation stores $k(m + n + 1)$, here $64 \times 8193 \approx 524{,}000$: a 32× reduction, with an error you can read off the singular values you dropped.
+- [ ] About 1.5%, because you keep 64 of 4096 rows
+  > You keep 64 directions, not 64 rows, and each costs a column of $U$ *and* a row of $V^\top$ — both dimensions, not one.
+- [ ] About 25%, one quarter of the spectrum
+  > 64 of 4096 is one sixty-fourth of the spectrum, not a quarter.
+- [ ] It depends on the values, not the rank
+  > The storage depends only on $k$ and the shape. The values decide the *error*, which is a separate question.
+:::
 
 ## Where you will meet it
 
@@ -145,6 +171,19 @@ about **13 components**.
 Storage: $13 \times (1000 + 800 + 1) = 23{,}413$ numbers against $800{,}000$, a **34×
 reduction** for 5% of the squared norm. The $1/i$ decay is what makes this work; a flat
 spectrum would have needed 760 components for the same fidelity.
+:::
+
+::: check
+Eckart–Young says the truncated SVD $A_k$ is the best rank-$k$ approximation to $A$. Best in what sense?
+
+- [x] No rank-$k$ matrix is closer to $A$ in either the spectral or the Frobenius norm — it is provably optimal, not a good heuristic
+  > And the error is exactly the tail you dropped: $\lVert A - A_k\rVert_F^2 = \sum_{i>k}\sigma_i^2$. You can price the approximation before making it.
+- [ ] It is the fastest rank-$k$ approximation to compute
+  > It is one of the more expensive ones — $O(mn\min(m,n))$. Randomised methods are faster and worse.
+- [ ] It preserves the largest entries of $A$
+  > Individual entries are not preserved at all. What is preserved is the leading directions of the map.
+- [ ] It is optimal only when the singular values decay quickly
+  > Optimality holds regardless. Fast decay makes the optimum *good*; slow decay means even the best rank-$k$ approximation is poor.
 :::
 
 ## What to carry forward

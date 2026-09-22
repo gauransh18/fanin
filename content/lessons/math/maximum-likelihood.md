@@ -61,6 +61,19 @@ dragged around by outliers, the honest diagnosis is that you asserted Gaussian r
 for data that is not Gaussian. Change the assumption rather than patching the symptom.
 :::
 
+::: check
+Under MSE, $\sigma^2$ only scales the loss. What follows for the trained model?
+
+- [x] It cannot report its own uncertainty — noise magnitude was never estimated
+  > A constant factor on the loss does not change the argmin, so nothing in training ever learns $\sigma$. Predicting uncertainty means parameterising it, which is what heteroscedastic regression and every calibrated head do deliberately.
+- [ ] The learning rate must be scaled by $\sigma^2$ to compensate
+  > A constant factor on the loss does interact with the step size, but that is a tuning detail, not what the scaling tells you.
+- [ ] The model is guaranteed to be well calibrated
+  > It is guaranteed to be *un*-calibrated in the sense that matters: it has no notion of its own spread.
+- [ ] Residuals will always be Gaussian after training
+  > Assuming Gaussian residuals does not make them so. Checking whether they are is exactly how you find out the loss was wrong.
+:::
+
 ## What MLE guarantees, and when
 
 Under regularity conditions, MLE is **consistent** (converges to the true parameter as
@@ -138,6 +151,19 @@ loss on hard examples by inflating their predicted variance instead of fitting t
 the extreme it gives up on difficult regions entirely, reporting huge uncertainty rather
 than learning. The standard fixes are to warm up with plain MSE for the first epochs
 before enabling the variance head, or to clamp $\log\sigma$ to a sensible range.
+:::
+
+::: check
+As the dataset grows, MAP converges to MLE. Why, and what does that predict in practice?
+
+- [x] The likelihood term grows with $n$ while the prior stays fixed, so regularisation matters most when data is scarce
+  > Which is exactly the empirical finding: weight decay helps fine-tuning on small datasets far more than it helps pretraining on trillions of tokens.
+- [ ] The prior shrinks as more data arrives, by construction
+  > The prior is fixed; it is simply outvoted. Nothing about it changes.
+- [ ] Because MLE is consistent, and consistency implies the prior is correct
+  > Consistency says MLE converges to the true parameter under regularity conditions. It says nothing about the prior being right.
+- [ ] They converge only when the prior is uniform
+  > A uniform prior makes them *identical* at every $n$. The convergence described here happens for any fixed proper prior.
 :::
 
 ## What to carry forward

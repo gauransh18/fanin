@@ -69,6 +69,19 @@ $$
 That identity is exact — no assumption, no approximation. A language model is a
 parameterised estimate of each conditional on the right. Lesson 5.01 starts here.
 
+::: check
+A model reports a positive log-likelihood for a continuous variable. Is something wrong?
+
+- [x] No — $p(x)$ is a density, not a probability, and a density may exceed 1
+  > A uniform distribution on $[0, 0.1]$ has density 10 everywhere on it. Only the integral over a region is a probability, so $\log p(x) > 0$ is perfectly ordinary for a sharply peaked density.
+- [ ] Yes — probabilities are at most 1, so the log cannot be positive
+  > That holds for a probability *mass* function on a discrete variable. Densities are a different object.
+- [ ] Yes — it means the model has memorised that example exactly
+  > Memorisation would show up as an unusually high likelihood relative to held-out data, which is a comparison, not a sign test.
+- [ ] No — log-likelihoods are always reported negated, so positive means a good fit
+  > Negative log-likelihood is a common *convention* for a loss, but that is a sign flip applied afterwards, not the reason a density can exceed 1.
+:::
+
 ## Independence
 
 $X$ and $Y$ are **independent** if $p(x,y) = p(x)p(y)$, equivalently $p(y\mid x) = p(y)$
@@ -84,6 +97,19 @@ violated in ways that matter:
   deduplication in lesson 5.02 is not a nicety.
 - Any distribution shift between training and deployment breaks "identically
   distributed" outright.
+
+::: check
+The factorisation $p(x_1,\ldots,x_T) = \prod_t p(x_t \mid x_{<t})$ underpins every autoregressive language model. What kind of statement is it?
+
+- [x] An exact identity, following from the product rule with no assumption at all
+  > Chaining $p(x,y) = p(y\mid x)p(x)$ gives it for any joint distribution whatsoever. What a language model approximates is each conditional on the right, not the factorisation itself.
+- [ ] An approximation that holds when the tokens are nearly independent
+  > Independence would give $\prod_t p(x_t)$, with no conditioning. The chain rule needs no independence and is exact regardless.
+- [ ] A modelling assumption specific to transformers
+  > It long predates them and applies to any sequence model. What transformers changed is how the conditionals are computed.
+- [ ] True only for discrete variables
+  > The same chaining holds for densities, with integrals in place of sums.
+:::
 
 ## Expectation
 
