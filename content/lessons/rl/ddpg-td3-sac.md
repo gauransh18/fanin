@@ -62,6 +62,19 @@ DDPG works and is notoriously unstable. Its main failure is **Q-value overestima
 actor finds and exploits errors in the critic, driving $Q$ upward with no corresponding
 improvement in return.
 
+::: check
+DDPG replaces DQN's $\arg\max_a Q(s,a)$ with what, and why does that force a deterministic policy?
+
+- [x] Gradient ascent on a differentiable $Q$ — the chain rule runs through the critic to a *specific* action, which a sampling operation would break
+  > Continuous actions make $Q$ differentiable with respect to $a$, so you can ask which direction in action space raises $Q$. Enumeration is replaced by a gradient, and the gradient needs a concrete action to flow through.
+- [ ] A softmax over a discretised action grid
+  > Discretising defeats the purpose and scales exponentially in action dimensions.
+- [ ] Sampling many actions and taking the best
+  > That is cross-entropy-method planning, which some model-based methods use. DDPG's point is that it does not need to search.
+- [ ] An analytic maximum, since $Q$ is quadratic in $a$
+  > $Q$ is a neural network with no such structure imposed.
+:::
+
 ## TD3
 
 Three fixes, each targeting a specific instability:

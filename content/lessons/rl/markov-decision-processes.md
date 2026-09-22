@@ -43,6 +43,19 @@ When you genuinely cannot observe the full state, you have a **POMDP**, and the 
 response is to maintain a belief state or feed a history to a recurrent or attention-based
 policy — which is exactly what a language model does.
 
+::: check
+An RL agent trained on single video frames cannot learn to catch a ball. What is the most likely diagnosis?
+
+- [x] The state is not Markov — velocity is not recoverable from one image, so stacking several frames is the fix
+  > The Markov property is a property of your state representation, not of the world. When an algorithm fails, "is my state actually Markov?" is one of the first things to check, and the usual fix adds the missing information to the state rather than changing the algorithm.
+- [ ] The discount factor is too low
+  > A low $\gamma$ shortens the horizon, which would not stop the agent seeing where the ball is going *now*.
+- [ ] The reward is too sparse
+  > Sparse reward makes learning slow. It does not make the task unlearnable in the way a missing state variable does.
+- [ ] The action space is too large
+  > Catching a ball needs few actions. The information deficit is on the observation side.
+:::
+
 ## Returns and discounting
 
 The objective is cumulative reward:

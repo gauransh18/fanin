@@ -91,6 +91,19 @@ A common misunderstanding is that clipping enforces a constraint, and it does no
 removes the objective's gradient beyond a threshold.
 :::
 
+::: check
+Why constrain the KL divergence between old and new policies rather than the step size in parameter space?
+
+- [x] A small parameter change can produce a large policy change — especially near-deterministically, where a small logit shift flips the argmax — and KL is invariant to how the policy is parameterised
+  > Constraining the distribution is what makes the guarantee meaningful. In RL a bad step collects worse data and the next step is worse still, so recovery is not automatic the way it is in supervised learning.
+- [ ] KL is cheaper to compute than a parameter norm
+  > A parameter norm is trivially cheap; KL needs an extra forward pass. The reason is correctness, not cost.
+- [ ] Parameter-space constraints do not have a closed form
+  > They have a very simple one. It just measures the wrong thing.
+- [ ] KL bounds the reward change directly
+  > It bounds the policy change, and the surrogate objective is what connects that to expected reward.
+:::
+
 ## The full algorithm
 
 ```python

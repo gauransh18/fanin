@@ -122,6 +122,19 @@ model's state space is every possible token sequence. Function approximation —
 table with a neural network — is what the rest of this track is about, and it is where the
 convergence guarantee is lost.
 
+::: check
+Why is $Q$ more useful than $V$ for control?
+
+- [x] It lets you act greedily without a model — $\pi(s) = \arg\max_a Q(s,a)$ needs no knowledge of $P$
+  > Acting greedily on $V$ requires knowing where each action leads, which means having the transition model. That is exactly the assumption model-free methods refuse to make.
+- [ ] It has lower variance when estimated from samples
+  > $Q$ has more entries to estimate and is generally harder, not easier.
+- [ ] It is defined for continuing tasks where $V$ is not
+  > Both are defined wherever the discounted return converges.
+- [ ] It does not require a discount factor
+  > Both are defined in terms of the same discounted return.
+:::
+
 ## Advantage
 
 $$

@@ -88,6 +88,19 @@ plateaus and MC does not.
 
 TD usually wins in practice: lower variance dominates, and the bias shrinks as $V$ improves.
 
+::: check
+Monte Carlo value estimation is unbiased. What does it cost?
+
+- [x] High variance, since the return depends on every random choice for the rest of the episode — and it needs episodes to terminate at all
+  > TD(0) trades the other way: it bootstraps from the current estimate, so it is biased and low variance, and works on continuing tasks. Everything between is the $n$-step spectrum.
+- [ ] Bias that grows with the discount factor
+  > It has no bias. That is the one thing it guarantees.
+- [ ] It cannot be used with function approximation
+  > It can, and in fact it is the safest of the three legs of the deadly triad to combine with approximation.
+- [ ] It requires knowing the transition model
+  > It needs only experience. Needing the model is dynamic programming's problem.
+:::
+
 ## n-step methods
 
 The two are endpoints of a spectrum. Use $n$ real rewards, then bootstrap:

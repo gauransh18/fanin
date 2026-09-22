@@ -117,6 +117,19 @@ spaces — and generally outperforms both SARSA and Q-learning.
 It also unifies them: with a greedy $\pi$, the expectation becomes the max and Expected
 SARSA *is* Q-learning.
 
+::: check
+SARSA and Q-learning differ in one term. What is the consequence for what each learns?
+
+- [x] SARSA's target uses the action actually taken, so it learns the value of the $\epsilon$-greedy policy including the cost of exploring; Q-learning's uses $\max_{a'}$, so it learns $Q^*$ while behaving however it likes
+  > Being off-policy is what lets Q-learning train from a replay buffer, a human demonstration, or any other data source — which is why it scales to deep RL.
+- [ ] SARSA converges faster because it bootstraps from a single action
+  > Both bootstrap from one step. Convergence speed is not the distinction.
+- [ ] Q-learning is on-policy and SARSA off-policy
+  > The other way around: the $\max$ is what makes Q-learning off-policy.
+- [ ] They learn the same values and differ only in variance
+  > On a cliff-walking task they learn visibly different policies — SARSA takes the safe route, Q-learning the optimal one it cannot safely execute.
+:::
+
 ## Maximisation bias
 
 ::: warning

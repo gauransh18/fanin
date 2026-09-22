@@ -115,6 +115,19 @@ reason.
 Typical $\beta$ is 0.01 for discrete actions and near zero for continuous ones, where the
 Gaussian's learned standard deviation already controls exploration.
 
+::: check
+The critic's errors bias the policy gradient. Why is that acceptable?
+
+- [x] A biased low-variance estimator beats an unbiased one you cannot see through — the bias–variance tradeoff of lesson 1.11 made concrete
+  > Monte Carlo advantages are unbiased and too noisy to learn from; TD(0) is biased and quiet. GAE's $\lambda$ is the dial between them.
+- [ ] The bias cancels over many updates
+  > It does not cancel; it systematically points the gradient slightly wrong. It is tolerated, not eliminated.
+- [ ] The critic converges before the actor, so the bias is transient
+  > The two train together and the critic chases a moving target, so its error never fully disappears.
+- [ ] Policy gradients are insensitive to the advantage's scale
+  > They are quite sensitive to it, which is why advantage normalisation is standard.
+:::
+
 ## Shared or separate networks
 
 Sharing a trunk between actor and critic saves compute and lets the value task regularise the

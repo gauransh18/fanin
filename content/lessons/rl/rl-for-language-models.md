@@ -73,6 +73,19 @@ and the critic's instability.
 Each token in a response receives the same advantage, since the reward is terminal. That is
 crude credit assignment, and it works because the KL penalty keeps updates small.
 
+::: check
+GRPO removes PPO's value network. What replaces it as the baseline?
+
+- [x] The mean reward of a group of $G$ responses sampled for the same prompt
+  > Any state-dependent baseline is unbiased, and for a fixed prompt the group mean is exactly that. It removes the fourth model from memory at the cost of $G$ samples per prompt.
+- [ ] A running average of rewards across the whole batch
+  > Averaging across different prompts would not be state-dependent, and the variance reduction would be much weaker.
+- [ ] The reward model's own uncertainty estimate
+  > Uncertainty is useful for other purposes and is not what stands in for $V(s)$ here.
+- [ ] The reference model's likelihood
+  > That appears in the KL term, not in the advantage.
+:::
+
 ## Verifiable rewards
 
 Lesson 5.10 introduced this and it is worth restating in RL terms: in maths, code and formal
@@ -106,6 +119,19 @@ Verifiable rewards have their own hacking surface, and it is worth naming:
   structure is what you meant.
 
 Hold out test cases, and read samples. "Unhackable" means harder to hack, not impossible.
+:::
+
+::: check
+Which properties make a language model an unusual MDP?
+
+- [x] Transitions are deterministic — appending a token is not stochastic, so all randomness comes from the policy
+  > Which makes return variance entirely the policy's own, and variance reduction more tractable than in control.
+- [x] Reward is terminal only, so one scalar must be attributed across hundreds of token decisions
+  > Credit assignment becomes the central difficulty, and is what process supervision and per-token value estimates attack.
+- [x] The policy starts from a capable pretrained model rather than from scratch
+  > The goal is to adjust a model that already works, which is exactly what the KL penalty encodes.
+- [ ] The action space is continuous
+  > It is discrete and very large — around 128,000 tokens — which is a different problem from continuity.
 :::
 
 ## Credit assignment

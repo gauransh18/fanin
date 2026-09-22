@@ -51,6 +51,19 @@ That is what makes policy gradients model-free, and it is the single most useful
 this lesson.
 :::
 
+::: check
+The policy gradient theorem drops the transition terms $P(s_{t+1}\mid s_t, a_t)$. Why may it?
+
+- [x] They do not depend on $\theta$, so they vanish under differentiation — which is why the method is model-free
+  > Taking the log of the trajectory probability turns a product into a sum, and every term that is not the policy differentiates to zero. You never need to know the dynamics.
+- [ ] They are assumed deterministic
+  > Nothing assumes that. Stochastic transitions drop out for the same reason.
+- [ ] They are absorbed into the baseline
+  > The baseline subtracts a state-dependent term from the return; it has nothing to do with the transition probabilities.
+- [ ] They cancel between the numerator and denominator of the importance ratio
+  > There is no importance ratio in the on-policy derivation.
+:::
+
 ## REINFORCE
 
 $$

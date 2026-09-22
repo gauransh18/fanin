@@ -111,6 +111,19 @@ lesson 6.04: use the model for a few steps, then trust a learned value.
 MBPO formalises this: generate short rollouts from states in the real replay buffer, add
 them to an augmented buffer, and train SAC on the mixture.
 
+::: check
+What limits how far a learned dynamics model can be rolled out?
+
+- [x] Compounding error — each step's prediction feeds the next, so small errors multiply and the imagined trajectory leaves the distribution the model was fitted on
+  > Short rollouts from real states, model ensembles, and uncertainty-aware termination are the standard responses. The horizon, not the one-step accuracy, is what decides whether the model helps.
+- [ ] Memory, since each imagined step must be stored
+  > Imagined transitions are the same size as real ones and are cheap to store.
+- [ ] The model cannot represent stochastic transitions
+  > Probabilistic models and ensembles represent them routinely.
+- [ ] Rollouts cannot be batched on a GPU
+  > They batch extremely well, which is much of the appeal.
+:::
+
 ## Planning with a model
 
 **Model-predictive control.** At each step, optimise a short action sequence under the model,

@@ -102,6 +102,19 @@ With $\tau = 0.7$–$0.9$, the expectile approximates a max over the *actions pr
 data* — capturing the benefit of a max without ever evaluating $Q$ off-distribution. This is
 why IQL is often the strongest and simplest choice.
 
+::: check
+Q-learning is off-policy, so it should learn from any dataset. Why does running DQN on a fixed dataset usually produce a policy worse than the one that generated it?
+
+- [x] The Bellman max ranges over all actions, including ones never taken — $Q$ extrapolates arbitrarily there, the inflated value enters the target, and nothing corrects it
+  > Online, the agent tries the overestimated action and the estimate falls. Interaction *is* the error-correction mechanism, and removing it is what makes the setting hard. The symptom is unmistakable: $Q$-values growing without bound while performance collapses.
+- [ ] The dataset is not large enough to cover the state space
+  > More data helps, and the failure happens even with excellent coverage of the *states* if the actions are narrow.
+- [ ] Off-policy correction requires importance weights that are unavailable offline
+  > Q-learning's target needs no importance weights; that is what makes it off-policy in the first place.
+- [ ] The behaviour policy is unknown
+  > Some constraint methods estimate it, and not knowing it is a complication rather than the core failure.
+:::
+
 ## Data quality decides everything
 
 ::: warning

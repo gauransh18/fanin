@@ -131,6 +131,19 @@ That freedom is what makes the approach scalable in the directions that matter:
   policy visits are a tiny fraction of $\mathcal{S}$, and the rest do not need accurate
   values.
 
+::: check
+Dynamic programming solves an MDP exactly. Which two assumptions stop it being used in practice?
+
+- [x] You must know $P$ and $R$
+  > Every model-free method in this track exists because you usually do not.
+- [x] You must be able to enumerate the states
+  > A sweep touches every state, which is impossible for continuous or combinatorially large spaces.
+- [ ] The policy must be deterministic
+  > Policy iteration handles stochastic policies without difficulty.
+- [ ] The reward must be bounded
+  > Bounded rewards help the convergence argument and are not one of the two blocking assumptions.
+:::
+
 ## The two blocking assumptions
 
 **You must know $P$ and $R$.** In most problems you do not — you can only sample. Lesson
