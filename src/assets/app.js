@@ -544,6 +544,13 @@
     document.querySelectorAll('[data-xp]').forEach(function (el) {
       el.textContent = s.xp.toLocaleString();
     });
+    document.querySelectorAll('[data-hud-xp]').forEach(function (el) {
+      countTo(el, s.xp);
+    });
+    document.querySelectorAll('[data-hud-badges]').forEach(function (el) {
+      el.textContent = s.badges.filter(function (b) { return b.earned; }).length +
+        '/' + s.badges.length;
+    });
     document.querySelectorAll('[data-streak]').forEach(function (el) {
       el.textContent = String(s.streak);
     });
@@ -564,15 +571,79 @@
         : 'Every lesson complete.';
     });
 
-    var chip = document.getElementById('level-chip');
-    if (chip) {
-      chip.hidden = s.count === 0;
-      chip.setAttribute('title',
+    var hud = document.getElementById('hud');
+    if (hud) {
+      // Nothing to read out before the first answer; an all-zero HUD is noise.
+      hud.hidden = s.xp === 0;
+      hud.setAttribute('title',
         s.level.name + ' · ' + s.xp.toLocaleString() + ' XP' +
         (s.streak ? ' · ' + s.streak + '-day streak' : ''));
+      var streakEl = hud.querySelector('[data-hud-streak]');
+      if (streakEl) streakEl.dataset.lit = s.streak > 0 ? '1' : '0';
     }
-    var flame = document.getElementById('chip-streak');
-    if (flame) flame.hidden = s.streak < 2;
+    document.querySelectorAll('[data-hud-ring]').forEach(function (el) {
+      var span = s.next ? s.next.at - s.level.at : 0;
+      var frac = s.next ? Math.min(1, (s.xp - s.level.at) / span) : 1;
+      var c = 2 * Math.PI * 16;
+      el.style.strokeDasharray = c + ' ' + c;
+      el.style.strokeDashoffset = String(c * (1 - frac));
+    });
+
+    // A level-up is the one moment worth interrupting for.
+    if (lastLevel !== null && s.levelIndex > lastLevel) levelUp(s);
+    lastLevel = s.levelIndex;
+  }
+
+  var lastLevel = null;
+
+  // Counts a number up to its new value. Cheap, and it is the difference
+  // between a number changing and a number being *earned*.
+  function countTo(el, value) {
+    var from = Number(el.dataset.count || 0);
+    if (from === value || REDUCED) {
+      el.textContent = value.toLocaleString();
+      el.dataset.count = String(value);
+      return;
+    }
+    el.dataset.count = String(value);
+    var t0 = performance.now();
+    var ms = Math.min(900, 200 + Math.abs(value - from) * 1.5);
+    (function step(t) {
+      var k = Math.min(1, (t - t0) / ms);
+      var e = 1 - Math.pow(1 - k, 3);
+      el.textContent = Math.round(from + (value - from) * e).toLocaleString();
+      if (k < 1) requestAnimationFrame(step);
+    })(t0);
+  }
+
+  var REDUCED = false;
+  try { REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) {}
+
+  // The full-screen moment. Dismisses on any key, click or after a beat.
+  function levelUp(s) {
+    if (document.querySelector('.levelup')) return;
+    var el = document.createElement('div');
+    el.className = 'levelup';
+    el.setAttribute('role', 'status');
+    el.innerHTML =
+      '<div class="levelup-card">' +
+      '<p class="levelup-eyebrow">Level ' + (s.levelIndex + 1) + '</p>' +
+      '<h2 class="levelup-name">' + escapeHtml(s.level.name) + '</h2>' +
+      '<p class="levelup-xp">' + s.xp.toLocaleString() + ' XP</p>' +
+      (s.next
+        ? '<p class="levelup-next">' + (s.next.at - s.xp).toLocaleString() +
+          ' to ' + escapeHtml(s.next.name) + '</p>'
+        : '<p class="levelup-next">Nothing above this one.</p>') +
+      '</div>';
+    document.body.appendChild(el);
+    var close = function () {
+      el.dataset.out = '1';
+      setTimeout(function () { el.remove(); }, 240);
+      document.removeEventListener('keydown', close);
+    };
+    el.addEventListener('click', close);
+    document.addEventListener('keydown', close);
+    setTimeout(close, 3600);
   }
 
   /* --------------------------------------------------------- dashboard -- */

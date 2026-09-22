@@ -92,23 +92,43 @@ ${katex}
       <span>${site.name}</span>
     </a>
     <nav class="site-nav" aria-label="Main">
-      ${navLink('/curriculum/', 'Curriculum', 'curriculum')}
-      ${navLink('/progress/', 'Progress', 'progress', true)}
+      ${navLink('/curriculum/', 'Map', 'curriculum')}
+      ${navLink('/progress/', 'Record', 'progress', true)}
       ${navLink('/about/', 'About', 'about', true)}
-      <a class="level-chip" id="level-chip" href="${u('/progress/')}" hidden>
-        <span class="chip-level">L<span data-level-num>1</span></span>
-        <span class="chip-streak" id="chip-streak" hidden>
-          <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
-            <path d="M8 1c.6 2.2-.4 3.4-1.4 4.5C5.4 6.8 4.3 8 4.3 9.9A3.7 3.7 0 0 0 8 13.6a3.7 3.7 0
-                     0 0 3.7-3.7c0-2.6-1.6-3.9-2.4-5.6-.3 1-.9 1.6-1.6 2.2.5-1.9.6-3.9.3-5.5z"/>
-          </svg><span data-streak>0</span>
-        </span>
-      </a>
+    </nav>
+
+    <!-- The readout: level, XP, streak and badges, on every page. Hidden
+         until there is something to show, so a first visit is not all zeroes. -->
+    <a class="hud" id="hud" href="${u('/progress/')}" hidden aria-label="Your progress">
+      <span class="hud-ring">
+        <svg viewBox="0 0 40 40" aria-hidden="true">
+          <circle class="hud-ring-bg" cx="20" cy="20" r="16" />
+          <circle class="hud-ring-fill" cx="20" cy="20" r="16" data-hud-ring />
+        </svg>
+        <span class="hud-lvl" data-level-num>1</span>
+      </span>
+      <span class="hud-stat hud-xp">
+        <b data-hud-xp data-count>0</b><i>XP</i>
+      </span>
+      <span class="hud-stat hud-streak" data-hud-streak data-lit="0">
+        <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+          <path d="M8 1c.6 2.2-.4 3.4-1.4 4.5C5.4 6.8 4.3 8 4.3 9.9A3.7 3.7 0 0 0 8 13.6a3.7 3.7 0
+                   0 0 3.7-3.7c0-2.6-1.6-3.9-2.4-5.6-.3 1-.9 1.6-1.6 2.2.5-1.9.6-3.9.3-5.5z"/>
+        </svg><b data-streak>0</b>
+      </span>
+      <span class="hud-stat hud-badges">
+        <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+          <path d="M8 1.2l1.9 4.1 4.5.5-3.4 3.1.9 4.4L8 11.1l-3.9 2.2.9-4.4L1.6 5.8l4.5-.5z"/>
+        </svg><b data-hud-badges>0</b>
+      </span>
+    </a>
+
+    <div class="header-tools">
       <button class="search-trigger" type="button" data-search-open aria-label="Search lessons">
         ${ICON.search}<span class="search-label">Search</span><kbd>⌘K</kbd>
       </button>
       <button class="icon-btn" type="button" id="theme-toggle" aria-label="Switch theme">${ICON.theme}</button>
-    </nav>
+    </div>
   </div>
 </header>
 

@@ -2821,3 +2821,224 @@ h2:hover > .anchor, h3:hover > .anchor, h4:hover > .anchor, .anchor:focus-visibl
   .path-label { padding-bottom: .1rem; }
   .node { width: 1.45rem; height: 1.45rem; }
 }
+
+/* ============================================================== console == */
+/* The chrome reads as an instrument panel: notched corners, a rail of channel
+   colour, monospace numerals, and light that comes on when something is earned.
+   The reading surface underneath is deliberately left alone — prose is prose. */
+
+:root {
+  --notch: 7px;
+  --panel-top: rgba(255, 255, 255, .8);
+  --panel-bot: rgba(240, 242, 246, .55);
+  --edge: rgba(255, 255, 255, .9);
+  --rule: color-mix(in srgb, var(--ink) 8%, transparent);
+  --glow: color-mix(in srgb, var(--accent) 45%, transparent);
+  --hud-h: 3.5rem;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --panel-top: rgba(38, 44, 58, .55);
+    --panel-bot: rgba(14, 17, 23, .5);
+    --edge: rgba(255, 255, 255, .07);
+    --rule: color-mix(in srgb, var(--ink) 12%, transparent);
+    --glow: color-mix(in srgb, var(--accent) 55%, transparent);
+  }
+}
+:root[data-theme="dark"] {
+  --panel-top: rgba(38, 44, 58, .55);
+  --panel-bot: rgba(14, 17, 23, .5);
+  --edge: rgba(255, 255, 255, .07);
+  --rule: color-mix(in srgb, var(--ink) 12%, transparent);
+  --glow: color-mix(in srgb, var(--accent) 55%, transparent);
+}
+
+/* A cut corner, top-left and bottom-right. One declaration, and the whole
+   interface stops looking like a document. */
+.notch {
+  clip-path: polygon(
+    var(--notch) 0, 100% 0, 100% calc(100% - var(--notch)),
+    calc(100% - var(--notch)) 100%, 0 100%, 0 var(--notch));
+}
+
+.panel-sheen {
+  background:
+    linear-gradient(180deg, var(--panel-top), var(--panel-bot)),
+    var(--surface);
+  border: 1px solid var(--line);
+  box-shadow: inset 0 1px 0 var(--edge), var(--shadow);
+}
+
+/* ------------------------------------------------------------- the HUD -- */
+
+.site-header {
+  background: color-mix(in srgb, var(--bg) 82%, transparent);
+  backdrop-filter: saturate(1.7) blur(14px);
+  border-bottom: 1px solid var(--line);
+}
+.site-header::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 -1px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--glow) 35%, var(--glow) 65%, transparent);
+  opacity: .5;
+}
+.site-header { position: sticky; }
+.header-inner { gap: .75rem; }
+
+.site-nav { gap: .1rem; margin-right: auto; }
+.nav-link {
+  font: 500 var(--fs-xs)/1 var(--mono);
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  padding: .5rem .6rem;
+}
+.nav-link[aria-current="page"] {
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 9%, transparent);
+}
+
+.header-tools { display: flex; align-items: center; gap: .45rem; }
+
+.hud {
+  display: flex;
+  align-items: center;
+  gap: .1rem;
+  padding: .28rem .7rem .28rem .32rem;
+  text-decoration: none;
+  --notch: 6px;
+  background:
+    linear-gradient(180deg, var(--panel-top), var(--panel-bot)),
+    var(--surface);
+  border: 1px solid var(--line);
+  box-shadow: inset 0 1px 0 var(--edge);
+  clip-path: polygon(
+    var(--notch) 0, 100% 0, 100% calc(100% - var(--notch)),
+    calc(100% - var(--notch)) 100%, 0 100%, 0 var(--notch));
+  transition: border-color .15s, box-shadow .15s;
+}
+.hud:hover { border-color: var(--line-strong); }
+.hud:focus-visible { outline: none; box-shadow: var(--ring); }
+
+.hud-ring { position: relative; width: 2rem; height: 2rem; flex: none; }
+.hud-ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+.hud-ring-bg { fill: none; stroke: var(--surface-2); stroke-width: 3; }
+.hud-ring-fill {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 3;
+  stroke-linecap: round;
+  filter: drop-shadow(0 0 3px var(--glow));
+  transition: stroke-dashoffset .6s cubic-bezier(.3, .8, .3, 1);
+}
+.hud-lvl {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font: 600 var(--fs-xs)/1 var(--mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+
+.hud-stat {
+  display: inline-flex;
+  align-items: center;
+  gap: .28rem;
+  padding: 0 .5rem;
+  border-left: 1px solid var(--rule);
+  font: 500 var(--fs-xs)/1 var(--mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+}
+.hud-stat:first-of-type { border-left: 0; }
+.hud-stat b { font-weight: 600; color: var(--ink); }
+.hud-stat i { font-style: normal; font-size: .6875em; opacity: .65; }
+.hud-stat svg { width: .8125rem; height: .8125rem; }
+
+.hud-streak[data-lit="1"] { color: var(--warn); }
+.hud-streak[data-lit="1"] b { color: var(--warn); }
+.hud-streak[data-lit="1"] svg { filter: drop-shadow(0 0 4px color-mix(in srgb, var(--warn) 60%, transparent)); }
+
+@media (max-width: 860px) {
+  .hud-badges { display: none; }
+}
+@media (max-width: 640px) {
+  .hud { padding-right: .45rem; }
+  .hud-xp i { display: none; }
+  .nav-link { padding-inline: .45rem; }
+}
+@media (max-width: 430px) {
+  .hud-streak { display: none; }
+  .site-nav { gap: 0; }
+}
+
+/* ------------------------------------------------------- the level-up --- */
+
+.levelup {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: grid;
+  place-items: center;
+  padding: var(--gutter);
+  background: color-mix(in srgb, var(--bg) 78%, transparent);
+  backdrop-filter: blur(14px) saturate(1.4);
+  animation: lu-in .24s ease-out;
+  cursor: pointer;
+}
+.levelup[data-out="1"] { animation: lu-out .24s ease-in forwards; }
+@keyframes lu-in  { from { opacity: 0; } }
+@keyframes lu-out { to   { opacity: 0; } }
+
+.levelup-card {
+  --notch: 14px;
+  position: relative;
+  max-width: 26rem;
+  width: 100%;
+  padding: 2.4rem 2rem;
+  text-align: center;
+  background:
+    radial-gradient(120% 90% at 50% 0%, color-mix(in srgb, var(--accent) 16%, transparent), transparent 70%),
+    linear-gradient(180deg, var(--panel-top), var(--panel-bot)),
+    var(--surface);
+  border: 1px solid color-mix(in srgb, var(--accent) 40%, var(--line));
+  box-shadow: inset 0 1px 0 var(--edge), 0 24px 70px -20px var(--glow);
+  clip-path: polygon(
+    var(--notch) 0, 100% 0, 100% calc(100% - var(--notch)),
+    calc(100% - var(--notch)) 100%, 0 100%, 0 var(--notch));
+  animation: lu-card .42s cubic-bezier(.16, 1, .3, 1);
+}
+@keyframes lu-card {
+  from { opacity: 0; transform: translateY(14px) scale(.96); }
+}
+.levelup-eyebrow {
+  margin: 0 0 .5rem;
+  font: 600 var(--fs-xs)/1 var(--mono);
+  letter-spacing: .22em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.levelup-name {
+  margin: 0 0 .9rem;
+  font: 600 var(--fs-2xl)/1.1 var(--sans);
+  letter-spacing: -.02em;
+  color: var(--ink);
+}
+.levelup-xp {
+  margin: 0;
+  font: 600 var(--fs-lg)/1 var(--mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-2);
+}
+.levelup-next {
+  margin: .9rem 0 0;
+  font: 400 var(--fs-sm)/1.5 var(--sans);
+  color: var(--muted);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .levelup, .levelup-card { animation: none; }
+  .hud-ring-fill { transition: none; }
+}
