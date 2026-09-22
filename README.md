@@ -27,6 +27,11 @@ XP earns levels, and each track ends in a **trial** — ten questions drawn from
 no explanations until the end, 80% to pass. A track badge takes both: every lesson cleared
 and the trial passed.
 
+Answers, combos, lesson clears and level-ups each have a short cue, synthesised with a few
+oscillators rather than shipped as audio files — which keeps the no-third-party-requests
+promise and costs a few hundred bytes instead of tens of kilobytes. Nothing can play before
+a gesture, and the speaker in the header mutes it permanently.
+
 The correct answer ships inside the page, base64-encoded, because there is no server to
 check against. That is enough to stop a stray ctrl-F spoiling a question and is not
 pretending to be more.

@@ -402,6 +402,151 @@
     return out;
   }
 
+  /* -------------------------------------------------------------- sound -- */
+  // Synthesised, not sampled. A handful of oscillators is a few hundred bytes
+  // of code against tens of kilobytes of audio, needs no decoding, and keeps
+  // the promise that the site fetches nothing from anywhere.
+  //
+  // Nothing can play before a gesture -- browsers suspend an AudioContext
+  // until one, and every cue here is triggered by a click or a keypress
+  // anyway. The toggle sits next to the theme switch and is remembered.
+
+  var SOUND_KEY = 'fanin:sound';
+  var soundOn = true;
+  try { soundOn = localStorage.getItem(SOUND_KEY) !== 'off'; } catch (e) {}
+
+  var actx = null;
+  var master = null;
+
+  function audio() {
+    if (actx) return actx;
+    try {
+      var Ctx = window.AudioContext || window.webkitAudioContext;
+      if (!Ctx) return null;
+      actx = new Ctx();
+      master = actx.createGain();
+      master.gain.value = 0.5;
+      // A gentle roll-off: these are console blips, not an alarm.
+      var shelf = actx.createBiquadFilter();
+      shelf.type = 'lowpass';
+      shelf.frequency.value = 6000;
+      master.connect(shelf);
+      shelf.connect(actx.destination);
+    } catch (e) {
+      actx = null;
+    }
+    return actx;
+  }
+
+  // One note. `slide` bends to a second frequency over the note's life, which
+  // is most of what makes a blip read as rising or falling.
+  function note(freq, at, dur, opts) {
+    var ctx = audio();
+    if (!ctx || !master) return;
+    opts = opts || {};
+    var t = ctx.currentTime + at;
+    var osc = ctx.createOscillator();
+    var g = ctx.createGain();
+    osc.type = opts.type || 'triangle';
+    osc.frequency.setValueAtTime(freq, t);
+    if (opts.slide) osc.frequency.exponentialRampToValueAtTime(opts.slide, t + dur);
+
+    // A short attack and an exponential tail; a linear one clicks at the end.
+    var peak = opts.gain == null ? 0.16 : opts.gain;
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(peak, t + Math.min(0.012, dur * 0.3));
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+
+    osc.connect(g);
+    g.connect(master);
+    osc.start(t);
+    osc.stop(t + dur + 0.02);
+  }
+
+  // A minor pentatonic, so any two cues that overlap still agree.
+  var A4 = 440, C5 = 523.25, D5 = 587.33, E5 = 659.25, G5 = 783.99,
+      A5 = 880, C6 = 1046.5, E6 = 1318.5;
+
+  var CUES = {
+    // Right first time: a rising fifth, bright and over in a fifth of a second.
+    hit: function () {
+      note(E5, 0, 0.09, { gain: 0.13 });
+      note(A5, 0.055, 0.14, { gain: 0.11 });
+    },
+    // Right after a miss: one note, lower and softer. Still a reward.
+    hitRetry: function () {
+      note(C5, 0, 0.13, { gain: 0.09 });
+    },
+    // A miss: short, low, and down. Not a buzzer -- nobody is being told off.
+    miss: function () {
+      note(196, 0, 0.13, { type: 'sine', gain: 0.1, slide: 146.8 });
+    },
+    // The combo bonus, stacked on top of the hit that earned it.
+    combo: function () {
+      note(A5, 0, 0.07, { gain: 0.1 });
+      note(C6, 0.06, 0.07, { gain: 0.1 });
+      note(E6, 0.12, 0.18, { gain: 0.09 });
+    },
+    // A lesson cleared: three notes up the scale.
+    clear: function () {
+      note(A4, 0, 0.11, { gain: 0.12 });
+      note(C5, 0.085, 0.11, { gain: 0.12 });
+      note(E5, 0.17, 0.26, { gain: 0.12 });
+    },
+    // A badge: one small chime above everything else.
+    badge: function () {
+      note(E6, 0, 0.05, { type: 'sine', gain: 0.09 });
+      note(A5 * 2, 0.05, 0.22, { type: 'sine', gain: 0.07 });
+    },
+    // The level-up. The only cue allowed to take a whole second, with a pad
+    // underneath it so it lands rather than pings.
+    levelUp: function () {
+      [A4, C5, E5, A5].forEach(function (f, i) {
+        note(f, i * 0.085, i === 3 ? 0.55 : 0.16, { gain: 0.13 });
+      });
+      note(A4 / 2, 0, 0.9, { type: 'sine', gain: 0.05 });
+      note(E5, 0.34, 0.6, { type: 'sine', gain: 0.05 });
+      note(C6, 0.42, 0.5, { gain: 0.05 });
+    },
+    // A trial passed: the same shape, a fourth higher.
+    trial: function () {
+      [C5, E5, G5, C6].forEach(function (f, i) {
+        note(f, i * 0.08, i === 3 ? 0.5 : 0.15, { gain: 0.12 });
+      });
+      note(C5 / 2, 0, 0.8, { type: 'sine', gain: 0.05 });
+    },
+  };
+
+  function sfx(name) {
+    if (!soundOn) return;
+    var cue = CUES[name];
+    if (!cue) return;
+    try {
+      var ctx = audio();
+      if (!ctx) return;
+      // Safari and Chrome both hand back a suspended context until a gesture.
+      if (ctx.state === 'suspended' && ctx.resume) ctx.resume();
+      cue();
+    } catch (e) { /* audio is a garnish; never let it break the page */ }
+  }
+
+  var soundBtn = document.getElementById('sound-toggle');
+  function paintSound() {
+    if (!soundBtn) return;
+    soundBtn.dataset.on = soundOn ? '1' : '0';
+    soundBtn.setAttribute('aria-pressed', soundOn ? 'true' : 'false');
+    soundBtn.setAttribute('aria-label', soundOn ? 'Mute sound' : 'Unmute sound');
+  }
+  if (soundBtn) {
+    paintSound();
+    soundBtn.addEventListener('click', function () {
+      soundOn = !soundOn;
+      try { localStorage.setItem(SOUND_KEY, soundOn ? 'on' : 'off'); } catch (e) {}
+      paintSound();
+      if (soundOn) sfx('hit');   // so you hear what you just turned on
+    });
+  }
+
   /* ------------------------------------------------------------ theme --- */
 
   var root = document.documentElement;
@@ -622,6 +767,7 @@
   // The full-screen moment. Dismisses on any key, click or after a beat.
   function levelUp(s) {
     if (document.querySelector('.levelup')) return;
+    sfx('levelUp');
     var el = document.createElement('div');
     el.className = 'levelup';
     el.setAttribute('role', 'status');
@@ -924,6 +1070,7 @@
     var res = el.querySelector('.check-result');
 
     if (!isRight) {
+      sfx('miss');
       el.dataset.missed = '1';
       el.dataset.shake = '1';
       setTimeout(function () { el.dataset.shake = '0'; }, 320);
@@ -943,6 +1090,7 @@
 
     var firstTry = el.dataset.missed !== '1';
     var got = recordCheck(LESSON, index, firstTry);
+    sfx(firstTry ? 'hit' : 'hitRetry');
     lockSolved(el, firstTry ? 1 : 2);
 
     if (res) {
@@ -952,6 +1100,7 @@
     }
     if (got.xp) xpPop(el.querySelector('.check-tag'), '+' + got.xp + ' XP');
     if (got.bonus) {
+      setTimeout(function () { sfx('combo'); }, 110);
       showToast(got.combo + ' in a row', '+' + got.bonus + ' XP combo bonus', 'combo');
     }
 
@@ -1283,6 +1432,7 @@
         }
       }
 
+      if (outcome.passed) sfx('trial');
       if (outcome.xp) {
         showToast('Trial passed', '+' + outcome.xp + ' XP · ' + trialEl.dataset.badge, 'badge');
       }
@@ -1335,9 +1485,17 @@
                     body: 'Keep it going tomorrow.' });
     }
 
+    // A level-up has already played its own cue from paintLevel, and it is the
+    // bigger moment -- the clear chime underneath it would only muddy it.
+    var levelled = events.some(function (e) { return e.kind === 'level'; });
+    if (!levelled) sfx('clear');
+
     showToast('+' + gained + ' XP', after.xp.toLocaleString() + ' total', 'xp');
     events.forEach(function (e, i) {
-      setTimeout(function () { showToast(e.title, e.body, e.kind); }, 450 * (i + 1));
+      setTimeout(function () {
+        if (e.kind === 'badge') sfx('badge');
+        showToast(e.title, e.body, e.kind);
+      }, 450 * (i + 1));
     });
   }
 

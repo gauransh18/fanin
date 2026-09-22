@@ -837,6 +837,12 @@ function aboutPage() {
       clears it; there is no server copy, by design.
     </p>
     <p>
+      Answers, combos, clearing a lesson and levelling up each have a short sound, synthesised
+      in the page rather than loaded from anywhere. Nothing plays before you press something,
+      and the speaker in the header mutes it for good &mdash; that choice is remembered in this
+      browser like everything else.
+    </p>
+    <p>
       The answers ship inside the page, base64-encoded, because there is no server to check them
       against. That is enough to stop a stray <code>⌘F</code> spoiling a question and it is not
       pretending to be more — if you want to read them, you can, and the explanations are the

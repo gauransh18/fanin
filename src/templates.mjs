@@ -28,6 +28,13 @@ const ICON = {
   arrow:
     '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
     '<path d="M3 8h10M9 4l4 4-4 4"/></svg>',
+  // One speaker; the waves and the slash are toggled by CSS off data-on.
+  sound:
+    '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+    '<path d="M4 7.5h2.5L10 4.5v11L6.5 12.5H4z" fill="currentColor" stroke-linejoin="round"/>' +
+    '<path class="wave" d="M12.6 7.6a3.4 3.4 0 0 1 0 4.8"/>' +
+    '<path class="wave" d="M14.9 5.3a6.6 6.6 0 0 1 0 9.4"/>' +
+    '<path class="mute" d="M13.2 7.8l4.4 4.4M17.6 7.8l-4.4 4.4"/></svg>',
 };
 
 /**
@@ -127,6 +134,8 @@ ${katex}
       <button class="search-trigger" type="button" data-search-open aria-label="Search lessons">
         ${ICON.search}<span class="search-label">Search</span><kbd>⌘K</kbd>
       </button>
+      <button class="icon-btn" type="button" id="sound-toggle" data-on="1"
+              aria-label="Mute sound" aria-pressed="true">${ICON.sound}</button>
       <button class="icon-btn" type="button" id="theme-toggle" aria-label="Switch theme">${ICON.theme}</button>
     </div>
   </div>

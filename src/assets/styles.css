@@ -3795,3 +3795,12 @@ h2:hover > .anchor, h3:hover > .anchor, h4:hover > .anchor, .anchor:focus-visibl
 .k-label { font-family: var(--mono); letter-spacing: .02em; }
 .quote-chip { border-radius: 0; font-family: var(--mono); letter-spacing: .03em; }
 .suggest-btn { font-family: var(--mono); font-size: var(--fs-xs); letter-spacing: .04em; }
+
+/* -------------------------------------------------------- sound toggle -- */
+
+#sound-toggle .wave { opacity: 1; transition: opacity .15s; }
+#sound-toggle .mute { opacity: 0; transition: opacity .15s; }
+#sound-toggle[data-on="0"] { color: var(--muted); }
+#sound-toggle[data-on="0"] .wave { opacity: 0; }
+#sound-toggle[data-on="0"] .mute { opacity: 1; }
+#sound-toggle[data-on="1"]:hover { color: var(--accent); }
