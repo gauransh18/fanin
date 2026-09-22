@@ -77,6 +77,19 @@ A paper with a "limitations" section naming real limitations is more trustworthy
 claiming uniform improvement, almost regardless of the numbers.
 :::
 
+::: check
+You cannot state a paper's contribution in one sentence after the second pass. What does that tell you?
+
+- [x] Either the paper is unclear or the contribution is marginal — and both are useful signals
+  > Almost every paper has one such sentence, usually buried mid-section. "Tile the computation so the score matrix never reaches HBM" is FlashAttention; "the fine-tuning update is low-rank, so parameterise it that way" is LoRA.
+- [ ] You need the third pass, which is where the contribution becomes clear
+  > The third pass is for papers you intend to build on. Spending hours to find out whether there is a contribution is the wrong order.
+- [ ] The contribution is empirical rather than methodological
+  > An empirical contribution states just as cleanly: this scales, that does not.
+- [ ] You lack the background to read it
+  > Sometimes true, and it is not the first hypothesis when the abstract and figures were legible.
+:::
+
 ## Deciding to reproduce
 
 Reproduction is expensive. Reasons that justify it:
@@ -124,6 +137,19 @@ reproduction fails.
 
 **5. Run multiple seeds.** From lesson 2.15, a single run tells you nothing about whether a
 difference is real.
+
+::: check
+After the first pass — five minutes on title, abstract, figures and conclusion — you stop reading. Is that a failure?
+
+- [x] No, that is the correct outcome for most papers
+  > The skill is not reading more papers; it is deciding quickly which deserve a careful read. The first pass exists to answer whether the improvement is large enough to matter to you.
+- [ ] Yes — the method section often contains the real contribution
+  > Sometimes, and if the abstract and figures suggest the effect is too small to matter, the method will not change that.
+- [ ] Yes, unless the paper has no code release
+  > A code release affects whether you can *reproduce* it, not whether it is worth reading.
+- [ ] Only if the paper is from a group you follow
+  > Provenance is a weak signal next to the size of the claimed effect relative to its error bars.
+:::
 
 ## When it does not reproduce
 

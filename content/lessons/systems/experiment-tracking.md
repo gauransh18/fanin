@@ -130,6 +130,21 @@ def run_name(cfg, provenance):
 Tag runs by the question they answer — `ablation:norm`, `sweep:lr`, `baseline` — so a search
 returns a comparable set rather than everything you have ever run.
 
+::: check
+Which of these must be versioned for a result to be reproducible?
+
+- [x] The git commit hash *and* whether the working tree was dirty
+  > A hash from a dirty tree identifies nothing.
+- [x] A content hash of the processed dataset, not the download URL
+  > Datasets get re-scraped, re-filtered and silently updated. The URL is not the data.
+- [x] The complete resolved configuration, including every default in effect
+  > Recording only the overrides leaves every default free to change underneath you.
+- [x] Library, CUDA and GPU versions, and the world size
+  > These change kernel selection and therefore numerical results — lesson 2.15's point, in operational form.
+- [ ] The wall-clock time the run started
+  > Useful for bookkeeping, and it explains no variance in the result.
+:::
+
 ## Ablations that mean something
 
 ::: key

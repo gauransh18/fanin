@@ -77,6 +77,19 @@ Two consequences that shape how transformers are optimised:
   Only raising the batch size does.
 :::
 
+::: check
+An H100 has a ridge point around 295 FLOP/byte. What follows for an operation well below it?
+
+- [x] Extra arithmetic is free in wall-clock terms, because the units are idle waiting for data
+  > This is why FlashAttention can do *more* FLOPs and run faster, and why gradient checkpointing costs far less than its 30% FLOP overhead suggests. It is the single most useful fact in performance engineering.
+- [ ] Reducing FLOPs is the highest-leverage optimisation
+  > Below the ridge, cutting FLOPs changes nothing — the data movement is the constraint.
+- [ ] The kernel is running at peak and cannot be improved
+  > It is running at $I \times BW$, which is well below peak. Raising $I$ improves it.
+- [ ] Lower precision will not help
+  > Lower precision halves the bytes moved, which below the ridge is a direct speedup.
+:::
+
 ## Fusion, quantified
 
 ```python

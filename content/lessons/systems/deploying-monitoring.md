@@ -82,6 +82,19 @@ inputs outside the expected schema. Drift here explains most model-behaviour dri
 **Business outcomes** — user retention, thumbs up/down rate, escalation rate, task completion.
 The only layer that measures what you actually care about, and the slowest to move.
 
+::: check
+Of the five preflight checks, which three ship broken most often — producing plausible output and raising no error?
+
+- [x] The tokenizer matching the checkpoint
+  > A mismatch produces fluent nonsense, which reads as a quality problem rather than a configuration one.
+- [x] Generation terminating
+  > A missing or wrong EOS token means every response runs to the length cap. The most common launch bug.
+- [x] The chat template round-tripping exactly as trained
+  > A template that differs by a newline from the training format degrades quality with nothing to point at.
+- [ ] Memory headroom under the worst-case batch
+  > When this one is wrong you get an out-of-memory error, which is loud and immediately actionable.
+:::
+
 ## Drift
 
 Two kinds, with different responses:

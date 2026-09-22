@@ -42,6 +42,19 @@ That is arithmetic intensity, and lesson 7.02 makes it into a method. FlashAtten
 (lesson 4.12) is exactly the answer "keep the tile in shared memory and never write the score
 matrix to HBM".
 
+::: check
+Why does GPU code avoid data-dependent branching?
+
+- [x] A warp of 32 threads executes one instruction in lockstep — if they take different branches, the warp runs both paths with the inactive threads masked, doubling the cost of that region
+  > It is not that branches are forbidden. It is that a warp cannot take two paths at once, so divergence is paid in serialised execution.
+- [ ] Branches are not supported in CUDA C
+  > They are ordinary C control flow and compile fine.
+- [ ] Branch prediction is absent, so every branch stalls the pipeline
+  > The cost is warp divergence, not misprediction. Uniform branches across a warp are cheap.
+- [ ] Branching prevents memory coalescing
+  > Divergent branches can disturb access patterns as a side effect; the direct cost is executing both paths.
+:::
+
 ## Coalescing
 
 When a warp reads memory, the hardware combines the 32 requests into as few transactions as

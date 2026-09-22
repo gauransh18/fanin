@@ -115,6 +115,19 @@ DDP's bucketed gradient reduction (lesson 7.05).
 prefetching can materialise several layers' parameters at once and defeat the memory saving —
 the setting exists because peak memory, not average, is what makes a run fail.
 
+::: check
+ZeRO-1 and ZeRO-2 move the same number of bytes as plain data parallelism. Why?
+
+- [x] A reduce-scatter plus an all-gather is exactly an all-reduce — so the memory savings are free in communication terms
+  > ZeRO-3 is different: it adds an all-gather of parameters per layer in the forward pass and again in the backward, which is real extra traffic for a much larger saving.
+- [ ] They compress gradients before sending them
+  > No compression is involved. The decomposition of the collective is what makes it free.
+- [ ] They communicate less often, in larger messages
+  > Bucketing does batch small messages, and that is orthogonal to the ZeRO stages.
+- [ ] They overlap communication with compute, hiding the cost
+  > Overlap hides latency and is used at every stage. The claim here is about volume, which is genuinely identical.
+:::
+
 ## CPU offload
 
 ```python

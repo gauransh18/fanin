@@ -93,6 +93,19 @@ the measured speedup is close to that. Triton kernels like this one are why
 `torch.compile`'s Inductor backend generates Triton (lesson 2.14).
 :::
 
+::: check
+What is the main conceptual difference between writing a CUDA kernel and a Triton kernel?
+
+- [x] CUDA is written from one thread's point of view; Triton is written from one block's, operating on whole arrays with the compiler handling coalescing, shared memory and vectorisation
+  > `tl.arange(0, BLOCK)` produces a vector of offsets, so a single `tl.load` fetches a block. That shift is what gets you to 80–95% of hand-tuned CUDA in Python.
+- [ ] Triton runs on the CPU and CUDA on the GPU
+  > Both compile to GPU code. Triton emits PTX.
+- [ ] Triton is interpreted, so it is slower but easier to debug
+  > It is JIT-compiled, and the performance is the point.
+- [ ] CUDA supports fusion and Triton does not
+  > Fusion is one of the main reasons to reach for Triton at all.
+:::
+
 ## Autotuning
 
 Block size, warp count and pipeline stages interact with shape and hardware in ways that are

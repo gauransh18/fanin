@@ -118,6 +118,19 @@ x = checkpoint(block, x, use_reentrant=False, context_fn=context_fn)
 Selective checkpointing typically recovers most of full checkpointing's memory saving at
 10–15% overhead instead of 33%.
 
+::: check
+Gradient checkpointing adds about 33% more FLOPs. Why is it often *faster* end to end?
+
+- [x] The memory freed allows a 2–4× larger batch, which raises arithmetic intensity on everything else and improves utilisation
+  > Measure throughput in tokens per second, not FLOPs. This is lesson 7.02's roofline argument: below the ridge, extra arithmetic is nearly free and what you actually buy is better hardware use.
+- [ ] Recomputation runs in lower precision than the original forward
+  > It runs in the same precision; the result has to match.
+- [ ] The recomputed activations are cached and reused across steps
+  > They are discarded immediately after the backward consumes them.
+- [ ] Fewer activations means less memory bandwidth spent writing them
+  > Some write traffic is saved, which is a small effect next to what the larger batch buys.
+:::
+
 ## The memory budget
 
 Estimate before running, so you know which lever to pull:
@@ -145,6 +158,13 @@ memory_budget(7e9, batch=8, seq=4096, d_model=4096, n_layers=32, checkpointing=T
 The two rows show the split clearly: state is fixed by the model and the sharding, while
 activations scale with $B \times T$. If memory grows when you raise the batch, activations
 are the term and checkpointing is the lever.
+
+::: check
+Checkpointing every $k$-th layer of an $L$-layer network gives memory $O(L/k + k)$. What is the optimal $k$?
+
+= 10
+> The expression is minimised at $k = \sqrt{L}$, giving $O(\sqrt{L})$ memory. For $L = 100$ that is every tenth layer, storing 10 checkpoints and recomputing at most 10 layers per segment.
+:::
 
 ## Related techniques
 

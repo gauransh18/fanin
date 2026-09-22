@@ -115,6 +115,19 @@ Without `no_sync`, you communicate `accum` times more than necessary. At `accum=
 the network traffic for identical results — and it is one of the most common causes of poor
 scaling efficiency.
 
+::: check
+Why must `sampler.set_epoch(epoch)` be called on a `DistributedSampler`?
+
+- [x] Without it every rank replays the same shuffle order every epoch, so the model sees an identical sequence of batches each time round
+  > The epoch number is what seeds the permutation. Forgetting it is silent: the run proceeds, the loss falls, and the effective dataset ordering never changes.
+- [ ] It tells the sampler which rank it is running on
+  > The rank is fixed at construction. The epoch is what varies.
+- [ ] It resets the gradient accumulation counter
+  > The sampler has nothing to do with gradients.
+- [ ] It is only needed when `shuffle=False`
+  > With `shuffle=False` there is no permutation to seed. It matters precisely when shuffling is on.
+:::
+
 ## Scaling the batch and the learning rate
 
 $N$ ranks at batch $B$ each gives an effective batch of $NB$. Gradient noise falls as

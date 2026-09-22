@@ -121,6 +121,19 @@ for alpha in (0.6, 0.8, 0.9):
 Acceptance rate is everything, and it depends on how well the draft matches the target. A
 draft from the same family and training data does far better than a generic small model.
 
+::: check
+Speculative decoding is *exact* — the output distribution matches standard sampling. Where does the speedup come from, then?
+
+- [x] Scoring $k$ already-known tokens costs almost what scoring 1 costs, because decode is memory-bound and the weights are read once either way
+  > If the draft is right a fraction $\alpha$ of the time, you get roughly $1/(1-\alpha)$ tokens per target forward pass. It is the same parallelism that makes training efficient, applied to candidate tokens.
+- [ ] The draft model answers most queries, so the target model runs rarely
+  > The target model verifies *every* token. Nothing is accepted without it.
+- [ ] It trades a small amount of quality for speed
+  > The rejection-sampling rule is constructed precisely so that it does not. That exactness is the remarkable part.
+- [ ] It caches common continuations across requests
+  > That is prefix caching, a different technique.
+:::
+
 ## Getting a draft model
 
 - **A smaller model from the same family** — Llama 7B drafting for Llama 70B. Typical $\alpha$

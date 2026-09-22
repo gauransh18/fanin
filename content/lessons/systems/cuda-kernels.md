@@ -145,6 +145,19 @@ The `TORCH_CHECK` lines are load-bearing. A kernel handed a non-contiguous tenso
 whatever is at those addresses and produces silently wrong results — the worst possible
 failure mode, since nothing errors.
 
+::: check
+A CUDA kernel launched with $\lceil n/256 \rceil$ blocks of 256 threads includes `if (i < n)`. What happens without that guard?
+
+- [x] The last block has threads past the end of the array and writes out of bounds
+  > 256 rarely divides $n$, so the guard is not optional. Out-of-bounds writes corrupt whatever is next in memory and surface far from the kernel that caused them.
+- [ ] Nothing; CUDA bounds-checks device memory
+  > It does not. That is what `compute-sanitizer` exists to find.
+- [ ] The extra threads idle harmlessly
+  > They execute the same code as everyone else, including the store.
+- [ ] The kernel fails to launch
+  > It launches happily and corrupts memory.
+:::
+
 ## Errors are asynchronous
 
 ::: warning

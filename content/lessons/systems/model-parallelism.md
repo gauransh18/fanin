@@ -111,6 +111,19 @@ for p in (4, 8):
 **Interleaved scheduling** (1F1B with virtual stages) assigns each rank several
 non-contiguous layer groups, reducing the bubble further at the cost of more communication.
 
+::: check
+Tensor parallelism splits the transformer MLP column-parallel then row-parallel. Why that pairing specifically?
+
+- [x] It gives one all-reduce per MLP block instead of two — the elementwise nonlinearity needs no communication after a column split, and the row split produces partial sums that combine in a single reduce
+  > Splitting both by columns, or both by rows, would need communication between the two matrices as well. The same pattern applies to attention: split by heads, then row-split $W_O$ and all-reduce once.
+- [ ] It keeps the activation memory balanced across ranks
+  > Memory balance is a consequence; the communication count is the reason.
+- [ ] Row-parallel matrices cannot be first in a chain
+  > They can, at the cost of an extra all-reduce to assemble their input.
+- [ ] It avoids materialising the $4d$ hidden activation
+  > The hidden activation is materialised, sharded across ranks.
+:::
+
 ## Sequence parallelism
 
 Split the **sequence** dimension across devices. Attention needs all positions, so each rank

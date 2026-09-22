@@ -94,6 +94,19 @@ For a 7B model on 2T tokens serving a million requests a day, inference FLOPs ma
 FLOPs in about twelve days. After that, everything is inference — which is the argument for
 overtraining a smaller model (lesson 5.03) and for quantization (lesson 5.12).
 
+::: check
+Where do naive training cost estimates most often go wrong?
+
+- [x] They omit the overhead factor — a frontier run does not spend 100% of its wall clock making forward progress
+  > Failures, restarts from checkpoints, stragglers and debugging time add up, and a multiplier around 1.35 is typical. The FLOP arithmetic itself is the easy part.
+- [ ] They use $6N$ instead of $2N$ per token
+  > $6N$ is right for a training step — one unit forward and two backward. $2N$ is the forward-only inference figure.
+- [ ] They assume 100% MFU
+  > Anyone writing the estimate usually knows to discount MFU. It is the *non-compute* time that gets forgotten.
+- [ ] They forget that GPUs are billed per second rather than per hour
+  > Billing granularity is a rounding detail next to a 35% overhead.
+:::
+
 ## What actually reduces cost
 
 Ordered by typical impact:

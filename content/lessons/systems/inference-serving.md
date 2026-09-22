@@ -61,6 +61,19 @@ class ContinuousBatchScheduler:
 The gain is 2–4× throughput over static batching on realistic traffic, and it is the single
 biggest improvement available.
 
+::: check
+At batch 1, decoding a 7B bf16 model reads 14 GB per token. On 3.35 TB/s of bandwidth, what is the floor?
+
+- [x] About 4.2 ms per token — roughly 239 tokens/second, however fast the arithmetic is
+  > Batching is the fix and it is nearly free: $B$ sequences read the same 14 GB once and do $B$ times the arithmetic, so throughput rises linearly with $B$ until you cross the roofline ridge. Everything else in serving is about making large batches possible.
+- [ ] About 4.2 μs per token, which is negligible
+  > Three orders of magnitude out — 14 GB at 3.35 TB/s is milliseconds, not microseconds.
+- [ ] It depends on the model's FLOP count, not its size
+  > Decode is memory-bound, so bytes read is the binding quantity, not arithmetic.
+- [ ] There is no floor; a faster GPU removes it
+  > A faster GPU with the same bandwidth has the same floor. Bandwidth is what moves it.
+:::
+
 ## Paged attention
 
 A contiguous KV cache per sequence must be allocated for the *maximum* possible length. A

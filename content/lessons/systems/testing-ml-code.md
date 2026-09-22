@@ -66,6 +66,19 @@ def test_causal_mask_no_leakage():
 Both assertions matter. The first catches leakage; the second catches a model that is
 ignoring its input entirely, which would pass the first trivially.
 
+::: check
+Why can't ML code be tested the way ordinary code is?
+
+- [x] A bug rarely crashes — it produces a model that trains to a slightly worse loss, and there is usually no independently computable correct output to assert against
+  > So tests target *properties* that must hold whatever the weights are: shapes and dtypes, claimed invariances, gradient finiteness, information flow, and agreement with a slow obviously-correct reference.
+- [ ] Because training is non-deterministic, so no assertion can be stable
+  > Non-determinism complicates numerical regression tests and does not stop shape, causality or gradient tests being exact.
+- [ ] Because models are too large to run in CI
+  > A two-layer model with a 1,000-token vocabulary tests the same code paths in milliseconds.
+- [ ] Because the correct output depends on the training data
+  > That is part of why there is no reference output, and the deeper issue is that the property, not the value, is what you can check.
+:::
+
 ## Invariances
 
 Test what the architecture claims:
@@ -170,6 +183,19 @@ def test_optimised_attention_matches_reference():
 ```
 
 Use float64 for the comparison so tolerance is not masking a real discrepancy.
+
+::: check
+Which test would catch a causal mask that accidentally lets position $i$ see position $i+1$?
+
+- [x] Perturb a token at position $j$ and assert that outputs at every position $i < j$ are unchanged
+  > It is an exact, weight-independent property — either information flowed backwards or it did not. A loss curve would never tell you, because a leaky mask makes training *easier*.
+- [ ] Asserting the loss decreases over 100 steps
+  > A model with a leaky mask trains beautifully. That is what makes the bug dangerous.
+- [ ] Comparing the output shape against the expected shape
+  > Shape is unaffected by which positions attend to which.
+- [ ] Checking that all logits are finite
+  > Finiteness would catch an all-$-\infty$ row, which is the opposite failure.
+:::
 
 ## The integration test
 
