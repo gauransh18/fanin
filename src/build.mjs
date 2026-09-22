@@ -110,9 +110,19 @@ function trackNav(track, currentSlug) {
     )
     .join('\n');
 
-  return `<nav class="track-nav" aria-label="${esc(track.title)} lessons">
-    <div class="track-nav-head">${trackDot(track)}<strong>${esc(track.title)}</strong></div>
-    <ol>${items}</ol>
+  const ids = track.lessons.map(([slug]) => `${track.id}/${slug}`).join(' ');
+
+  return `<nav class="track-nav" aria-label="${esc(track.title)} lessons"
+       style="--track:${track.fill};--track-ink:${track.inkLight};--track-ink-dark:${track.inkDark}">
+    <div class="track-nav-head">
+      <span class="tn-ch">CH ${String(tracks.indexOf(track) + 1).padStart(2, '0')}</span>
+      <strong>${esc(track.short)}</strong>
+      <span class="tn-meter" data-track-progress data-track-lessons="${ids}">
+        <span class="tn-count" data-progress-label>0 / ${track.lessons.length}</span>
+        <span class="progress tn-bar"><i></i></span>
+      </span>
+    </div>
+    <ol class="tn-list">${items}</ol>
     <div class="track-nav-other">
       <p class="spine-title">Other tracks</p>
       <ol>${others}</ol>
@@ -136,7 +146,7 @@ function lessonRows(track, present) {
 
 // ------------------------------------------------------------------ pages --
 
-function landingPage(present) {
+function landingPage(present, trialTracks, checkCount) {
   setPage('/');
   const done = allLessons.filter((l) => present.has(lessonId(l))).length;
 
@@ -195,40 +205,41 @@ function landingPage(present) {
 
   const body = `
 <section class="hero">
-  <div class="wrap hero-grid">
-    <div>
-      <p class="eyebrow">${totals.lessons} lessons · ${totals.tracks} tracks · no account</p>
-      <h1>The AI research curriculum, <em>fully unlocked</em>.</h1>
-      <p class="hero-lede">
-        Linear algebra to distributed training, in the order the ideas actually depend
-        on each other. Every lesson is open — there is no pro tier, no trial, and nothing
-        behind an email form.
-      </p>
-      <div class="hero-actions">
-        <a class="btn btn-primary" href="${u('/learn/math/vectors-norms-geometry/')}">Start lesson 1.01 ${ICON.arrow}</a>
-        <a class="btn btn-ghost" href="${u('/curriculum/')}">See all ${totals.lessons} lessons</a>
-      </div>
+  <div class="wrap hero-inner">
+    <p class="eyebrow">AI research curriculum · no account, no tier, no paywall</p>
+    <h1>Learn it by <em>answering</em>.</h1>
+    <p class="hero-lede">
+      ${totals.lessons} lessons from linear algebra to distributed training, in the order
+      the ideas actually depend on each other — with ${checkCount} questions inside them,
+      seven trials to clear, and the whole path on one screen.
+    </p>
 
-      <!-- Populated from local storage; stays hidden for a first-time reader. -->
-      <a class="resume" id="resume-card" href="#" hidden>
-        <span class="resume-label">Pick up where you left off</span>
-        <span class="resume-title"><b data-resume-number></b> <span data-resume-title></span></span>
-        <span class="resume-meta"><span data-resume-done>0</span> of ${
-          totals.lessons
-        } complete ${ICON.arrow}</span>
-      </a>
+    <!-- Populated from local storage; stays hidden for a first-time reader. -->
+    <a class="resume" id="resume-card" href="#" hidden>
+      <span class="resume-label">Resume</span>
+      <span class="resume-title"><b data-resume-number></b> <span data-resume-title></span></span>
+      <span class="resume-meta"><span data-resume-done>0</span> / ${
+        totals.lessons
+      } ${ICON.arrow}</span>
+    </a>
+
+    <div class="hero-actions">
+      <a class="btn btn-primary btn-lg" href="${u('/learn/math/vectors-norms-geometry/')}">Begin at 1.01 ${ICON.arrow}</a>
+      <a class="btn btn-ghost" href="${u('/about/')}">How it works</a>
     </div>
-    <div>${spine()}</div>
+
+    <ul class="readout">
+      <li><b>${totals.lessons}</b><span>lessons</span></li>
+      <li><b>${checkCount}</b><span>questions</span></li>
+      <li><b>${trialTracks.size}</b><span>trials</span></li>
+      <li><b>${hours(totals.minutes)}</b><span>to read</span></li>
+      <li><b>$0</b><span>forever</span></li>
+    </ul>
   </div>
 </section>
 
 <div class="wrap">
-  <div class="stats">
-    <div class="stat"><div class="stat-value">${totals.lessons}</div><div class="stat-label">lessons, all readable now</div></div>
-    <div class="stat"><div class="stat-value">${hours(totals.minutes)}</div><div class="stat-label">of written material</div></div>
-    <div class="stat"><div class="stat-value">${totals.tracks}</div><div class="stat-label">tracks, in dependency order</div></div>
-    <div class="stat"><div class="stat-value">$0</div><div class="stat-label">now and permanently</div></div>
-  </div>
+  ${pathMap(present, trialTracks)}
 </div>
 
 <section class="section">
@@ -598,6 +609,22 @@ async function lessonPage(lesson, raw) {
       <span>${lesson.number}</span>
     </div>
 
+    <!-- The briefing bar: which channel, how far in, what it is worth. -->
+    <div class="briefing">
+      <a class="briefing-track" href="${u(`/learn/${track.id}/`)}">
+        <span class="briefing-ch">CH ${String(tracks.indexOf(track) + 1).padStart(2, '0')}</span>
+        <span class="briefing-name">${esc(track.short)}</span>
+      </a>
+      <span class="briefing-pips" data-pips aria-hidden="true">${
+        checks.length
+          ? Array.from({ length: checks.length }, (_, k) => `<i data-pip="${k}"></i>`).join('')
+          : ''
+      }</span>
+      <span class="briefing-worth">
+        <b>${lesson.minutes * 5 + checks.length * 20}</b><i>XP</i>
+      </span>
+    </div>
+
     <header class="lesson-head">
       <div class="lesson-kicker">
         <span class="lesson-num">${lesson.number}</span>
@@ -629,7 +656,7 @@ async function lessonPage(lesson, raw) {
     <div class="prose">${contentHtml}</div>
 
     <footer class="lesson-foot">
-      <div class="complete-row">
+      <div class="complete-row console-commit">
         <button class="complete-btn" type="button" id="complete-btn" data-lesson="${lessonId(
           lesson
         )}" data-minutes="${lesson.minutes}" data-checks="${checks.length}"
@@ -1141,10 +1168,10 @@ async function build() {
     }
   }
 
-  await write('index.html', landingPage(present));
   const trialTracks = new Set(
     tracks.filter((t) => (pools.get(t.id) || []).length >= TRIAL_SIZE).map((t) => t.id)
   );
+  await write('index.html', landingPage(present, trialTracks, checkCount));
   await write(path.join('curriculum', 'index.html'), curriculumPage(present, trialTracks));
   await write(path.join('about', 'index.html'), aboutPage());
   await write(path.join('progress', 'index.html'), progressPage());

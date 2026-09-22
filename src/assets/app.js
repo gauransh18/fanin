@@ -900,6 +900,11 @@
 
   function paintChecks() {
     var n = answeredCount();
+    var a = answered(LESSON);
+    document.querySelectorAll('[data-pip]').forEach(function (pip) {
+      var how = a[pip.dataset.pip];
+      pip.dataset.state = how === 1 ? 'first' : how === 2 ? 'retry' : '0';
+    });
     document.querySelectorAll('[data-tally] .tally-n').forEach(function (el) {
       el.textContent = String(n);
     });
@@ -920,6 +925,8 @@
 
     if (!isRight) {
       el.dataset.missed = '1';
+      el.dataset.shake = '1';
+      setTimeout(function () { el.dataset.shake = '0'; }, 320);
       breakCombo();
       (chosenRows || []).forEach(function (row) {
         row.dataset.show = '1';

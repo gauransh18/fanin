@@ -3042,3 +3042,442 @@ h2:hover > .anchor, h3:hover > .anchor, h4:hover > .anchor, .anchor:focus-visibl
   .levelup, .levelup-card { animation: none; }
   .hud-ring-fill { transition: none; }
 }
+
+/* ---------------------------------------------------------- the console -- */
+/* The landing page opens on the instrument, not on a pitch. */
+
+.hero {
+  padding: 3rem 0 2rem;
+  border-bottom: 0;
+  background:
+    radial-gradient(90% 60% at 50% -10%, color-mix(in srgb, var(--accent) 7%, transparent), transparent 70%),
+    var(--bg);
+}
+.hero-inner { max-width: 46rem; }
+.hero .eyebrow {
+  font: 500 var(--fs-xs)/1 var(--mono);
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.hero h1 {
+  margin: .9rem 0 .85rem;
+  font: 600 var(--fs-3xl)/1.05 var(--sans);
+  letter-spacing: -.035em;
+}
+.hero h1 em {
+  font-style: normal;
+  color: var(--accent);
+  text-shadow: 0 0 28px var(--glow);
+}
+.hero-lede {
+  max-width: 40rem;
+  margin: 0 0 1.5rem;
+  font: 400 var(--fs-md)/1.65 var(--sans);
+  color: var(--ink-2);
+}
+.hero-actions { display: flex; flex-wrap: wrap; gap: .6rem; margin-bottom: 1.8rem; }
+
+/* The readout strip: the site's own vital signs, in the HUD's language. */
+.readout {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+.readout li {
+  flex: 1 1 5.5rem;
+  padding: .85rem 1rem .8rem 0;
+  border-right: 1px solid var(--rule);
+}
+.readout li:last-child { border-right: 0; }
+.readout b {
+  display: block;
+  font: 600 var(--fs-lg)/1.1 var(--mono);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -.02em;
+  color: var(--ink);
+}
+.readout span {
+  display: block;
+  margin-top: .2rem;
+  font: 400 var(--fs-xs)/1 var(--mono);
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* The resume card, as a live console row rather than a marketing panel. */
+.resume {
+  --notch: 8px;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: .3rem 1rem;
+  margin-bottom: 1.4rem;
+  padding: .85rem 1.1rem;
+  text-decoration: none;
+  background:
+    linear-gradient(90deg, color-mix(in srgb, var(--accent) 10%, transparent), transparent 40%),
+    linear-gradient(180deg, var(--panel-top), var(--panel-bot)),
+    var(--surface);
+  border: 1px solid color-mix(in srgb, var(--accent) 30%, var(--line));
+  box-shadow: inset 0 1px 0 var(--edge), 0 0 0 0 var(--glow);
+  clip-path: polygon(
+    var(--notch) 0, 100% 0, 100% calc(100% - var(--notch)),
+    calc(100% - var(--notch)) 100%, 0 100%, 0 var(--notch));
+  transition: box-shadow .2s, border-color .2s;
+}
+.resume:hover { box-shadow: inset 0 1px 0 var(--edge), 0 0 26px -6px var(--glow); }
+.resume-label {
+  grid-row: span 2;
+  align-self: center;
+  padding-right: 1rem;
+  border-right: 1px solid var(--rule);
+  font: 600 var(--fs-xs)/1 var(--mono);
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.resume-title {
+  font: 500 var(--fs-md)/1.3 var(--sans);
+  color: var(--ink);
+}
+.resume-title b {
+  font-family: var(--mono);
+  font-weight: 600;
+  color: var(--accent);
+}
+.resume-meta {
+  grid-row: span 2;
+  align-self: center;
+  display: inline-flex;
+  align-items: center;
+  gap: .4rem;
+  font: 500 var(--fs-sm)/1 var(--mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+}
+.resume-meta svg { width: .875rem; height: .875rem; }
+
+@media (max-width: 560px) {
+  .hero { padding-top: 2rem; }
+  .resume { grid-template-columns: 1fr auto; }
+  .resume-label { grid-row: auto; border-right: 0; padding-right: 0; }
+  .resume-meta { grid-row: auto; }
+  .hero-actions .btn { width: 100%; justify-content: center; }
+}
+
+/* The path, promoted from a widget to the instrument it is. */
+.path {
+  --notch: 12px;
+  margin: 2rem 0 3rem;
+  padding: 1.6rem 1.5rem 1.3rem;
+  background:
+    linear-gradient(180deg, var(--panel-top), var(--panel-bot)),
+    repeating-linear-gradient(0deg, transparent 0 3px, color-mix(in srgb, var(--ink) 2%, transparent) 3px 4px),
+    var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 0;
+  box-shadow: inset 0 1px 0 var(--edge), var(--shadow);
+  clip-path: polygon(
+    var(--notch) 0, 100% 0, 100% calc(100% - var(--notch)),
+    calc(100% - var(--notch)) 100%, 0 100%, 0 var(--notch));
+}
+.path-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: .4rem 1rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--rule);
+}
+.path-head h2 {
+  margin: 0;
+  font: 600 var(--fs-sm)/1 var(--mono);
+  letter-spacing: .2em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.path-sub { font: 400 var(--fs-sm)/1.4 var(--sans); }
+
+.path-name {
+  font: 500 var(--fs-sm)/1.3 var(--mono);
+  letter-spacing: .02em;
+  text-transform: uppercase;
+}
+.path-num { font-size: var(--fs-xs); opacity: .7; }
+.path-label { border-left-width: 3px; }
+.path-track { align-items: center; }
+
+/* The node gains a channel glow once it is cleared. */
+.node[data-done="1"] {
+  box-shadow: 0 0 10px -2px color-mix(in srgb, var(--track, var(--accent)) 70%, transparent);
+}
+.node[data-current="1"] {
+  box-shadow: 0 0 0 3px var(--accent-soft), 0 0 14px -2px var(--glow);
+  animation: node-pulse 2.4s ease-in-out infinite;
+}
+@keyframes node-pulse {
+  0%, 100% { box-shadow: 0 0 0 3px var(--accent-soft), 0 0 14px -2px var(--glow); }
+  50%      { box-shadow: 0 0 0 4px transparent, 0 0 22px 0 var(--glow); }
+}
+.node-trial[data-passed="1"] {
+  box-shadow: 0 0 14px -2px color-mix(in srgb, var(--track, var(--accent)) 80%, transparent);
+}
+@media (prefers-reduced-motion: reduce) {
+  .node[data-current="1"] { animation: none; }
+}
+
+/* --------------------------------------------------------- the briefing -- */
+/* A lesson opens on its channel, its pips and what it is worth. The prose
+   underneath keeps its reading measure and its serif — this band is the frame
+   around it, not a change to it. */
+
+.briefing {
+  --notch: 6px;
+  display: flex;
+  align-items: center;
+  gap: .9rem;
+  margin: 0 0 1.6rem;
+  padding: .5rem .85rem .5rem .6rem;
+  background:
+    linear-gradient(90deg, color-mix(in srgb, var(--track, var(--accent)) 14%, transparent), transparent 55%),
+    linear-gradient(180deg, var(--panel-top), var(--panel-bot)),
+    var(--surface);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--track-ink, var(--track, var(--accent)));
+  box-shadow: inset 0 1px 0 var(--edge);
+  clip-path: polygon(
+    0 0, 100% 0, 100% calc(100% - var(--notch)),
+    calc(100% - var(--notch)) 100%, 0 100%);
+}
+:root[data-theme="dark"] .briefing,
+:root:not([data-theme="light"]) .briefing { border-left-color: var(--track-ink-dark, var(--track, var(--accent))); }
+
+.briefing-track {
+  display: inline-flex;
+  align-items: baseline;
+  gap: .5rem;
+  text-decoration: none;
+  margin-right: auto;
+}
+.briefing-ch {
+  font: 600 var(--fs-xs)/1 var(--mono);
+  letter-spacing: .12em;
+  color: var(--muted);
+}
+.briefing-name {
+  font: 500 var(--fs-sm)/1 var(--mono);
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+.briefing-track:hover .briefing-name { color: var(--accent); }
+
+.briefing-pips { display: inline-flex; gap: .28rem; }
+.briefing-pips i {
+  width: .5rem;
+  height: .5rem;
+  border-radius: 50%;
+  border: 1.5px solid var(--line-strong);
+  transition: background .2s, border-color .2s, box-shadow .2s;
+}
+.briefing-pips i[data-state="first"] {
+  background: var(--good);
+  border-color: var(--good);
+  box-shadow: 0 0 8px -1px color-mix(in srgb, var(--good) 70%, transparent);
+}
+.briefing-pips i[data-state="retry"] {
+  background: var(--warn);
+  border-color: var(--warn);
+}
+
+.briefing-worth {
+  display: inline-flex;
+  align-items: baseline;
+  gap: .2rem;
+  padding-left: .9rem;
+  border-left: 1px solid var(--rule);
+  font: 600 var(--fs-sm)/1 var(--mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+.briefing-worth i { font-style: normal; font-size: .6875em; color: var(--muted); }
+
+@media (max-width: 480px) {
+  .briefing { gap: .55rem; padding-inline: .5rem .6rem; }
+  .briefing-worth { padding-left: .55rem; }
+}
+
+/* The lesson number, as an instrument reading rather than a label. */
+.lesson-num {
+  font: 600 var(--fs-sm)/1 var(--mono) !important;
+  letter-spacing: .04em;
+  color: var(--accent) !important;
+}
+
+/* ------------------------------------------------------------- checks --- */
+/* Heavier than a callout, so it reads as a thing to do. */
+
+.check {
+  --notch: 10px;
+  border-radius: 0;
+  border-left: 3px solid color-mix(in srgb, var(--accent) 55%, var(--line));
+  background:
+    linear-gradient(180deg, var(--panel-top), var(--panel-bot)),
+    var(--surface);
+  box-shadow: inset 0 1px 0 var(--edge), var(--shadow);
+  clip-path: polygon(
+    0 0, 100% 0, 100% calc(100% - var(--notch)),
+    calc(100% - var(--notch)) 100%, 0 100%);
+}
+.check[data-state="solved"] {
+  border-left-color: var(--good);
+  box-shadow: inset 0 1px 0 var(--edge), 0 0 30px -14px color-mix(in srgb, var(--good) 70%, transparent);
+}
+.check-tag {
+  letter-spacing: .18em;
+  font-family: var(--mono);
+}
+.opt { border-radius: 3px; }
+.opt[data-mark="right"] {
+  box-shadow: 0 0 20px -8px color-mix(in srgb, var(--good) 80%, transparent);
+}
+.opt:not(:disabled):active { transform: translateY(1px) scale(.997); }
+
+/* A miss shakes. A hit pops. Both are over in a quarter of a second. */
+.check[data-shake="1"] { animation: check-shake .3s ease-in-out; }
+@keyframes check-shake {
+  0%, 100% { transform: translateX(0); }
+  20%      { transform: translateX(-5px); }
+  55%      { transform: translateX(4px); }
+  80%      { transform: translateX(-2px); }
+}
+.opt[data-mark="right"] { animation: opt-pop .32s cubic-bezier(.2, 1.5, .4, 1); }
+@keyframes opt-pop {
+  0%   { transform: scale(1); }
+  45%  { transform: scale(1.022); }
+  100% { transform: scale(1); }
+}
+
+.check-result { font-family: var(--mono); letter-spacing: .01em; }
+
+/* ------------------------------------------------------- commit bar ----- */
+
+.console-commit {
+  --notch: 8px;
+  padding: .9rem 1.1rem;
+  background:
+    linear-gradient(180deg, var(--panel-top), var(--panel-bot)),
+    var(--surface);
+  border: 1px solid var(--line);
+  box-shadow: inset 0 1px 0 var(--edge);
+  clip-path: polygon(
+    var(--notch) 0, 100% 0, 100% calc(100% - var(--notch)),
+    calc(100% - var(--notch)) 100%, 0 100%, 0 var(--notch));
+}
+.complete-btn { font-family: var(--mono); letter-spacing: .04em; }
+.complete-btn[data-ready="1"] {
+  background: color-mix(in srgb, var(--good) 12%, transparent);
+  box-shadow: 0 0 26px -8px color-mix(in srgb, var(--good) 80%, transparent);
+}
+.check-tally { font-family: var(--mono); }
+
+@media (prefers-reduced-motion: reduce) {
+  .check[data-shake="1"], .opt[data-mark="right"] { animation: none; }
+}
+
+/* ----------------------------------------------------- the channel rail -- */
+/* The lesson sidebar as the track's own instrument: channel number, a meter,
+   and a rail with a marker per lesson. */
+
+.track-nav-head {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: .2rem .55rem;
+  align-items: baseline;
+  padding: .7rem .75rem .75rem;
+  margin-bottom: .6rem;
+  background:
+    linear-gradient(90deg, color-mix(in srgb, var(--track, var(--accent)) 16%, transparent), transparent 70%),
+    transparent;
+  border-left: 3px solid var(--track-ink, var(--track, var(--accent)));
+}
+:root[data-theme="dark"] .track-nav-head,
+:root:not([data-theme="light"]) .track-nav-head {
+  border-left-color: var(--track-ink-dark, var(--track, var(--accent)));
+}
+.track-nav-head .track-dot { display: none; }
+.tn-ch {
+  font: 600 var(--fs-xs)/1 var(--mono);
+  letter-spacing: .12em;
+  color: var(--muted);
+}
+.track-nav-head strong {
+  font: 500 var(--fs-sm)/1 var(--mono);
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+.tn-meter { grid-column: 1 / -1; display: grid; gap: .3rem; margin-top: .35rem; }
+.tn-count {
+  font: 400 var(--fs-xs)/1 var(--mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+}
+.tn-bar { height: 3px; }
+.tn-bar > i { background: var(--track-ink, var(--accent)); }
+:root[data-theme="dark"] .tn-bar > i,
+:root:not([data-theme="light"]) .tn-bar > i { background: var(--track-ink-dark, var(--accent)); }
+.tn-meter[data-complete="1"] .tn-count { color: var(--good); }
+
+/* Each row carries its own state marker on a continuous rail. */
+.tn-list { position: relative; }
+.tn-list::before {
+  content: "";
+  position: absolute;
+  left: .72rem;
+  top: .4rem;
+  bottom: .4rem;
+  width: 1px;
+  background: var(--line);
+}
+.track-nav .tn-list > li > a { position: relative; padding-left: 1.7rem; }
+.track-nav .tn-list > li > a::before {
+  content: "";
+  position: absolute;
+  left: .47rem;
+  top: 50%;
+  width: .5rem;
+  height: .5rem;
+  margin-top: -.25rem;
+  border-radius: 50%;
+  background: var(--bg);
+  border: 1.5px solid var(--line-strong);
+  transition: background .2s, border-color .2s, box-shadow .2s;
+}
+.track-nav .tn-list > li > a[data-done="1"]::before {
+  background: var(--track-ink, var(--accent));
+  border-color: var(--track-ink, var(--accent));
+  box-shadow: 0 0 8px -1px color-mix(in srgb, var(--track, var(--accent)) 80%, transparent);
+}
+:root[data-theme="dark"] .track-nav .tn-list > li > a[data-done="1"]::before,
+:root:not([data-theme="light"]) .track-nav .tn-list > li > a[data-done="1"]::before {
+  background: var(--track-ink-dark, var(--accent));
+  border-color: var(--track-ink-dark, var(--accent));
+}
+.track-nav .tn-list > li > a[aria-current="page"]::before {
+  border-color: var(--accent);
+  border-width: 2px;
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+.track-nav .n { font-family: var(--mono); }
+.spine-title { font-family: var(--mono); letter-spacing: .16em; }
+.toc-rail .spine-title { letter-spacing: .16em; }
