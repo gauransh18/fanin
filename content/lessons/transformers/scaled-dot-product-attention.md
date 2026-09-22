@@ -45,8 +45,8 @@ $S_{ij}$ is the dot product of query $i$ with key $j$ — the alignment measure 
 
 This is the part worth deriving properly.
 
-Suppose $\mathbf{q}$ and $\mathbf{k}$ have independent components with mean 0 and variance
-1. Then by lesson 1.11's rules,
+Suppose $\mathbf{q}$ and $\mathbf{k}$ have independent components with mean 0
+and variance 1. Then by lesson 1.11's rules,
 
 $$
 \mathbb{E}[\mathbf{q}\cdot\mathbf{k}] = 0, \qquad

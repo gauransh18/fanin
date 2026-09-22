@@ -5,12 +5,13 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { tracks, allLessons } from '../content/curriculum.mjs';
-import { parseFrontmatter } from './markdown.mjs';
+import { parseFrontmatter, parseCheck } from './markdown.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const DIST = path.join(ROOT, 'dist');
 const errors = [];
 const warnings = [];
+const checkCounts = new Map();
 
 async function walk(dir) {
   const out = [];
@@ -36,6 +37,36 @@ for (const lesson of allLessons) {
   const { data, body } = parseFrontmatter(raw);
   if (!data.summary) errors.push(`${lesson.slug}: no summary in frontmatter`);
   if (body.trim().length < 500) warnings.push(`${lesson.slug}: body under 500 chars`);
+
+  // Every ::: check block must parse, and a lesson is expected to have some.
+  const blocks = body.match(/^:::[ \t]*check[ \t]*$[\s\S]*?^:::[ \t]*$/gm) || [];
+  for (const [n, block] of blocks.entries()) {
+    const inner = block.split('\n').slice(1, -1).join('\n');
+    try {
+      parseCheck(inner);
+    } catch (err) {
+      errors.push(`${lesson.slug}: check ${n + 1}: ${err.message}`);
+    }
+  }
+  checkCounts.set(lesson.slug, blocks.length);
+
+  // A wrapped line whose next line begins "1. " turns that sentence into a
+  // one-item ordered list. It happens silently and only shows up in the render,
+  // so it is caught here. A list opening at 2 or higher after prose is a
+  // genuine continuation and is left alone.
+  {
+    const lines = body.split('\n');
+    for (let i = 1; i < lines.length; i++) {
+      if (!/^1\.\s+\S/.test(lines[i])) continue;
+      const prev = lines[i - 1];
+      if (!prev.trim()) continue;
+      if (/^\s*(\d+\.|[-*>]|\||:::|```)/.test(prev)) continue;
+      errors.push(
+        `${lesson.slug}:${i + 1}: "${lines[i].slice(0, 40)}" reads as a list item ` +
+        `because the line above wraps — reflow it`
+      );
+    }
+  }
 
   for (const p of [].concat(data.prereqs || [])) {
     if (!slugs.has(p)) errors.push(`${lesson.slug}: prereq "${p}" is not a lesson slug`);
@@ -98,11 +129,22 @@ for (const entry of index) {
 }
 
 // --- 4. Report ---
+const totalChecks = [...checkCounts.values()].reduce((a, b) => a + b, 0);
+const withoutChecks = [...checkCounts.entries()].filter(([, n]) => n === 0);
+if (withoutChecks.length) {
+  warnings.push(
+    `${withoutChecks.length} lesson(s) have no checks: ` +
+    withoutChecks.slice(0, 6).map(([slug]) => slug).join(', ') +
+    (withoutChecks.length > 6 ? ', …' : '')
+  );
+}
+
 const stats = {
   tracks: tracks.length,
   lessons: allLessons.length,
   pages: files.length,
   internalLinks: linkCount,
+  checks: totalChecks,
 };
 console.log(Object.entries(stats).map(([k, v]) => `${k}: ${v}`).join('  ·  '));
 if (warnings.length) {

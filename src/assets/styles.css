@@ -29,6 +29,8 @@
   --accent-line:   #EBC9D9;
   --good:          #1B7A59;
   --good-soft:     #E7F5EF;
+  --bad:           #B4271F;
+  --bad-soft:      #FCECEA;
   --warn:          #9A5B0C;
   --warn-soft:     #FBF1E2;
   --shadow:        0 1px 2px rgba(20, 23, 31, .05), 0 8px 24px -12px rgba(20, 23, 31, .14);
@@ -86,6 +88,8 @@
     --accent-line:   #40202F;
     --good:          #4FD1A0;
     --good-soft:     #0F221C;
+    --bad:           #FF8A80;
+    --bad-soft:      #2A1414;
     --warn:          #E0A94A;
     --warn-soft:     #241C0F;
     --shadow:        0 1px 2px rgba(0, 0, 0, .5), 0 10px 30px -14px rgba(0, 0, 0, .8);
@@ -125,6 +129,8 @@
   --accent-line:   #40202F;
   --good:          #4FD1A0;
   --good-soft:     #0F221C;
+  --bad:           #FF8A80;
+  --bad-soft:      #2A1414;
   --warn:          #E0A94A;
   --warn-soft:     #241C0F;
   --shadow:        0 1px 2px rgba(0, 0, 0, .5), 0 10px 30px -14px rgba(0, 0, 0, .8);
@@ -2232,4 +2238,209 @@ h2:hover > .anchor, h3:hover > .anchor, h4:hover > .anchor, .anchor:focus-visibl
 @keyframes toast-out { to   { opacity: 0; transform: translateY(-4px); } }
 @media (prefers-reduced-motion: reduce) {
   .toast, .toast[data-leaving] { animation: none; }
+}
+
+/* ---------------------------------------------------------------- checks -- */
+/* A question inside the lesson. It reads as a thing to do, not a thing to
+   read: solid card, its own tag, options that behave like buttons. */
+
+.check {
+  margin: 2rem 0;
+  padding: 1.05rem 1.15rem 1.15rem;
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
+  border-radius: calc(var(--radius) + 3px);
+  box-shadow: var(--shadow);
+  position: relative;
+}
+
+.check-tag {
+  position: relative;
+  margin: 0 0 .6rem;
+  font: 600 var(--fs-xs)/1 var(--sans);
+  letter-spacing: .09em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.check-hint {
+  font-weight: 400;
+  letter-spacing: .04em;
+  text-transform: none;
+  color: var(--muted);
+}
+
+.check-q > :first-child { margin-top: 0; }
+.check-q > :last-child { margin-bottom: .95rem; }
+.check-q p { font-size: var(--fs-base); }
+
+.check-opts { list-style: none; margin: 0; padding: 0; display: grid; gap: .45rem; }
+/* The prose bullet is drawn with ::before, so switching list-style off is not
+   enough to keep it out of a check. */
+.prose .check-opts > li::before { content: none; }
+.prose .check-opts > li { margin: 0; padding: 0; }
+.prose .check-q > ul, .prose .check-q > ol { margin-bottom: .8em; }
+
+.opt {
+  width: 100%;
+  display: flex;
+  gap: .7rem;
+  align-items: flex-start;
+  padding: .62rem .8rem;
+  text-align: left;
+  font: 400 var(--fs-base)/1.5 var(--sans);
+  color: var(--ink);
+  background: var(--surface-sunk);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: border-color .12s, background .12s, transform .08s;
+}
+.opt:hover:not(:disabled) { border-color: var(--line-strong); background: var(--surface-2); }
+.opt:active:not(:disabled) { transform: translateY(1px); }
+.opt:focus-visible { outline: none; box-shadow: var(--ring); }
+.opt:disabled { cursor: default; }
+
+.opt-mark {
+  flex: none;
+  width: 1.05rem;
+  height: 1.05rem;
+  margin-top: .16rem;
+  border: 1.5px solid var(--line-strong);
+  border-radius: 50%;
+  position: relative;
+  transition: border-color .12s, background .12s;
+}
+.check[data-kind="multi"] .opt-mark { border-radius: 3px; }
+
+.opt[data-picked="1"] { border-color: var(--accent); background: var(--accent-soft); }
+.opt[data-picked="1"] .opt-mark { border-color: var(--accent); background: var(--accent); }
+.opt[data-picked="1"] .opt-mark::after {
+  content: ""; position: absolute; inset: 0;
+  background: var(--surface);
+  clip-path: polygon(19% 52%, 38% 71%, 81% 28%, 88% 36%, 38% 86%, 12% 60%);
+}
+
+.opt[data-mark="right"] {
+  border-color: var(--good);
+  background: var(--good-soft);
+  color: var(--ink);
+}
+.opt[data-mark="right"] .opt-mark { border-color: var(--good); background: var(--good); }
+.opt[data-mark="right"] .opt-mark::after {
+  content: ""; position: absolute; inset: 0;
+  background: var(--surface);
+  clip-path: polygon(19% 52%, 38% 71%, 81% 28%, 88% 36%, 38% 86%, 12% 60%);
+}
+
+.opt[data-mark="wrong"] {
+  border-color: color-mix(in srgb, var(--bad) 45%, transparent);
+  background: var(--bad-soft);
+  color: var(--ink-2);
+}
+.opt[data-mark="wrong"] .opt-mark { border-color: var(--bad); background: var(--bad); }
+.opt[data-mark="wrong"] .opt-mark::after {
+  content: ""; position: absolute; inset: 0;
+  background: var(--surface);
+  clip-path: polygon(20% 28%, 28% 20%, 50% 42%, 72% 20%, 80% 28%, 58% 50%, 80% 72%, 72% 80%, 50% 58%, 28% 80%, 20% 72%, 42% 50%);
+}
+
+/* An explanation is only there once its option has been tried. */
+.opt-why {
+  display: none;
+  margin: .4rem 0 .15rem;
+  padding: 0 0 0 1.75rem;
+  font: 400 var(--fs-sm)/1.6 var(--sans);
+  color: var(--ink-2);
+}
+.opt-row[data-show="1"] .opt-why,
+.check-num ~ .opt-why[data-show="1"] { display: block; animation: why-in .2s ease-out; }
+.opt-why[data-show="1"] { display: block; }
+.opt-why .tex { font-size: .95em; }
+
+@keyframes why-in { from { opacity: 0; transform: translateY(-3px); } to { opacity: 1; } }
+
+.check-num { display: flex; gap: .5rem; flex-wrap: wrap; }
+.check-num input {
+  flex: 1 1 8rem;
+  min-width: 0;
+  padding: .55rem .7rem;
+  font: 400 var(--fs-base)/1.4 var(--mono);
+  color: var(--ink);
+  background: var(--surface-sunk);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+}
+.check-num input:focus-visible { outline: none; box-shadow: var(--ring); border-color: var(--accent); }
+.check-num input:disabled { color: var(--good); border-color: var(--good); }
+
+.check-actions { margin-top: .75rem; }
+
+.check-result {
+  margin: .7rem 0 0;
+  min-height: 1.2em;
+  font: 500 var(--fs-sm)/1.5 var(--sans);
+  color: var(--muted);
+}
+.check-result[data-tone="right"] { color: var(--good); }
+.check-result[data-tone="wrong"] { color: var(--bad); }
+
+.check[data-state="solved"] { border-color: color-mix(in srgb, var(--good) 40%, var(--line)); }
+.check[data-state="solved"] .check-tag { color: var(--good); }
+/* Options never tried recede once the question is settled. */
+.check[data-state="solved"] .opt:not([data-mark]) { opacity: .5; }
+
+/* The number that just landed, floating off the tag. */
+.xp-pop {
+  position: absolute;
+  right: 0;
+  top: -.1rem;
+  font: 600 var(--fs-sm)/1 var(--sans);
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--good);
+  pointer-events: none;
+  animation: xp-float 1.4s cubic-bezier(.2, .7, .3, 1) forwards;
+}
+@keyframes xp-float {
+  0%   { opacity: 0; transform: translateY(6px) scale(.9); }
+  18%  { opacity: 1; transform: translateY(-2px) scale(1.06); }
+  35%  { transform: translateY(-6px) scale(1); }
+  100% { opacity: 0; transform: translateY(-30px); }
+}
+
+/* -------------------------------------------------- clearing a lesson -- */
+
+.check-tally {
+  font: 500 var(--fs-sm)/1 var(--sans);
+  color: var(--muted);
+  white-space: nowrap;
+}
+.check-tally[data-full="1"] { color: var(--good); }
+.check-tally .tally-n { font-variant-numeric: tabular-nums; color: var(--ink); }
+.check-tally[data-full="1"] .tally-n { color: var(--good); }
+
+.complete-btn[data-locked="1"] { opacity: .55; }
+.complete-btn[data-ready="1"] {
+  border-color: var(--good);
+  color: var(--good);
+  animation: ready-pulse 1.6s ease-in-out 3;
+}
+@keyframes ready-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--good) 40%, transparent); }
+  50%      { box-shadow: 0 0 0 6px color-mix(in srgb, var(--good) 0%, transparent); }
+}
+.complete-btn[data-nudge="1"] { animation: nudge .35s ease-in-out 2; }
+@keyframes nudge {
+  0%, 100% { transform: translateX(0); }
+  25%      { transform: translateX(-3px); }
+  75%      { transform: translateX(3px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .xp-pop { animation: xp-fade 1.4s linear forwards; }
+  @keyframes xp-fade { 0%, 60% { opacity: 1; } 100% { opacity: 0; } }
+  .opt-row[data-show="1"] .opt-why,
+  .opt-why[data-show="1"] { animation: none; }
+  .complete-btn[data-ready="1"],
+  .complete-btn[data-nudge="1"] { animation: none; }
 }

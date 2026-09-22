@@ -16,10 +16,22 @@
     }
     return BASE + '/' + clean;
   }
-  var STORE_KEY = 'fanin:progress:v2';
-  var LEGACY_KEY = 'fanin:progress:v1';
+  var STORE_KEY = 'fanin:progress:v3';
+  var LEGACY_V2 = 'fanin:progress:v2';
+  var LEGACY_V1 = 'fanin:progress:v1';
+  var META_KEY = 'fanin:meta:v1';
+  var TRIALS_KEY = 'fanin:trials:v1';
   var THEME_KEY = 'fanin:theme';
-  var XP_PER_MINUTE = 10;
+
+  // What an answer is worth. Getting it right the first time pays more than
+  // getting there after a miss, but a miss still pays -- the explanation is the
+  // point, and a reader who works out why they were wrong has learnt the thing.
+  var XP_FIRST = 20;
+  var XP_RETRY = 8;
+  var XP_PER_MINUTE = 5;   // the bonus for clearing a lesson
+  var XP_COMBO = 25;       // every COMBO_STEP first-try answers in a row
+  var COMBO_STEP = 5;
+  var TRIAL_PASS = 0.8;    // share of a trial you must get right to pass it
 
   /* ---------------------------------------------------------- storage --- */
   // Site data lives in this browser only. Private windows and blocked site
@@ -43,25 +55,51 @@
     }
   }
 
-  // One record per completed lesson: { d: "YYYY-MM-DD", x: xp earned }.
-  // XP is stored at completion rather than recomputed, so it stays yours even
-  // if a lesson is later re-timed, and no metadata has to be fetched to total
-  // it up.
+  // One record per lesson you have touched:
+  //   { c: 1 when cleared, d: "YYYY-MM-DD" | null, x: xp banked,
+  //     a: { checkIndex: 1 | 2 } }
+  // `c` and `d` are separate because a lesson can be cleared without a known
+  // date -- a v1 record carries no date, and inventing one would put a day on
+  // the calendar that never happened. `a` records how each check went, 1 for
+  // right the first time and 2 for right after a miss. XP is stored rather
+  // than recomputed, so it stays yours if a lesson is later re-timed or
+  // re-questioned.
   var store = readJSON(STORE_KEY, null);
 
   if (!store || typeof store !== 'object' || Array.isArray(store)) {
     store = {};
-    // v1 was a flat { id: 1 } with no dates. Preserve the completions; their
-    // XP and dates are genuinely unknown, so they are left empty rather than
-    // invented.
-    var legacy = readJSON(LEGACY_KEY, null);
-    if (legacy && typeof legacy === 'object' && !Array.isArray(legacy)) {
-      Object.keys(legacy).forEach(function (id) {
-        if (legacy[id]) store[id] = { d: null, x: 0 };
+    var v2 = readJSON(LEGACY_V2, null);
+    if (v2 && typeof v2 === 'object' && !Array.isArray(v2)) {
+      // v2 had no checks. The lesson stays cleared and keeps its date; its XP
+      // is rescaled to the new per-minute rate rather than left to tower over
+      // freshly earned XP.
+      Object.keys(v2).forEach(function (id) {
+        var rec = v2[id] || {};
+        store[id] = { c: 1, d: rec.d || null, x: Math.round((rec.x || 0) / 2), a: {} };
       });
-      writeJSON(STORE_KEY, store);
+    } else {
+      // v1 was a flat { id: 1 } with no dates. Preserve the completions; their
+      // XP and dates are genuinely unknown, so they are left empty rather than
+      // invented.
+      var v1 = readJSON(LEGACY_V1, null);
+      if (v1 && typeof v1 === 'object' && !Array.isArray(v1)) {
+        Object.keys(v1).forEach(function (id) {
+          if (v1[id]) store[id] = { c: 1, d: null, x: 0, a: {} };
+        });
+      }
     }
+    if (Object.keys(store).length) writeJSON(STORE_KEY, store);
   }
+
+  // Running state that is not per-lesson: the answer combo, and today's tally
+  // for the daily quests.
+  var meta = readJSON(META_KEY, null);
+  if (!meta || typeof meta !== 'object') meta = {};
+  if (typeof meta.combo !== 'number') meta.combo = 0;
+  if (typeof meta.bestCombo !== 'number') meta.bestCombo = 0;
+
+  var trials = readJSON(TRIALS_KEY, null);
+  if (!trials || typeof trials !== 'object') trials = {};
 
   function today() {
     var d = new Date();
@@ -70,16 +108,104 @@
       String(d.getDate()).padStart(2, '0');
   }
 
-  function isDone(id) { return !!store[id]; }
+  // Today's counters, reset the moment the date rolls over.
+  function day() {
+    if (!meta.day || meta.day.d !== today()) {
+      meta.day = { d: today(), checks: 0, first: 0, cleared: 0 };
+    }
+    return meta.day;
+  }
+
+  function saveMeta() { writeJSON(META_KEY, meta); }
+
+  function rec(id) {
+    if (!store[id]) store[id] = { c: 0, d: null, x: 0, a: {} };
+    if (!store[id].a) store[id].a = {};
+    return store[id];
+  }
+
+  function isDone(id) { return !!(store[id] && store[id].c); }
+
+  function answered(id) { return store[id] && store[id].a ? store[id].a : {}; }
+
+  // Records one check result and returns what it was worth, so the page can
+  // show the number that just landed.
+  function recordCheck(id, index, firstTry) {
+    var r = rec(id);
+    var key = String(index);
+    if (r.a[key]) return { xp: 0, repeat: true, combo: meta.combo };
+
+    r.a[key] = firstTry ? 1 : 2;
+    var gained = firstTry ? XP_FIRST : XP_RETRY;
+
+    var d = day();
+    d.checks++;
+    if (firstTry) {
+      d.first++;
+      meta.combo++;
+      if (meta.combo > meta.bestCombo) meta.bestCombo = meta.combo;
+    } else {
+      meta.combo = 0;
+    }
+
+    var bonus = 0;
+    if (firstTry && meta.combo > 0 && meta.combo % COMBO_STEP === 0) {
+      bonus = XP_COMBO;
+      gained += bonus;
+    }
+
+    r.x += gained;
+    writeJSON(STORE_KEY, store);
+    saveMeta();
+    return { xp: gained, bonus: bonus, combo: meta.combo, repeat: false };
+  }
+
+  // A miss costs the combo immediately, before the reader picks again.
+  function breakCombo() {
+    if (!meta.combo) return 0;
+    meta.combo = 0;
+    saveMeta();
+    return 0;
+  }
 
   function setDone(id, done, minutes) {
+    var r = rec(id);
     if (done) {
-      store[id] = { d: today(), x: (minutes || 0) * XP_PER_MINUTE };
+      if (!r.c) {
+        r.c = 1;
+        r.d = today();
+        r.x += (minutes || 0) * XP_PER_MINUTE;
+        day().cleared++;
+        saveMeta();
+      }
     } else {
-      delete store[id];
+      // Un-clearing gives back the clear bonus but keeps answered checks:
+      // you did answer them, and re-answering them would pay twice.
+      if (r.c) r.x = Math.max(0, r.x - (minutes || 0) * XP_PER_MINUTE);
+      r.c = 0;
+      r.d = null;
+      if (!r.x && !Object.keys(r.a).length) delete store[id];
     }
     writeJSON(STORE_KEY, store);
     return stats();
+  }
+
+  function recordTrial(trackId, correct, total) {
+    var pct = total ? correct / total : 0;
+    var passed = pct >= TRIAL_PASS;
+    var prev = trials[trackId] || { best: 0, passed: 0, x: 0 };
+    var xp = 0;
+    // A trial pays once, the first time it is passed. Retries are for the
+    // score on the board, not for farming XP.
+    if (passed && !prev.passed) xp = 400;
+    trials[trackId] = {
+      best: Math.max(prev.best || 0, Math.round(pct * 100)),
+      passed: passed || prev.passed ? 1 : 0,
+      d: passed && !prev.passed ? today() : prev.d || null,
+      x: (prev.x || 0) + xp,
+    };
+    writeJSON(TRIALS_KEY, trials);
+    return { passed: passed, pct: pct, xp: xp, best: trials[trackId].best };
   }
 
   /* ------------------------------------------------- derived statistics -- */
@@ -91,17 +217,20 @@
       return { id: bits[0], size: Number(bits[1]) || 0, short: bits[2] || bits[0] };
     });
 
+  // The ladder tops out at what finishing the curriculum is actually worth:
+  // every lesson cleared, every check answered, every trial passed, without
+  // needing a perfect first-try record.
   var LEVELS = [
     { at: 0,     name: 'Randomly Initialized' },
-    { at: 600,   name: 'First Backward Pass' },
-    { at: 1800,  name: 'Gradient Descending' },
-    { at: 3600,  name: 'Learning Rate Tuned' },
-    { at: 6000,  name: 'Attention Is Yours' },
-    { at: 9000,  name: 'Residual Connected' },
-    { at: 12000, name: 'Scaling Laws Obeyed' },
-    { at: 15000, name: 'Policy Optimized' },
-    { at: 17500, name: 'Kernel Fused' },
-    { at: 20110, name: 'Compute Optimal' },
+    { at: 500,   name: 'First Backward Pass' },
+    { at: 1400,  name: 'Gradient Descending' },
+    { at: 2600,  name: 'Learning Rate Tuned' },
+    { at: 4200,  name: 'Attention Is Yours' },
+    { at: 6100,  name: 'Residual Connected' },
+    { at: 8300,  name: 'Scaling Laws Obeyed' },
+    { at: 10800, name: 'Policy Optimized' },
+    { at: 13500, name: 'Kernel Fused' },
+    { at: 16500, name: 'Compute Optimal' },
   ];
 
   var TRACK_BADGE = {
@@ -143,21 +272,62 @@
     return { current: current, longest: longest };
   }
 
+  /* ------------------------------------------------------ daily quests -- */
+  // Three goals a day, picked from the date so they are the same all day and
+  // different tomorrow. Small, finishable in one sitting.
+
+  var QUESTS = [
+    { id: 'answer-5',  goal: 5,  of: 'checks',  name: 'Answer five checks' },
+    { id: 'answer-10', goal: 10, of: 'checks',  name: 'Answer ten checks' },
+    { id: 'first-3',   goal: 3,  of: 'first',   name: 'Three right first try' },
+    { id: 'first-6',   goal: 6,  of: 'first',   name: 'Six right first try' },
+    { id: 'clear-1',   goal: 1,  of: 'cleared', name: 'Clear a lesson' },
+    { id: 'clear-2',   goal: 2,  of: 'cleared', name: 'Clear two lessons' },
+    { id: 'clear-3',   goal: 3,  of: 'cleared', name: 'Clear three lessons' },
+  ];
+
+  function questsToday() {
+    var iso = today();
+    var h = 0;
+    for (var i = 0; i < iso.length; i++) h = (h * 31 + iso.charCodeAt(i)) >>> 0;
+    var pool = QUESTS.slice();
+    var picked = [];
+    for (var k = 0; k < 3 && pool.length; k++) {
+      h = (h * 1103515245 + 12345) >>> 0;
+      picked.push(pool.splice(h % pool.length, 1)[0]);
+    }
+    var d = day();
+    return picked.map(function (q) {
+      var have = d[q.of] || 0;
+      return {
+        id: q.id, name: q.name, goal: q.goal, have: Math.min(have, q.goal),
+        done: have >= q.goal,
+      };
+    });
+  }
+
   function stats() {
     var ids = Object.keys(store);
-    var xp = 0, byDay = {}, byTrack = {}, earliest = null;
+    var xp = 0, byDay = {}, byTrack = {}, checksRight = 0, firstTry = 0;
 
     ids.forEach(function (id) {
-      var rec = store[id] || {};
-      xp += rec.x || 0;
-      var track = id.split('/')[0];
-      byTrack[track] = (byTrack[track] || 0) + 1;
-      if (rec.d) {
-        byDay[rec.d] = (byDay[rec.d] || 0) + 1;
-        if (!earliest || rec.d < earliest) earliest = rec.d;
+      var r = store[id] || {};
+      xp += r.x || 0;
+      Object.keys(r.a || {}).forEach(function (k) {
+        checksRight++;
+        if (r.a[k] === 1) firstTry++;
+      });
+      if (r.c) {
+        var track = id.split('/')[0];
+        byTrack[track] = (byTrack[track] || 0) + 1;
+        // Only a dated clear reaches the calendar and the streak.
+        if (r.d) byDay[r.d] = (byDay[r.d] || 0) + 1;
       }
     });
 
+    Object.keys(trials).forEach(function (t) { xp += trials[t].x || 0; });
+
+    var cleared = ids.filter(function (id) { return store[id] && store[id].c; });
     var days = Object.keys(byDay).sort().reverse();
     var streak = streakFrom(days);
 
@@ -168,9 +338,12 @@
 
     var total = TRACKS.reduce(function (s, t) { return s + t.size; }, 0);
     var busiest = days.reduce(function (m, d) { return Math.max(m, byDay[d]); }, 0);
+    var trialsPassed = TRACKS.filter(function (t) {
+      return trials[t.id] && trials[t.id].passed;
+    }).length;
 
     return {
-      count: ids.length,
+      count: cleared.length,
       total: total,
       xp: xp,
       level: level,
@@ -182,8 +355,19 @@
       byTrack: byTrack,
       days: days,
       busiestDay: busiest,
-      badges: badges({ count: ids.length, total: total, byTrack: byTrack,
-                       streak: streak, busiest: busiest }),
+      checksRight: checksRight,
+      firstTry: firstTry,
+      accuracy: checksRight ? Math.round((firstTry / checksRight) * 100) : 0,
+      combo: meta.combo,
+      bestCombo: meta.bestCombo,
+      trials: trials,
+      trialsPassed: trialsPassed,
+      quests: questsToday(),
+      badges: badges({
+        count: cleared.length, total: total, byTrack: byTrack, streak: streak,
+        busiest: busiest, bestCombo: meta.bestCombo, trialsPassed: trialsPassed,
+        checksRight: checksRight, firstTry: firstTry,
+      }),
     };
   }
 
@@ -193,22 +377,31 @@
       out.push({ id: id, name: name, hint: hint, earned: !!earned });
     }
 
-    add('first', 'First Light', 'Complete your first lesson', s.count >= 1);
-    add('ten', 'Warmed Up', 'Complete ten lessons', s.count >= 10);
-    add('half', 'Past the Ridge Point', 'Complete half the curriculum', s.count >= Math.ceil(s.total / 2));
-    add('all', 'Compute Optimal', 'Complete all ' + s.total + ' lessons', s.total > 0 && s.count >= s.total);
+    add('first', 'First Light', 'Clear your first lesson', s.count >= 1);
+    add('ten', 'Warmed Up', 'Clear ten lessons', s.count >= 10);
+    add('half', 'Past the Ridge Point', 'Clear half the curriculum', s.count >= Math.ceil(s.total / 2));
+    add('all', 'Compute Optimal', 'Clear all ' + s.total + ' lessons', s.total > 0 && s.count >= s.total);
 
     add('deep-work', 'Deep Work', 'Five lessons in one day', s.busiest >= 5);
     add('streak-3', 'Three Days Running', 'A three-day streak', s.streak.longest >= 3);
     add('streak-7', 'A Full Week', 'A seven-day streak', s.streak.longest >= 7);
     add('streak-30', 'Converged', 'A thirty-day streak', s.streak.longest >= 30);
 
+    add('combo-5', 'On a Roll', 'Five right in a row, first try', s.bestCombo >= 5);
+    add('combo-15', 'Low Perplexity', 'Fifteen right in a row, first try', s.bestCombo >= 15);
+    add('sharp', 'Well Calibrated', 'A hundred answers right first try', s.firstTry >= 100);
+    add('trials', 'Benchmarked', 'Pass every track trial',
+        TRACKS.length > 0 && s.trialsPassed >= TRACKS.length);
+
     var touched = TRACKS.filter(function (t) { return s.byTrack[t.id]; }).length;
     add('breadth', 'Polymath', 'A lesson in every track', TRACKS.length > 0 && touched >= TRACKS.length);
 
+    // A track badge takes both: every lesson cleared and the trial passed.
     TRACKS.forEach(function (t) {
       add('track-' + t.id, TRACK_BADGE[t.id] || ('Cleared ' + t.short),
-          'Finish ' + t.short, t.size > 0 && (s.byTrack[t.id] || 0) >= t.size);
+          'Finish ' + t.short + ' and pass its trial',
+          t.size > 0 && (s.byTrack[t.id] || 0) >= t.size &&
+          !!(trials[t.id] && trials[t.id].passed));
     });
 
     return out;
@@ -470,14 +663,245 @@
 
   /* -------------------------------------------------- lesson controls --- */
 
+  /* ------------------------------------------------------------ checks -- */
+  // The question loop: attempt, immediate feedback, consequence. A miss shows
+  // why that option is wrong and leaves the question open, so the reader who
+  // gets it wrong still ends up knowing the answer -- they just earn less for
+  // it, and their combo resets.
+
+  var checkEls = [].slice.call(document.querySelectorAll('.check'));
   var completeBtn = document.getElementById('complete-btn');
+  var LESSON = completeBtn ? completeBtn.dataset.lesson || '' : '';
+  var NEED = completeBtn ? Number(completeBtn.dataset.checks) || 0 : 0;
+
+  function keyOf(el) {
+    try {
+      var raw = atob(el.dataset.k || '');
+      return raw.indexOf('fanin:') === 0 ? raw.slice(6) : '';
+    } catch (e) {
+      return '';
+    }
+  }
+
+  function correctSet(el) {
+    var out = {};
+    keyOf(el).split(',').forEach(function (n) {
+      if (n !== '') out[Number(n)] = true;
+    });
+    return out;
+  }
+
+  // A number answer is right within its stated tolerance, and exactly right
+  // when none was given -- allowing for the float error of typing "0.1".
+  function numericOk(el, typed) {
+    var bits = keyOf(el).split('|');
+    var want = Number(bits[0]);
+    var tol = Number(bits[1]) || 0;
+    var got = Number(String(typed).trim().replace(/,/g, ''));
+    if (!isFinite(got)) return false;
+    return Math.abs(got - want) <= (tol || Math.abs(want) * 1e-9 + 1e-9);
+  }
+
+  function xpPop(near, text) {
+    if (!near) return;
+    var pop = document.createElement('span');
+    pop.className = 'xp-pop';
+    pop.textContent = text;
+    near.appendChild(pop);
+    setTimeout(function () { pop.remove(); }, 1400);
+  }
+
+  // Paints a check that is finished with: the right answer marked, its
+  // explanation open, and nothing left to click.
+  function lockSolved(el, how) {
+    el.dataset.state = 'solved';
+    el.dataset.how = how === 1 ? 'first' : 'retry';
+    var right = correctSet(el);
+    el.querySelectorAll('.opt').forEach(function (btn) {
+      var i = Number(btn.dataset.i);
+      btn.disabled = true;
+      if (right[i]) {
+        btn.dataset.mark = 'right';
+        var row = btn.closest('.opt-row');
+        if (row) row.dataset.show = '1';
+      }
+    });
+    var input = el.querySelector('.check-num input');
+    if (input) {
+      input.disabled = true;
+      input.value = input.value || keyOf(el).split('|')[0];
+      var go = el.querySelector('.check-num button');
+      if (go) go.disabled = true;
+      var why = el.querySelector('[data-why]');
+      if (why) why.dataset.show = '1';
+    }
+    var submit = el.querySelector('[data-submit]');
+    if (submit) submit.disabled = true;
+    var res = el.querySelector('.check-result');
+    if (res && !res.textContent) {
+      res.dataset.tone = 'right';
+      res.textContent = how === 1 ? 'Right first time.' : 'Answered.';
+    }
+  }
+
+  function answeredCount() {
+    var a = answered(LESSON);
+    return checkEls.filter(function (el, i) { return a[String(i)]; }).length;
+  }
+
+  function paintChecks() {
+    var n = answeredCount();
+    document.querySelectorAll('[data-tally] .tally-n').forEach(function (el) {
+      el.textContent = String(n);
+    });
+    var tally = document.querySelector('[data-tally]');
+    if (tally) tally.dataset.full = NEED && n >= NEED ? '1' : '0';
+    if (completeBtn && NEED) {
+      var ready = n >= NEED;
+      completeBtn.dataset.locked = ready || isDone(LESSON) ? '0' : '1';
+      completeBtn.setAttribute('aria-disabled', ready || isDone(LESSON) ? 'false' : 'true');
+    }
+    return n;
+  }
+
+  // Scores one attempt. Returns true when the check is now finished.
+  function judge(el, index, isRight, chosenRows) {
+    var res = el.querySelector('.check-result');
+
+    if (!isRight) {
+      el.dataset.missed = '1';
+      breakCombo();
+      (chosenRows || []).forEach(function (row) {
+        row.dataset.show = '1';
+        var b = row.querySelector('.opt');
+        if (b) b.dataset.mark = 'wrong';
+      });
+      if (res) {
+        res.dataset.tone = 'wrong';
+        res.textContent = 'Not this one — read why, then try again.';
+      }
+      paintLevel(stats());
+      return false;
+    }
+
+    var firstTry = el.dataset.missed !== '1';
+    var got = recordCheck(LESSON, index, firstTry);
+    lockSolved(el, firstTry ? 1 : 2);
+
+    if (res) {
+      res.dataset.tone = 'right';
+      res.textContent = firstTry ? 'Right first time.' : 'That is the one.';
+      if (got.combo >= 2) res.textContent += '  ' + got.combo + ' in a row.';
+    }
+    if (got.xp) xpPop(el.querySelector('.check-tag'), '+' + got.xp + ' XP');
+    if (got.bonus) {
+      showToast(got.combo + ' in a row', '+' + got.bonus + ' XP combo bonus', 'combo');
+    }
+
+    var n = paintChecks();
+    paintLevel(stats());
+    if (NEED && n >= NEED && !isDone(LESSON) && completeBtn) {
+      completeBtn.dataset.ready = '1';
+    }
+    return true;
+  }
+
+  checkEls.forEach(function (el, index) {
+    var prior = answered(LESSON)[String(index)];
+    if (prior) { lockSolved(el, prior); return; }
+
+    var kind = el.dataset.kind;
+
+    if (kind === 'numeric') {
+      el.addEventListener('submit', function (e) {
+        e.preventDefault();
+        if (el.dataset.state === 'solved') return;
+        var input = el.querySelector('input');
+        var typed = input ? input.value : '';
+        if (!String(typed).trim()) return;
+        if (numericOk(el, typed)) {
+          judge(el, index, true, []);
+        } else {
+          judge(el, index, false, []);
+          if (input) { input.select(); }
+        }
+      });
+      return;
+    }
+
+    if (kind === 'multi') {
+      el.querySelectorAll('.opt').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          if (el.dataset.state === 'solved') return;
+          btn.dataset.picked = btn.dataset.picked === '1' ? '0' : '1';
+        });
+      });
+      var submit = el.querySelector('[data-submit]');
+      if (submit) {
+        submit.addEventListener('click', function () {
+          if (el.dataset.state === 'solved') return;
+          var right = correctSet(el);
+          var picked = [].slice.call(el.querySelectorAll('.opt'))
+            .filter(function (b) { return b.dataset.picked === '1'; });
+          if (!picked.length) return;
+          var ok = picked.length === Object.keys(right).length &&
+                   picked.every(function (b) { return right[Number(b.dataset.i)]; });
+          if (ok) {
+            judge(el, index, true, []);
+          } else {
+            var wrongRows = picked
+              .filter(function (b) { return !right[Number(b.dataset.i)]; })
+              .map(function (b) { return b.closest('.opt-row'); });
+            // Nothing wrong was picked, so the set is merely incomplete: say so
+            // rather than marking a correct option as a mistake.
+            judge(el, index, false, wrongRows);
+            if (!wrongRows.length) {
+              var res = el.querySelector('.check-result');
+              if (res) res.textContent = 'Everything you picked is right, but not all of it is there.';
+            }
+            picked.forEach(function (b) { b.dataset.picked = '0'; });
+          }
+        });
+      }
+      return;
+    }
+
+    el.querySelectorAll('.opt').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        if (el.dataset.state === 'solved' || btn.disabled) return;
+        var right = correctSet(el);
+        var i = Number(btn.dataset.i);
+        if (right[i]) {
+          judge(el, index, true, []);
+        } else {
+          btn.disabled = true;
+          judge(el, index, false, [btn.closest('.opt-row')]);
+        }
+      });
+    });
+  });
+
+  paintChecks();
+
   if (completeBtn) {
     completeBtn.addEventListener('click', function () {
-      var wasDone = isDone(completeBtn.dataset.lesson);
+      var wasDone = isDone(LESSON);
+      // A lesson with checks is cleared by answering them, not by asserting it.
+      if (!wasDone && NEED && answeredCount() < NEED) {
+        completeBtn.dataset.nudge = '1';
+        setTimeout(function () { completeBtn.dataset.nudge = '0'; }, 700);
+        var first = checkEls.filter(function (el) {
+          return el.dataset.state !== 'solved';
+        })[0];
+        if (first) first.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return;
+      }
       var minutes = Number(completeBtn.dataset.minutes) || 0;
       var before = stats();
-      setDone(completeBtn.dataset.lesson, !wasDone, minutes);
+      setDone(LESSON, !wasDone, minutes);
+      completeBtn.dataset.ready = '0';
       var after = paintProgress();
+      paintChecks();
       if (!wasDone) celebrate(before, after, minutes);
     });
   }
@@ -487,8 +911,15 @@
     resetBtn.addEventListener('click', function () {
       if (!confirm('Clear your progress, XP, streak and badges? This cannot be undone.')) return;
       store = {};
+      meta = { combo: 0, bestCombo: 0 };
+      trials = {};
       writeJSON(STORE_KEY, store);
-      try { localStorage.removeItem(LEGACY_KEY); } catch (e) {}
+      writeJSON(META_KEY, meta);
+      writeJSON(TRIALS_KEY, trials);
+      try {
+        localStorage.removeItem(LEGACY_V1);
+        localStorage.removeItem(LEGACY_V2);
+      } catch (e) { /* nothing stored to remove */ }
       paintProgress();
     });
   }
